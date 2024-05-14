@@ -218,14 +218,14 @@ class FlxAnimate extends FlxSprite
 		var badPress:Bool = false;
 		var goodPress:Bool = false;
 		final isOverlaped:Bool = FlxG.mouse.overlaps(this);
-		final pressed = FlxG.mouse.pressed;
-		if (pressed && isOverlaped)
+		final isPressed = FlxG.mouse.pressed;
+		if (isPressed && isOverlaped)
 			goodPress = true;
-		if (pressed && !isOverlaped && !goodPress)
+		if (isPressed && !isOverlaped && !goodPress)
 		{
 			badPress = true;
 		}
-		if (!pressed)
+		if (!isPressed)
 		{
 			badPress = false;
 			goodPress = false;
