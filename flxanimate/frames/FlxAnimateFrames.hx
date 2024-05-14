@@ -164,7 +164,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 			FlxG.log.error('the image called "${curJson.meta.image}" does not exist in Path $Path, maybe you changed the image Path somewhere else?');
 	}
 
-	public function concat(frames:FlxFramesCollection)
+	public override function concat(frames:FlxFramesCollection)
 	{
 		if (parents.indexOf(frames.parent) == -1)
 			parents.push(frames.parent);
@@ -173,6 +173,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 			this.frames.push(frame);
 			framesHash.set(frame.name, frame);
 		}
+		return this;
 	}
 	/**
 	 * Sparrow spritesheet format parser with support of both of the versions and making the image completely optional to you.
