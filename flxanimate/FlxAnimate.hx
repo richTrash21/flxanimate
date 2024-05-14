@@ -70,7 +70,9 @@ class FlxAnimate extends FlxSprite
 
 	public var showPivot(default, set):Bool = false;
 
+	#if !FLX_ANIMATE_NO_PIVOTPOINT
 	var _pivot:FlxFrame;
+	#end
 	/**
 	 * # Description
 	 * `FlxAnimate` is a texture atlas parser from the drawing software *Adobe Animate* (once being *Adobe Flash*).
@@ -88,7 +90,9 @@ class FlxAnimate extends FlxSprite
 	public function new(X:Float = 0, Y:Float = 0, ?Path:String, ?Settings:Settings)
 	{
 		super(X, Y);
+		#if !FLX_CNE_FORK
 		shaderEnabled = false;
+		#end
 		anim = new FlxAnim(this);
 		if (Path != null)
 			loadAtlas(Path);
@@ -97,12 +101,14 @@ class FlxAnimate extends FlxSprite
 	}
 
 	function set_showPivot(v:Bool) {
+		#if !FLX_ANIMATE_NO_PIVOTPOINT
 		if(v && _pivot == null) {
 			@:privateAccess
 			_pivot = new FlxFrame(FlxGraphic.fromBitmapData(Assets.getBitmapData("flxanimate/images/pivot.png")));
 			_pivot.frame = new FlxRect(0, 0, _pivot.parent.width, _pivot.parent.height);
 			_pivot.name = "pivot";
 		}
+		#end
 		return showPivot = v;
 	}
 
@@ -126,8 +132,10 @@ class FlxAnimate extends FlxSprite
 		updateSkewMatrix();
 
 		parseElement(anim.curInstance, anim.curFrame, _matrix, colorTransform, true);
+		#if !FLX_ANIMATE_NO_PIVOTPOINT
 		if (showPivot)
 			drawLimb(_pivot, new FlxMatrix(1,0,0,1, origin.x, origin.y));
+		#end
 	}
 	/**
 	 * This basically renders an element of any kind, both limbs and symbols.
@@ -206,21 +214,23 @@ class FlxAnimate extends FlxSprite
 	var pressed:Bool = false;
 	function setButtonFrames(frame:Int)
 	{
+		#if FLX_MOUSE
 		var badPress:Bool = false;
 		var goodPress:Bool = false;
-		#if FLX_MOUSE
-		if (FlxG.mouse.pressed && FlxG.mouse.overlaps(this))
+		final isOverlaped:Bool = FlxG.mouse.overlaps(this);
+		final pressed = FlxG.mouse.pressed;
+		if (pressed && isOverlaped)
 			goodPress = true;
-		if (FlxG.mouse.pressed && !FlxG.mouse.overlaps(this) && !goodPress)
+		if (pressed && !isOverlaped && !goodPress)
 		{
 			badPress = true;
 		}
-		if (!FlxG.mouse.pressed)
+		if (!pressed)
 		{
 			badPress = false;
 			goodPress = false;
 		}
-		if (FlxG.mouse.overlaps(this) && !badPress)
+		if (isOverlaped && !badPress)
 		{
 			@:privateAccess
 			var event = anim.buttonMap.get(anim.curSymbol.name);
@@ -258,39 +268,39 @@ class FlxAnimate extends FlxSprite
 
 		for (camera in cameras)
 		{
+			if (!camera.visible || !camera.exists)
+				return;
+
 			rMatrix.identity();
 			rMatrix.translate(-limb.offset.x, -limb.offset.y);
 			rMatrix.concat(_matrix);
-			if (!camera.visible || !camera.exists || !limbOnScreen(limb, _matrix, camera))
-				return;
-
-			getScreenPosition(_point, camera).subtractPoint(offset);
-			rMatrix.translate(-origin.x, -origin.y);
-			if (limb != _pivot)
+			if (limbOnScreen(limb, _matrix, camera))
+			{
+				getScreenPosition(_point, camera).subtractPoint(offset);
+				rMatrix.translate(-origin.x, -origin.y);
+				#if FLX_ANIMATE_NO_PIVOTPOINT
 				rMatrix.scale(scale.x, scale.y);
-			else
-				rMatrix.a = rMatrix.d = 0.7 / camera.zoom;
+				#else
+				if (limb != _pivot)
+					rMatrix.scale(scale.x, scale.y);
+				else
+					rMatrix.a = rMatrix.d = 0.7 / camera.zoom;
+				#end
 
-			if (matrixExposed)
-			{
-				rMatrix.concat(transformMatrix);
-			}
-			else
-			{
-				rMatrix.concat(_skewMatrix);
-			}
+				rMatrix.concat(matrixExposed ? transformMatrix : _skewMatrix);
 
-			_point.addPoint(origin);
-			if (isPixelPerfectRender(camera))
-			{
-				_point.floor();
-			}
+				_point.addPoint(origin);
+				if (isPixelPerfectRender(camera))
+				{
+					_point.floor();
+				}
 
-			rMatrix.translate(_point.x, _point.y);
-			camera.drawPixels(limb, null, rMatrix, colorTransform, blend, antialiasing, shaderEnabled ? shader : null);
-			#if FLX_DEBUG
-			FlxBasic.visibleCount++;
-			#end
+				rMatrix.translate(_point.x, _point.y);
+				camera.drawPixels(limb, null, rMatrix, colorTransform, blend, antialiasing, #if !FLX_CNE_FORK shaderEnabled ? shader : null #else shader #end);
+				#if FLX_DEBUG
+				FlxBasic.visibleCount++;
+				#end	
+			}
 		}
 		// doesnt work, needs to be remade
 		//#if FLX_DEBUG
