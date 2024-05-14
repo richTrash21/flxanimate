@@ -158,13 +158,13 @@ class FlxAnimateFrames extends FlxAtlasFrames
 				}
 			}
 			graphic.addFrameCollection(spritemapFrames);
-			frames.concat(spritemapFrames);
+			frames.addFrames(spritemapFrames);
 		}
 		else
 			FlxG.log.error('the image called "${curJson.meta.image}" does not exist in Path $Path, maybe you changed the image Path somewhere else?');
 	}
 
-	public override function concat(frames:FlxFramesCollection)
+	public function addFrames(frames:FlxFramesCollection)
 	{
 		if (parents.indexOf(frames.parent) == -1)
 			parents.push(frames.parent);
