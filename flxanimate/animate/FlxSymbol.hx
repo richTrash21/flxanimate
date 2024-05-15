@@ -121,12 +121,13 @@ class FlxSymbol
 		var layer = timeline.get(layer);
 		@:privateAccess
 		var j = layer._keyframes.indexOf(label);
+		var frame:FlxKeyFrame;
 		@:privateAccess
 		while (j++ < layer._keyframes.length)
 		{
 			@:privateAccess
-			if (layer._keyframes[j].name == null || layer._keyframes[j].name == label.name)
-				return layer._keyframes[j];
+			if ((frame = layer._keyframes[j]).name != null && frame.name != label.name)
+				return frame;
 		}
 
 		return null;
@@ -163,7 +164,6 @@ class FlxSymbol
 				frame += (length > 0) ? length - 1 : frame;
 			else
 				frame = 0;
-
 		}
 		else if (frame > length - 1)
 		{
@@ -172,7 +172,6 @@ class FlxSymbol
 			else
 				frame = length - 1;
 		}
-
 		return frame;
 	}
 

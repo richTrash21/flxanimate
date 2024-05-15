@@ -109,7 +109,7 @@ class FlxAnim implements IFlxDestroyable
 		pause();
 		var isNewAnim = false;
 		@:privateAccess
-		if (!flxanimate.Utils.isValidStr(Name))
+		if (flxanimate.Utils.isValidStr(Name))
 		{
 			var curThing = animsMap.get(Name);
 			if (curThing == null)
