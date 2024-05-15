@@ -28,9 +28,6 @@ import haxe.xml.Fast as Access;
 #end
 import flixel.graphics.frames.FlxFrame;
 
-typedef Assets = #if FLX_ANIMATE_SYS_PATHS sys.FileSystem #else openfl.Assets #end;
-typedef File = #if FLX_ANIMATE_SYS_PATHS sys.io.File #else Assets #end;
-
 class FlxAnimateFrames extends FlxAtlasFrames
 {
 	public function new()
@@ -321,7 +318,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	{
 		if ((Path is String) && !Utils.exists(Path))
 			return null;
-		var data:Plist = (Path is String) ? PropertyList.parse(Assets.getText(Path)) : Path;
+		var data:Plist = (Path is String) ? PropertyList.parse(Utils.getText(Path)) : Path;
 		if (Image == null)
 		{
 			if ((Path is String))
