@@ -7,6 +7,7 @@ import haxe.extern.EitherType;
 import flxanimate.data.AnimationData.Frame;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import flxanimate.data.AnimationData.Layers;
+import flxanimate.Utils;
 
 
 class FlxLayer implements IFlxDestroyable
@@ -121,7 +122,7 @@ class FlxLayer implements IFlxDestroyable
 	}
 	public function rename(name:String = "")
 	{
-		if (["", null].indexOf(name) != -1 && ["", null].indexOf(this.name) != -1)
+		if (Utils.isValidStr(name) && Utils.isValidStr(this.name))
 		{
 			name = 'Layer ${(_parent != null) ? _parent.getList().length : 1}';
 		}
@@ -129,7 +130,7 @@ class FlxLayer implements IFlxDestroyable
 		{
 			name += " copy";
 		}
-		if (["", null].indexOf(name) == -1)
+		if (!Utils.isValidStr(name))
 			this.name = name;
 	}
 	function set__parent(par:FlxTimeline)

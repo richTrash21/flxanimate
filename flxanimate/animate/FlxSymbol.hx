@@ -17,7 +17,7 @@ class FlxSymbol
 
 	public var name(default, null):String;
 	@:noCompletion
-	@:deprecated("")
+	// @:deprecated("")
 	public var labels(default, null):Map<String, FlxLabel>;
 
 	public var layers(get, null):Array<String>;
@@ -125,7 +125,7 @@ class FlxSymbol
 		while (j++ < layer._keyframes.length)
 		{
 			@:privateAccess
-			if ([null, label.name].indexOf(layer._keyframes[j].name) == -1)
+			if (layer._keyframes[j].name == null || layer._keyframes[j].name == label.name)
 				return layer._keyframes[j];
 		}
 
@@ -159,24 +159,18 @@ class FlxSymbol
 	{
 		if (frame < 0)
 		{
-			if ([loop, "loop"].indexOf(loopType) != -1)
+			if (loopType == loop || loopType == "loop")
 				frame += (length > 0) ? length - 1 : frame;
 			else
-			{
 				frame = 0;
-			}
 
 		}
 		else if (frame > length - 1)
 		{
-			if ([loop, "loop"].indexOf(loopType) != -1)
-			{
+			if (loopType == loop || loopType == "loop")
 				frame -= (length > 0) ? length - 1 : frame;
-			}
 			else
-			{
 				frame = length - 1;
-			}
 		}
 
 		return frame;

@@ -3,6 +3,7 @@ package flxanimate.frames;
 import flixel.util.FlxSort;
 import flixel.graphics.frames.FlxFramesCollection;
 import flxanimate.data.AnimationData.OneOfTwo;
+import flxanimate.Utils;
 import openfl.geom.Rectangle;
 import flxanimate.data.SpriteMapData.Meta;
 import haxe.io.Bytes;
@@ -17,7 +18,7 @@ import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 import flxanimate.data.SpriteMapData.AnimateAtlas;
 import flxanimate.data.SpriteMapData.AnimateSpriteData;
-import openfl.Assets;
+
 import openfl.display.BitmapData;
 import flixel.system.FlxAssets.FlxGraphicAsset;
 #if haxe4
@@ -26,6 +27,9 @@ import haxe.xml.Access;
 import haxe.xml.Fast as Access;
 #end
 import flixel.graphics.frames.FlxFrame;
+
+typedef Assets = #if FLX_ANIMATE_SYS_PATHS sys.FileSystem #else openfl.Assets #end;
+typedef File = #if FLX_ANIMATE_SYS_PATHS sys.io.File #else Assets #end;
 
 class FlxAnimateFrames extends FlxAtlasFrames
 {
@@ -56,7 +60,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 			#end
 			var imagemap:Map<String, Bytes> = new Map();
 			var jsonMap:Map<String, AnimateAtlas> = new Map();
-			var thing = (zip != null) ? zip :  Zip.unzip(Zip.readZip(Assets.getBytes(Path)));
+			var thing = (zip != null) ? zip :  Zip.unzip(Zip.readZip(Utils.getBytes(Path)));
 			for (list in thing)
 			{
 				if (haxe.io.Path.extension(list.fileName) == "json")
@@ -88,10 +92,10 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		}
 		else
 		{
-			if (Assets.exists('$Path/spritemap.json'))
+			if (Utils.exists('$Path/spritemap.json'))
 				parseAtlasSpritemap(Path, 'spritemap.json', frames);
 			var i = 1;
-			while (Assets.exists('$Path/spritemap$i.json'))
+			while (Utils.exists('$Path/spritemap$i.json'))
 			{
 				parseAtlasSpritemap(Path, 'spritemap$i.json', frames);
 				i++;
@@ -106,8 +110,8 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	}
 
 	public static function parseAtlasSpritemap(Path:String, name:String, frames:FlxAnimateFrames) {
-		var curJson:AnimateAtlas = haxe.Json.parse(StringTools.replace(Assets.getText('$Path/$name'), String.fromCharCode(0xFEFF), ""));
-		var curSpritemap = Assets.getBitmapData('$Path/${curJson.meta.image}');
+		var curJson:AnimateAtlas = haxe.Json.parse(StringTools.replace(Utils.getText('$Path/$name'), String.fromCharCode(0xFEFF), ""));
+		var curSpritemap = Utils.getBitmapData('$Path/${curJson.meta.image}');
 		if (curSpritemap != null)
 		{
 			var graphic = FlxG.bitmap.add(curSpritemap);
@@ -183,10 +187,10 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	 */
 	public static function fromSparrow(Path:FlxSparrow, ?Image:FlxGraphicAsset):FlxAtlasFrames
 	{
-		if ((Path is String) && !Assets.exists(Path))
+		if ((Path is String) && !Utils.exists(Path))
 			return null;
 
-		var data:Access = new Access((Path is String) ? Xml.parse(Assets.getText(Path)).firstElement() : Path.firstElement());
+		var data:Access = new Access((Path is String) ? Xml.parse(Utils.getText(Path)).firstElement() : Path.firstElement());
 		if (Image == null)
 		{
 			if ((Path is String))
@@ -248,9 +252,9 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	 */
 	public static function fromJson(Path:FlxJson, ?Image:FlxGraphicAsset):FlxAtlasFrames
 	{
-		if ((Path is String) && !Assets.exists(Path))
+		if ((Path is String) && !Utils.exists(Path))
 			return null;
-		var data:JsonNormal = (Path is String) ? haxe.Json.parse(Assets.getText(Path)) : Path;
+		var data:JsonNormal = (Path is String) ? haxe.Json.parse(Utils.getText(Path)) : Path;
 		if (Image == null)
 		{
 			if ((Path is String))
@@ -315,7 +319,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	 */
 	public static function fromStarling(Path:FlxPropertyList, ?Image:FlxGraphicAsset):FlxAtlasFrames
 	{
-		if ((Path is String) && !Assets.exists(Path))
+		if ((Path is String) && !Utils.exists(Path))
 			return null;
 		var data:Plist = (Path is String) ? PropertyList.parse(Assets.getText(Path)) : Path;
 		if (Image == null)
@@ -361,9 +365,9 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	 */
 	public static function fromCocos2D(Path:String, ?Image:FlxGraphicAsset):FlxAtlasFrames
 	{
-		if (!Assets.exists(Path))
+		if (!Utils.exists(Path))
 			return null;
-		var data:Plist = PropertyList.parse(Assets.getText(Path));
+		var data:Plist = PropertyList.parse(Utils.getText(Path));
 		if (data.metadata.format == 2)
 		{
 			return fromStarling(Path, Image);
@@ -412,7 +416,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	public static function fromEaselJS(Path:String, ?Image:FlxGraphicAsset):FlxAtlasFrames
 	{
 		var hugeFrames:FlxAtlasFrames = new FlxAtlasFrames(null);
-		var separatedJS = Assets.getText(Path).split("\n");
+		var separatedJS = Utils.getText(Path).split("\n");
 		var lines:Array<String> = [];
 		for (line in separatedJS)
 		{
@@ -436,7 +440,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 			var times = 0;
 			var name = names[i];
 			var json = jsons[i];
-			var bitmap = FlxG.bitmap.add(Assets.getBitmapData((Image == null) ? '${imagePath.join("/")}/${json.images[0]}' : Image));
+			var bitmap = FlxG.bitmap.add(Utils.getBitmapData((Image == null) ? '${imagePath.join("/")}/${json.images[0]}' : Image));
 			var frames = new FlxAtlasFrames(bitmap);
 			for (frame in json.frames)
 			{

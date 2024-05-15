@@ -14,7 +14,7 @@ import flixel.math.FlxPoint;
 import flixel.FlxCamera;
 import flxanimate.animate.*;
 import flxanimate.zip.Zip;
-import openfl.Assets;
+import flxanimate.Utils;
 import haxe.io.BytesInput;
 import flixel.system.FlxSound;
 import flixel.FlxG;
@@ -104,7 +104,7 @@ class FlxAnimate extends FlxSprite
 		#if !FLX_ANIMATE_NO_PIVOTPOINT
 		if(v && _pivot == null) {
 			@:privateAccess
-			_pivot = new FlxFrame(FlxGraphic.fromBitmapData(Assets.getBitmapData("flxanimate/images/pivot.png")));
+			_pivot = new FlxFrame(FlxGraphic.fromBitmapData(openfl.Assets.getBitmapData("flxanimate/images/pivot.png")));
 			_pivot.frame = new FlxRect(0, 0, _pivot.parent.width, _pivot.parent.height);
 			_pivot.name = "pivot";
 		}
@@ -114,7 +114,7 @@ class FlxAnimate extends FlxSprite
 
 	public function loadAtlas(Path:String)
 	{
-		if (!Assets.exists('$Path/Animation.json') && haxe.io.Path.extension(Path) != "zip")
+		if (Utils.exists('$Path/Animation.json') && haxe.io.Path.extension(Path) != "zip")
 		{
 			FlxG.log.error('Animation file not found in specified path: "$path", have you written the correct path?');
 			return;
@@ -459,7 +459,7 @@ class FlxAnimate extends FlxSprite
 		var jsontxt:AnimAtlas = null;
 		if (haxe.io.Path.extension(Path) == "zip")
 		{
-			var thing = Zip.readZip(Assets.getBytes(Path));
+			var thing = Zip.readZip(Utils.getBytes(Path));
 
 			for (list in Zip.unzip(thing))
 			{
@@ -475,7 +475,7 @@ class FlxAnimate extends FlxSprite
 		}
 		else
 		{
-			jsontxt = haxe.Json.parse(openfl.Assets.getText('$Path/Animation.json'));
+			jsontxt = haxe.Json.parse(Utils.getText('$Path/Animation.json'));
 		}
 
 		return jsontxt;
