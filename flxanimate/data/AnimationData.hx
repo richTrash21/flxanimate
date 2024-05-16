@@ -92,11 +92,12 @@ class AnimationData
 
 		return bitmapFilter;
 	}
-	public static function parseColorEffect(colorEffect:ColorEffect = None)
+	public static function parseColorEffect(colorEffect:ColorEffect = None, ?CT:ColorTransform)
 	{
-		var CT = new ColorTransform();
+		if (CT == null)
+			CT = new ColorTransform();
 
-		if ([None, null].indexOf(colorEffect) == -1)
+		if (colorEffect != None && colorEffect != null)
 		{
 			var params = colorEffect.getParameters();
 			switch (colorEffect.getName())
