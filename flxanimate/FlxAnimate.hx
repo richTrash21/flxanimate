@@ -345,6 +345,7 @@ class FlxAnimate extends FlxSprite
 		if (Camera == null)
 			Camera = FlxG.camera;
 
+		// TODO: Fix it
 		var minX:Float = x + m.tx - offset.x - scrollFactor.x * Camera.scroll.x;
 		var minY:Float = y + m.ty - offset.y - scrollFactor.y * Camera.scroll.y;
 
