@@ -47,6 +47,7 @@ class SymbolParameters
 		firstFrame = 0;
 		name = null;
 		colorEffect = null;
+		_colorEffect = null;
 		transformationPoint = FlxDestroyUtil.put(transformationPoint);
 	}
 
@@ -73,6 +74,6 @@ class SymbolParameters
 
 	function get__colorEffect()
 	{
-		return AnimationData.parseColorEffect(colorEffect);
+		return _colorEffect = AnimationData.parseColorEffect(colorEffect, _colorEffect);
 	}
 }
