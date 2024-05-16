@@ -95,7 +95,14 @@ class AnimationData
 	public static function parseColorEffect(colorEffect:ColorEffect = None, ?CT:ColorTransform)
 	{
 		if (CT == null)
+		{
 			CT = new ColorTransform();
+		}
+		else
+		{
+			@:privateAccess
+			CT.__identity();	
+		}
 
 		if (colorEffect != None && colorEffect != null)
 		{
