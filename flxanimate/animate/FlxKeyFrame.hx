@@ -119,7 +119,11 @@ class FlxKeyFrame
 		return keyframe;
 	}
 
-	public function destroy() {}
+	public function destroy()
+	{
+		_colorEffect = null;
+		// TODO: Do actualy destroy
+	}
 
 	public function toString()
 	{
@@ -127,7 +131,7 @@ class FlxKeyFrame
 	}
 	function get__colorEffect()
 	{
-		return AnimationData.parseColorEffect(colorEffect);
+		return _colorEffect = AnimationData.parseColorEffect(colorEffect, _colorEffect);
 	}
 	function set_index(i:Int)
 	{
