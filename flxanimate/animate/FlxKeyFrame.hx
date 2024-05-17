@@ -18,11 +18,11 @@ class FlxKeyFrame
 	var _parent:FlxLayer;
 	public var index(default, set):Int;
 	public var duration(default, set):Int;
-	public var colorEffect:ColorEffect;
+	public var colorEffect(default, set):ColorEffect;
 	@:allow(flxanimate.FlxAnimate)
 	var _elements(default, null):Array<FlxElement>;
 	@:allow(flxanimate.FlxAnimate)
-	var _colorEffect(get, null):ColorTransform;
+	var _colorEffect(default, null):ColorTransform;
 
 	public function new(index:Int, ?duration:Int = 1, ?elements:Array<FlxElement>, ?colorEffect:ColorEffect, ?name:String)
 	{
@@ -129,9 +129,11 @@ class FlxKeyFrame
 	{
 		return '{index: $index, duration: $duration}';
 	}
-	function get__colorEffect()
+	function set_colorEffect(newEffect:ColorEffect)
 	{
-		return _colorEffect = AnimationData.parseColorEffect(colorEffect, _colorEffect);
+		// if (colorEffect != newEffect)
+			_colorEffect = AnimationData.parseColorEffect(colorEffect = newEffect, _colorEffect);
+		return newEffect;
 	}
 	function set_index(i:Int)
 	{

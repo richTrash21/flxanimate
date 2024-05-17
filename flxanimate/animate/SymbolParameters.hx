@@ -19,11 +19,11 @@ class SymbolParameters
 
 	public var name:String;
 
-	public var colorEffect:ColorEffect;
+	public var colorEffect(default, set):ColorEffect;
 
 	@:allow(flxanimate.FlxAnimate)
 	@:allow(flxanimate.animate.FlxAnim)
-	var _colorEffect(get, null):ColorTransform;
+	var _colorEffect(default, null):ColorTransform;
 
 	public var transformationPoint:FlxPoint;
 
@@ -72,8 +72,10 @@ class SymbolParameters
 		return loop;
 	}
 
-	function get__colorEffect()
+	function set_colorEffect(newEffect:ColorEffect)
 	{
-		return _colorEffect = AnimationData.parseColorEffect(colorEffect, _colorEffect);
+		// if (colorEffect != newEffect)
+			_colorEffect = AnimationData.parseColorEffect(colorEffect = newEffect, _colorEffect);
+		return newEffect;
 	}
 }
