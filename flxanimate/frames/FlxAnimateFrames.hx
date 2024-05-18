@@ -61,7 +61,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		if (frames != null)
 			return frames;
 
-		framesCollections.set(Path, frames = new FlxAnimateFrames());
+		frames = new FlxAnimateFrames();
 
 		if (zip != null || haxe.io.Path.extension(Path) == "zip")
 		{
@@ -71,7 +71,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 			#end
 			var imagemap:Map<String, Bytes> = new Map();
 			var jsonMap:Map<String, AnimateAtlas> = new Map();
-			var thing = (zip != null) ? zip :  Zip.unzip(Zip.readZip(Utils.getBytes(Path)));
+			var thing = zip == null ? Zip.unzip(Zip.readZip(Utils.getBytes(Path))) : zip;
 			for (list in thing)
 			{
 				if (haxe.io.Path.extension(list.fileName) == "json")
@@ -107,16 +107,14 @@ class FlxAnimateFrames extends FlxAtlasFrames
 				parseAtlasSpritemap(Path, 'spritemap.json', frames);
 			var i = 1;
 			while (Utils.exists('$Path/spritemap$i.json'))
-			{
-				parseAtlasSpritemap(Path, 'spritemap$i.json', frames);
-				i++;
-			}
+				parseAtlasSpritemap(Path, 'spritemap${i++}.json', frames);
 		}
 		if (frames.frames.length <= 0)
 		{
 			FlxG.log.error("the Frames parsing couldn't parse any of the frames, it's completely empty! \n Maybe you misspelled the Path?");
 			return null;
 		}
+		framesCollections.set(Path, frames);
 		return frames;
 	}
 
@@ -126,7 +124,6 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		if (curSpritemap != null)
 		{
 			var graphic = FlxG.bitmap.add(curSpritemap);
-			var spritemapFrames = FlxAtlasFrames.findFrame(graphic);
 			var padding:Float = 0;
 			if (curJson.ATLAS.SPRITES.length > 1) { // 2 or more, detect padding
 				var sprites = [for(s in curJson.ATLAS.SPRITES) s.SPRITE];
@@ -164,16 +161,11 @@ class FlxAnimateFrames extends FlxAtlasFrames
 			} else {
 				trace(padding);
 			}
-			if (spritemapFrames == null)
+			for (curSprite in curJson.ATLAS.SPRITES)
 			{
-				spritemapFrames = new FlxAnimateFrames();
-				for (curSprite in curJson.ATLAS.SPRITES)
-				{
-					spritemapFrames.pushFrame(textureAtlasHelper(graphic,curSprite.SPRITE, curJson.meta, padding));
-				}
+				frames.pushFrame(textureAtlasHelper(graphic, curSprite.SPRITE, curJson.meta, padding));
 			}
-			graphic.addFrameCollection(spritemapFrames);
-			frames.addFrames(spritemapFrames);
+			graphic.addFrameCollection(frames);
 			if (!frames.usedGraphics.contains(graphic))
 			{
 				frames.usedGraphics.push(graphic);

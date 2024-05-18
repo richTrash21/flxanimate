@@ -32,7 +32,7 @@ class FlxElement implements IFlxDestroyable
 	{
 		this.bitmap = bitmap;
 		this.symbol = symbol;
-		this.matrix = (matrix == null) ? new FlxMatrix() : matrix;
+		this.matrix = matrix == null ? new FlxMatrix() : matrix;
 	}
 
 	public function toString()
@@ -64,18 +64,18 @@ class FlxElement implements IFlxDestroyable
 			params.instance = element.SI.IN;
 			params.type = switch (element.SI.ST)
 			{
-				case movieclip, "movieclip": MovieClip;
-				case button, "button": Button;
+				case movieclip	| "movieclip":	MovieClip;
+				case button		| "button":		Button;
 				default: Graphic;
 			}
-			var lp:LoopType = (element.SI.LP == null) ? loop : element.SI.LP.split("R")[0];
+			var lp:LoopType = element.SI.LP == null ? loop : element.SI.LP.split("R")[0];
 			params.loop = switch (lp) // remove the reverse sufix
 			{
-				case playonce, "playonce": PlayOnce;
-				case singleframe, "singleframe": SingleFrame;
+				case playonce	 | "playonce":		PlayOnce;
+				case singleframe | "singleframe":	SingleFrame;
 				default: Loop;
 			}
-			params.reverse = (element.SI.LP == null) ? false : StringTools.contains(element.SI.LP, "R");
+			params.reverse = element.SI.LP == null ? false : StringTools.contains(element.SI.LP, "R");
 			params.firstFrame = element.SI.FF;
 			params.colorEffect = AnimationData.fromColorJson(element.SI.C);
 			params.name = element.SI.SN;
@@ -84,7 +84,7 @@ class FlxElement implements IFlxDestroyable
 			params = null;
 		}
 
-		var m3d = (symbol) ? element.SI.M3D : element.ASI.M3D;
+		var m3d = symbol ? element.SI.M3D : element.ASI.M3D;
 
 		m = if(m3d is Array) {
 			[m3d[0], m3d[1], m3d[4], m3d[5], m3d[12], m3d[13]];
@@ -98,7 +98,7 @@ class FlxElement implements IFlxDestroyable
 			m[1] = m[2] = m[4] = m[5] = 0;
 		}
 
-		var pos = (symbol) ? element.SI.bitmap.POS : element.ASI.POS;
+		var pos = symbol ? element.SI.bitmap.POS : element.ASI.POS;
 		if (pos == null)
 			pos = {x: 0, y: 0};
 		return new FlxElement(

@@ -54,7 +54,7 @@ class SymbolParameters
 	function set_type(type:SymbolT)
 	{
 		this.type = type;
-		loop = (type == null) ? null : Loop;
+		loop = type == null ? null : Loop;
 
 		return type;
 	}

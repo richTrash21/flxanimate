@@ -92,7 +92,7 @@ class FlxAnim implements IFlxDestroyable
 
 		setSymbols(animationFile);
 
-		stageInstance = (animationFile.AN.STI != null) ? FlxElement.fromJSON(cast animationFile.AN.STI) : new FlxElement(new SymbolParameters(animationFile.AN.SN));
+		stageInstance = animationFile.AN.STI != null ? FlxElement.fromJSON(cast animationFile.AN.STI) : new FlxElement(new SymbolParameters(animationFile.AN.SN));
 
 		curInstance = stageInstance;
 
@@ -115,7 +115,7 @@ class FlxAnim implements IFlxDestroyable
 			if (curThing == null)
 			{
 				var symbol = symbolDictionary.get(Name);
-				if (symbol != null) curThing = {instance: (symbol.name == curSymbol.name) ? curInstance : new FlxElement(new SymbolParameters(Name)), frameRate: metadata.frameRate};
+				if (symbol != null) curThing = {instance: symbol.name == curSymbol.name ? curInstance : new FlxElement(new SymbolParameters(Name)), frameRate: metadata.frameRate};
 
 				if (curThing == null)
 				{
@@ -125,7 +125,7 @@ class FlxAnim implements IFlxDestroyable
 				}
 			}
 
-			framerate = (curThing.frameRate == 0) ? metadata.frameRate : curThing.frameRate;
+			framerate = curThing.frameRate == 0 ? metadata.frameRate : curThing.frameRate;
 
 			if (curInstance != curThing.instance)
 				isNewAnim = true;
@@ -133,7 +133,7 @@ class FlxAnim implements IFlxDestroyable
 			curInstance = curThing.instance;
 		}
 		if (Force || finished || isNewAnim) {
-			curFrame = (Reverse) ? Frame - length : Frame;
+			curFrame = Reverse ? Frame - length : Frame;
 			_tick = 0;
 		}
 		reversed = Reverse;
@@ -213,7 +213,7 @@ class FlxAnim implements IFlxDestroyable
 	 */
 	public function addBySymbol(Name:String, SymbolName:String, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0)
 	{
-		var params = new FlxElement(new SymbolParameters((Looped) ? Loop : PlayOnce), new FlxMatrix(1,0,0,1,X,Y));
+		var params = new FlxElement(new SymbolParameters(Looped ? Loop : PlayOnce), new FlxMatrix(1,0,0,1,X,Y));
 		for (name in symbolDictionary.keys())
 		{
 			if (startsWith(name, SymbolName))
@@ -251,7 +251,7 @@ class FlxAnim implements IFlxDestroyable
 			FlxG.log.error('$SymbolName does not exist as a symbol! maybe you misspelled it?');
 			return;
 		}
-		var params = new FlxElement(new SymbolParameters((Looped) ? Loop : PlayOnce), new FlxMatrix(1,0,0,1,X,Y));
+		var params = new FlxElement(new SymbolParameters(Looped ? Loop : PlayOnce), new FlxMatrix(1,0,0,1,X,Y));
 		var timeline = new FlxTimeline();
 		timeline.add("Layer 1");
 
@@ -293,7 +293,7 @@ class FlxAnim implements IFlxDestroyable
 	public function addByCustomTimeline(Name:String, Timeline:FlxTimeline, FrameRate:Float = 0, Looped:Bool = true)
 	{
 		symbolDictionary.set(Name, new FlxSymbol(Name, Timeline));
-		var params = new FlxElement(new SymbolParameters((Looped) ? Loop : PlayOnce));
+		var params = new FlxElement(new SymbolParameters(Looped ? Loop : PlayOnce));
 		animsMap.set(Name, {instance: params, frameRate: FrameRate});
 	}
 
@@ -401,7 +401,7 @@ class FlxAnim implements IFlxDestroyable
 
 		var symbol:FlxSymbol = null;
 
-		var layers = (layer == null) ? curSymbol.timeline.getList() : [curSymbol.timeline.get(layer)];
+		var layers = layer == null ? curSymbol.timeline.getList() : [curSymbol.timeline.get(layer)];
 
 		for (layer in layers)
 		{

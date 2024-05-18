@@ -58,7 +58,7 @@ class FlxAnimate extends FlxSprite
 	public static var matrixesPool:FlxPool<DestroyableFlxMatrix> = new FlxPool(DestroyableFlxMatrix);
 	public var anim(default, null):FlxAnim;
 
-	public var isValid:Bool;
+	public var isValid(default, null):Bool;
 
 	// #if FLX_SOUND_SYSTEM
 	// public var audio:FlxSound;
@@ -119,9 +119,11 @@ class FlxAnimate extends FlxSprite
 		if (!Utils.exists('$Path/Animation.json') && haxe.io.Path.extension(Path) != "zip")
 		{
 			isValid = false;
+			kill();
 			FlxG.log.error('Animation file not found in specified path: "$Path", have you written the correct path?');
 			return;
 		}
+		if (!isValid) revive();
 		isValid = true;
 		anim._loadAtlas(atlasSetting(Path));
 		frames = FlxAnimateFrames.fromTextureAtlas(Path);
