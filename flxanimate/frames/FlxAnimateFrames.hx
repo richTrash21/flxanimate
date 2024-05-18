@@ -30,15 +30,25 @@ import flixel.graphics.frames.FlxFrame;
 
 class FlxAnimateFrames extends FlxAtlasFrames
 {
+	// Well.. - Redar13
+	public static var framesCollections = new Map<String, FlxAnimateFrames>();
+
 	public function new()
 	{
 		super(null);
 		parents = [];
 	}
+	public var parents:Array<FlxGraphic>;
+
 	static var data:AnimateAtlas = null;
 	static var zip:Null<List<haxe.zip.Entry>>;
 
-	public var parents:Array<FlxGraphic>;
+	public static function clearCache()
+	{
+		for (_ => i in FlxAnimateFrames.framesCollections) i.destroy();
+		FlxAnimateFrames.framesCollections.clear();
+	}
+
 	/**
 	 * Parses the spritemaps into small sprites to use in the animation.
 	 *
@@ -47,7 +57,11 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	 */
 	public static function fromTextureAtlas(Path:String):FlxAtlasFrames
 	{
-		var frames:FlxAnimateFrames = new FlxAnimateFrames();
+		var frames:FlxAnimateFrames = framesCollections.get(Path);
+		if (frames != null)
+			return frames;
+
+		framesCollections.set(Path, frames = new FlxAnimateFrames());
 
 		if (zip != null || haxe.io.Path.extension(Path) == "zip")
 		{
@@ -160,6 +174,11 @@ class FlxAnimateFrames extends FlxAtlasFrames
 			}
 			graphic.addFrameCollection(spritemapFrames);
 			frames.addFrames(spritemapFrames);
+			if (!frames.usedGraphics.contains(graphic))
+			{
+				frames.usedGraphics.push(graphic);
+				graphic.incrementUseCount();
+			}
 		}
 		else
 			FlxG.log.error('the image called "${curJson.meta.image}" does not exist in Path $Path, maybe you changed the image Path somewhere else?');
@@ -503,8 +522,8 @@ class FlxAnimateFrames extends FlxAtlasFrames
 
 	static function textureAtlasHelper(SpriteMap:FlxGraphic, limb:AnimateSpriteData, curMeta:Meta, ?padding:Float = 0)
 	{
-		var width = (limb.rotated) ? limb.h : limb.w;
-		var height = (limb.rotated) ? limb.w : limb.h;
+		var width = limb.rotated ? limb.h : limb.w;
+		var height = limb.rotated ? limb.w : limb.h;
 		@:privateAccess
 		var curFrame = new FlxFrame(SpriteMap);
 		curFrame.name = limb.name;
@@ -512,7 +531,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 
 		var halfPadding = padding / 2;
 		curFrame.offset.set(halfPadding, halfPadding);
-		curFrame.frame = new FlxRect(limb.x - halfPadding, limb.y - halfPadding, width+padding, height+padding);
+		curFrame.frame = FlxRect.get(limb.x - halfPadding, limb.y - halfPadding, width+padding, height+padding);
 
 		if (limb.rotated)
 			curFrame.angle = FlxFrameAngle.ANGLE_NEG_90;

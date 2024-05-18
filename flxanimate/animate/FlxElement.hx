@@ -86,7 +86,7 @@ class FlxElement implements IFlxDestroyable
 
 		var m3d = (symbol) ? element.SI.M3D : element.ASI.M3D;
 
-		m = if((m3d is Array)) {
+		m = if(m3d is Array) {
 			[m3d[0], m3d[1], m3d[4], m3d[5], m3d[12], m3d[13]];
 		} else {
 			[for (field in matrixNames) Reflect.field(m3d,field)];

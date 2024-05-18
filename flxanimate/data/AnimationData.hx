@@ -58,32 +58,33 @@ class AnimationData
 		return colorEffect;
 	}
 
-	public static function fromFilterJson(filters:Filters = null)
+	public static function fromFilterJson(filters:Filters = null, bitmapFilters:Array<BitmapFilter>)
 	{
 		if (filters == null)
 			return null;
 
-		var bitmapFilter:Array<BitmapFilter> = [];
+		if (bitmapFilters == null)
+			bitmapFilters = [];
+		else
+			while(bitmapFilters.length > 0)
+				bitmapFilters.pop();
 
 		for (filter in Reflect.fields(filters))
 		{
 			switch (filter)
 			{
 				case "GF":
-				{
 					var glow:GlowFilter = Reflect.field(filters, filter);
-					bitmapFilter.push(new openfl.filters.GlowFilter(FlxColor.fromString(glow.C), glow.A, glow.BLX, glow.BLY, glow.STR, glow.Q, glow.IN,
+					bitmapFilters.push(new openfl.filters.GlowFilter(FlxColor.fromString(glow.C), glow.A, glow.BLX, glow.BLY, glow.STR, glow.Q, glow.IN,
 						glow.KK));
-				}
+
 				case "BLF":
-				{
 					var blur:BlurFilter = Reflect.field(filters, filter);
-					bitmapFilter.push(new openfl.filters.BlurFilter(blur.BLX, blur.BLY, blur.Q));
-				}
+					bitmapFilters.push(new openfl.filters.BlurFilter(blur.BLX, blur.BLY, blur.Q));
 			}
 		}
 
-		return bitmapFilter;
+		return bitmapFilters;
 	}
 
 	public static function parseColorEffect(colorEffect:ColorEffect = None, ?CT:ColorTransform)
