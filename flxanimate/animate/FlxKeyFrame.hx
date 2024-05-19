@@ -56,7 +56,7 @@ class FlxKeyFrame
 				FlxG.log.error("this element is null!");
 				return null;
 			}
-			element._parent = this;
+			// element._parent = this;
 			_elements.push(element);
 		}
 		else

@@ -8,8 +8,8 @@ import openfl.geom.ColorTransform;
 
 class FlxElement implements IFlxDestroyable
 {
-	@:allow(flxanimate.animate.FlxKeyFrame)
-	var _parent:FlxKeyFrame;
+	// @:allow(flxanimate.animate.FlxKeyFrame)
+	// var _parent:FlxKeyFrame;
 	/**
 	 * All the other parameters that are exclusive to the symbol (instance, type, symbol name, etc.)
 	 */
@@ -41,7 +41,7 @@ class FlxElement implements IFlxDestroyable
 	}
 	public function destroy()
 	{
-		_parent = null;
+		// _parent = null;
 		if (symbol != null) {
 			symbol.destroy();
 			symbol = null;
