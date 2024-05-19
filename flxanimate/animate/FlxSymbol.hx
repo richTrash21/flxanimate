@@ -94,7 +94,7 @@ class FlxSymbol
 		{
 			return false;
 		}
-		var callback = (callback is Int) ? label.callbacks[callback] : callback;
+		var callback = callback is Int ? label.callbacks[callback] : callback;
 		if (label.callbacks.indexOf(callback) == -1)
 		{
 			FlxG.log.error("this callback doesn't exist!");
@@ -135,7 +135,7 @@ class FlxSymbol
 	public function getFrameLabel(name:String, ?layer:EitherType<Int, String> = null)
 	{
 		var frame:FlxKeyFrame = null;
-		var layers = (layer == null) ? timeline.getList() : [timeline.get(layer)];
+		var layers = layer == null ? timeline.getList() : [timeline.get(layer)];
 
 		for (layer in layers)
 		{
@@ -161,14 +161,14 @@ class FlxSymbol
 		if (frame < 0)
 		{
 			if (loopType == loop || loopType == "loop")
-				frame += (length > 0) ? length - 1 : frame;
+				frame += length > 0 ? length - 1 : frame;
 			else
 				frame = 0;
 		}
 		else if (frame > length - 1)
 		{
 			if (loopType == loop || loopType == "loop")
-				frame -= (length > 0) ? length - 1 : frame;
+				frame -= length > 0 ? length - 1 : frame;
 			else
 				frame = length - 1;
 		}

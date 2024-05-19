@@ -140,7 +140,13 @@ class FlxAnimate extends FlxSprite
 		parseElement(anim.curInstance, anim.curFrame, _matrix, colorTransform, true);
 		#if !FLX_ANIMATE_NO_PIVOTPOINT
 		if (showPivot)
-			drawLimb(_pivot, new FlxMatrix(1,0,0,1, origin.x, origin.y));
+		{
+			var matrix = matrixesPool.get();
+			matrix.tx = origin.x;
+			matrix.ty = origin.y;
+			drawLimb(_pivot, matrix);
+			matrixesPool.put(matrix);
+		}
 		#end
 	}
 	/**

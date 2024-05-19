@@ -58,7 +58,7 @@ class AnimationData
 		return colorEffect;
 	}
 
-	public static function fromFilterJson(filters:Filters = null, bitmapFilters:Array<BitmapFilter>)
+	public static function fromFilterJson(filters:Filters = null, ?bitmapFilters:Array<BitmapFilter>)
 	{
 		if (filters == null)
 			return null;
@@ -66,8 +66,7 @@ class AnimationData
 		if (bitmapFilters == null)
 			bitmapFilters = [];
 		else
-			while(bitmapFilters.length > 0)
-				bitmapFilters.pop();
+			bitmapFilters.slice(0, bitmapFilters.length - 1);
 
 		for (filter in Reflect.fields(filters))
 		{
