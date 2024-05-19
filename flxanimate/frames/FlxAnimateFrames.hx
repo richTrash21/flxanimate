@@ -114,6 +114,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 			FlxG.log.error("the Frames parsing couldn't parse any of the frames, it's completely empty! \n Maybe you misspelled the Path?");
 			return null;
 		}
+
 		framesCollections.set(Path, frames);
 		return frames;
 	}
@@ -514,8 +515,10 @@ class FlxAnimateFrames extends FlxAtlasFrames
 
 	static function textureAtlasHelper(SpriteMap:FlxGraphic, limb:AnimateSpriteData, curMeta:Meta, ?padding:Float = 0)
 	{
-		var width = limb.rotated ? limb.h : limb.w;
-		var height = limb.rotated ? limb.w : limb.h;
+		// var width = limb.rotated ? limb.h : limb.w;
+		// var height = limb.rotated ? limb.w : limb.h;
+		var width = limb.w;
+		var height = limb.h;
 		@:privateAccess
 		var curFrame = new FlxFrame(SpriteMap);
 		curFrame.name = limb.name;
