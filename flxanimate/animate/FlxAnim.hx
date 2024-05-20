@@ -115,7 +115,18 @@ class FlxAnim implements IFlxDestroyable
 			if (curThing == null)
 			{
 				var symbol = symbolDictionary.get(Name);
-				if (symbol != null) curThing = {instance: symbol.name == curSymbol.name ? curInstance : new FlxElement(new SymbolParameters(Name)), frameRate: metadata.frameRate};
+				if (symbol == null)
+				{
+					var nameFrame = getSymbolNameByLayerMark(Name);
+					if (nameFrame != null)
+					{
+						symbol = symbolDictionary.get(nameFrame);
+					}
+				}
+				if (symbol != null)
+				{
+					curThing = {instance: symbol.name == curSymbol.name ? curInstance : new FlxElement(new SymbolParameters(Name)), frameRate: metadata.frameRate};
+				}
 
 				if (curThing == null)
 				{
@@ -222,6 +233,14 @@ class FlxAnim implements IFlxDestroyable
 				break;
 			}
 		}
+		if (params.symbol.name == null)
+		{
+			var symbolName = getSymbolNameByLayerMark(SymbolName);
+			if (symbolName != null) // search from main symbol
+			{
+				params.symbol.name = symbolName;
+			}
+		}
 		if (params.symbol.name != null)
 			animsMap.set(Name, {instance: params, frameRate: FrameRate});
 		else
@@ -246,7 +265,17 @@ class FlxAnim implements IFlxDestroyable
 	}
 	public function addBySymbolIndices(Name:String, SymbolName:String, Indices:Array<Int>, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0)
 	{
-		if (!symbolDictionary.exists(SymbolName))
+		var isExists:Bool = !symbolDictionary.exists(SymbolName);
+		if (!isExists)
+		{
+			var nameFrame = getSymbolNameByLayerMark(SymbolName);
+			if (nameFrame != null)
+			{
+				SymbolName = nameFrame;
+				isExists = true;
+			}
+		}
+		if (isExists)
 		{
 			FlxG.log.error('$SymbolName does not exist as a symbol! maybe you misspelled it?');
 			return;
@@ -312,6 +341,16 @@ class FlxAnim implements IFlxDestroyable
 			LabelValuePair.weak("symbolDictionary", symbolDictionary),
 			LabelValuePair.weak("framerate", framerate)
 		]);
+	}
+	
+	public function getSymbolNameByLayerMark(layerMark:String)
+	{
+		var mainSymbol = symbolDictionary.get(stageInstance.symbol.name);
+		var label = mainSymbol == null ? null : mainSymbol.getFrameLabel(layerMark);
+		if (label == null) // search from main symbol
+			return null;
+		var elements = label.getList();
+		return elements.length > 0 ? elements[0].symbol.name : null;
 	}
 	/**
 	 * Redirects the frame into a frame with a frame label of that type.

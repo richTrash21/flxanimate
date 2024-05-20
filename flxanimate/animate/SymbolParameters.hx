@@ -21,6 +21,8 @@ class SymbolParameters
 
 	public var colorEffect(default, set):ColorEffect;
 
+	public var filters:Array<openfl.filters.BitmapFilter>;
+
 	@:allow(flxanimate.FlxAnimate)
 	@:allow(flxanimate.animate.FlxAnim)
 	var _colorEffect(default, null):ColorTransform;
@@ -49,6 +51,11 @@ class SymbolParameters
 		colorEffect = null;
 		_colorEffect = null;
 		transformationPoint = FlxDestroyUtil.put(transformationPoint);
+		if (filters != null)
+		{
+			filters.splice(0, filters.length);
+			filters = null;
+		}
 	}
 
 	function set_type(type:SymbolT)

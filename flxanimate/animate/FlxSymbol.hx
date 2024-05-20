@@ -199,11 +199,9 @@ class FlxSymbol
 		for (layer in timeline.getList())
 		{
 			var keyframe = layer.get(frame);
-
 			if (keyframe == null) continue;
 
 			var elements = keyframe.getList();
-
 			if (index > elements.length - 1)
 			{
 				index -= elements.length - 1;

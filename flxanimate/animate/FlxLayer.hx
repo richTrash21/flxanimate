@@ -50,7 +50,7 @@ class FlxLayer implements IFlxDestroyable
 	public function get(frame:EitherType<String, Int>)
 	{
 		var index = 0;
-		if ((frame is String))
+		if (frame is String)
 		{
 			if (!_labels.exists(frame)) return null;
 
