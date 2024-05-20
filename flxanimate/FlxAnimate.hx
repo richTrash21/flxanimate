@@ -66,7 +66,7 @@ class FlxAnimate extends FlxSprite
 
 	// public var rectangle:FlxRect;
 
-	#if !FLX_CNE_FORK
+	#if FLX_CNE_FORK
 	public var shaderEnabled:Bool = false;
 	#end
 
@@ -92,7 +92,7 @@ class FlxAnimate extends FlxSprite
 	public function new(X:Float = 0, Y:Float = 0, ?Path:String, ?Settings:Settings)
 	{
 		super(X, Y);
-		#if !FLX_CNE_FORK
+		#if FLX_CNE_FORK
 		shaderEnabled = false;
 		#end
 		anim = new FlxAnim(this);
@@ -313,7 +313,7 @@ class FlxAnimate extends FlxSprite
 				}
 
 				rMatrix.translate(_point.x, _point.y);
-				camera.drawPixels(limb, null, rMatrix, colorTransform, blend, antialiasing, #if !FLX_CNE_FORK shaderEnabled ? shader : null #else shader #end);
+				camera.drawPixels(limb, null, rMatrix, colorTransform, blend, antialiasing, #if FLX_CNE_FORK shaderEnabled ? shader : null #else shader #end);
 				#if FLX_DEBUG
 				FlxBasic.visibleCount++;
 				#end	
