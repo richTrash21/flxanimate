@@ -72,7 +72,7 @@ class FlxAnimate extends FlxSprite
 
 	public var showPivot(default, set):Bool = false;
 
-	#if !FLX_ANIMATE_NO_PIVOTPOINT
+	#if !ANIMATE_NO_PIVOTPOINT
 	var _pivot:FlxFrame;
 	#end
 	/**
@@ -103,7 +103,7 @@ class FlxAnimate extends FlxSprite
 	}
 
 	function set_showPivot(v:Bool) {
-		#if !FLX_ANIMATE_NO_PIVOTPOINT
+		#if !ANIMATE_NO_PIVOTPOINT
 		if(v && _pivot == null) {
 			@:privateAccess
 			_pivot = new FlxFrame(FlxGraphic.fromBitmapData(openfl.Assets.getBitmapData("flxanimate/images/pivot.png")));
@@ -138,7 +138,7 @@ class FlxAnimate extends FlxSprite
 		updateSkewMatrix();
 
 		parseElement(anim.curInstance, anim.curFrame, _matrix, colorTransform, true);
-		#if !FLX_ANIMATE_NO_PIVOTPOINT
+		#if !ANIMATE_NO_PIVOTPOINT
 		if (showPivot)
 		{
 			var matrix = matrixesPool.get();
@@ -295,13 +295,13 @@ class FlxAnimate extends FlxSprite
 			{
 				getScreenPosition(_point, camera).subtractPoint(offset);
 				rMatrix.translate(-origin.x, -origin.y);
-				#if FLX_ANIMATE_NO_PIVOTPOINT
+				#if ANIMATE_NO_PIVOTPOINT
 				rMatrix.scale(scale.x, scale.y);
 				#else
-				if (limb != _pivot)
-					rMatrix.scale(scale.x, scale.y);
-				else
+				if (limb == _pivot)
 					rMatrix.a = rMatrix.d = 0.7 / camera.zoom;
+				else
+					rMatrix.scale(scale.x, scale.y);
 				#end
 
 				rMatrix.concat(matrixExposed ? transformMatrix : _skewMatrix);
@@ -316,7 +316,7 @@ class FlxAnimate extends FlxSprite
 				camera.drawPixels(limb, null, rMatrix, colorTransform, blend, antialiasing, #if FLX_CNE_FORK shaderEnabled ? shader : null #else shader #end);
 				#if FLX_DEBUG
 				FlxBasic.visibleCount++;
-				#end	
+				#end
 			}
 		}
 		// doesnt work, needs to be remade
