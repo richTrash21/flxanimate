@@ -56,6 +56,8 @@ class FlxAnim implements IFlxDestroyable
 
 	public var framerate(default, set):Float;
 
+	public var timeScale:Float = 1.;
+
 	/**
 	 * Internal, used for each skip between frames.
 	 */
@@ -131,7 +133,7 @@ class FlxAnim implements IFlxDestroyable
 				if (curThing == null)
 				{
 					FlxG.log.error('there\'s no animation called "$Name"!');
-					isPlaying = true;
+					isPlaying = false;
 					return;
 				}
 			}
@@ -177,7 +179,7 @@ class FlxAnim implements IFlxDestroyable
 	{
 		if (frameDelay == 0 || !isPlaying || finished) return;
 
-		_tick += elapsed;
+		_tick += elapsed * timeScale;
 
 		while (_tick > frameDelay)
 		{
@@ -197,8 +199,14 @@ class FlxAnim implements IFlxDestroyable
 	}
 	function get_finished()
 	{
-		return (loopType == PlayOnce) && (reversed && curFrame == 0 || !reversed && curFrame >= length - 1);
+		return switch(loopType)
+		{
+			case SingleFrame:	true;
+			case PlayOnce:		reversed && curFrame == 0 || !reversed && curFrame >= length - 1;
+			default:			false;
+		}
 	}
+	
 	function get_curFrame()
 	{
 		return curSymbol.curFrame;

@@ -135,6 +135,7 @@ class FlxAnimate extends FlxSprite
 	{
 		if(alpha <= 0) return;
 
+		updateTrig();
 		updateSkewMatrix();
 
 		parseElement(anim.curInstance, anim.curFrame, _matrix, colorTransform, true);
@@ -303,6 +304,8 @@ class FlxAnimate extends FlxSprite
 				else
 					rMatrix.scale(scale.x, scale.y);
 				#end
+				if (angle != 0)
+					rMatrix.rotateWithTrig(_cosAngle, _sinAngle);
 
 				rMatrix.concat(matrixExposed ? transformMatrix : _skewMatrix);
 
