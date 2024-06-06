@@ -1,5 +1,7 @@
 package flxanimate.frames;
 
+import flxanimate.animate.FlxElement;
+import flxanimate.animate.SymbolParameters;
 import flixel.util.FlxSort;
 import flixel.graphics.frames.FlxFramesCollection;
 import flxanimate.data.AnimationData.OneOfTwo;
@@ -105,7 +107,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		{
 			if (Utils.exists('$Path/spritemap.json'))
 				parseAtlasSpritemap(Path, 'spritemap.json', frames);
-			var i = 1;
+			var i:Int = 1;
 			while (Utils.exists('$Path/spritemap$i.json'))
 				parseAtlasSpritemap(Path, 'spritemap${i++}.json', frames);
 		}

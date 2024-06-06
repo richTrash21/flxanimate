@@ -15,10 +15,12 @@ import flixel.system.FlxSound;
 #end
 
 
-typedef SymbolStuff = {
+typedef AnimStuff = {
 	var instance:FlxElement;
 	var frameRate:Float;
-};
+	var timescale:Float;
+	var loopPoint:Int;
+}
 typedef ClickStuff = {
 	?OnClick:Void->Void,
 	?OnRelease:Void->Void
@@ -56,6 +58,9 @@ class FlxAnim implements IFlxDestroyable
 
 	public var framerate(default, set):Float;
 
+	public var animTimeScale(default, null):Float = 1.;
+	public var loopPoint(default, null):Int = 0;
+
 	public var timeScale:Float = 1.;
 
 	/**
@@ -65,7 +70,7 @@ class FlxAnim implements IFlxDestroyable
 
 	public var curFrame(get, set):Int;
 
-	var animsMap:Map<String, SymbolStuff> = new Map();
+	var animsMap:Map<String, AnimStuff> = new Map();
 
 	/**
 	 * Internal, the parsed loop type
@@ -127,7 +132,12 @@ class FlxAnim implements IFlxDestroyable
 				}
 				if (symbol != null)
 				{
-					curThing = {instance: symbol.name == curSymbol.name ? curInstance : new FlxElement(new SymbolParameters(Name)), frameRate: metadata.frameRate};
+					curThing = {
+						instance: symbol.name == curSymbol.name ? curInstance : new FlxElement(new SymbolParameters(Name)),
+						frameRate: metadata.frameRate,
+						timescale: 1,
+						loopPoint: 0
+					}
 				}
 
 				if (curThing == null)
@@ -139,7 +149,9 @@ class FlxAnim implements IFlxDestroyable
 			}
 
 			framerate = curThing.frameRate == 0 ? metadata.frameRate : curThing.frameRate;
-
+			loopPoint = curThing.loopPoint;
+			animTimeScale = curThing.timescale;
+			if (animTimeScale == 0) animTimeScale = 1;
 			if (curInstance != curThing.instance)
 				isNewAnim = true;
 
@@ -177,14 +189,29 @@ class FlxAnim implements IFlxDestroyable
 
 	public function update(elapsed:Float)
 	{
-		if (frameDelay == 0 || !isPlaying || finished) return;
+		elapsed *= timeScale * animTimeScale;
+		if (frameDelay == 0 || !isPlaying || finished || elapsed <= 0) return;
 
-		_tick += elapsed * timeScale;
+		_tick += elapsed;
 
 		while (_tick > frameDelay)
 		{
-			(reversed) ? curFrame-- : curFrame++;
+			// reversed ? curFrame-- : curFrame++;
 			_tick -= frameDelay;
+			if (reversed)
+			{
+				if (loopType == Loop && curFrame == loopPoint)
+					curFrame = length - 1;
+				else
+					curFrame--;
+			}
+			else
+			{
+				if (loopType == Loop && curFrame == length - 1)
+					curFrame = loopPoint;
+				else
+					curFrame++;
+			}
 
 			@:privateAccess
 			curSymbol._shootCallback = true;
@@ -215,9 +242,9 @@ class FlxAnim implements IFlxDestroyable
 	{
 		curSymbol.curFrame = switch (loopType)
 		{
-			case Loop: Value % curSymbol.length;
-			case PlayOnce: cast FlxMath.bound(Value, 0, curSymbol.length - 1);
-			case _: Value;
+			case Loop:		Value % curSymbol.length;
+			case PlayOnce:	cast FlxMath.bound(Value, 0, curSymbol.length - 1);
+			default:		Value;
 		}
 
 		return curSymbol.curFrame;
@@ -250,7 +277,12 @@ class FlxAnim implements IFlxDestroyable
 			}
 		}
 		if (params.symbol.name != null)
-			animsMap.set(Name, {instance: params, frameRate: FrameRate});
+			animsMap.set(Name, {
+				instance: params,
+				frameRate: FrameRate,
+				timescale: 1,
+				loopPoint: 0
+			});
 		else
 			FlxG.log.error('No symbol was found with the name $SymbolName!');
 	}
@@ -292,16 +324,16 @@ class FlxAnim implements IFlxDestroyable
 		var timeline = new FlxTimeline();
 		timeline.add("Layer 1");
 
-		for (index in 0...Indices.length)
+		final thisLayer = timeline.get(0);
+		var symbParams:SymbolParameters;
+		var keyframe:FlxKeyFrame;
+		for (index => i in Indices)
 		{
-			var i = Indices[index];
-			var keyframe = new FlxKeyFrame(index);
-
-
-			var params = new SymbolParameters(SymbolName, params.symbol.loop);
-			params.firstFrame = i;
-			keyframe.add(new FlxElement(params));
-			timeline.get(0).add(keyframe);
+			symbParams = new SymbolParameters(SymbolName, params.symbol.loop);
+			symbParams.firstFrame = i;
+			keyframe = new FlxKeyFrame(index);
+			keyframe.add(new FlxElement(symbParams));
+			thisLayer.add(keyframe);
 		}
 		var symbol = new FlxSymbol(Name, timeline);
 		params.symbol.name = symbol.name;
@@ -309,7 +341,12 @@ class FlxAnim implements IFlxDestroyable
 		symbolDictionary.set(Name, symbol);
 
 
-		animsMap.set(Name, {instance: params, frameRate: FrameRate});
+		animsMap.set(Name, {
+			instance: params,
+			frameRate: FrameRate,
+			timescale: 1,
+			loopPoint: 0
+		});
 	}
 
 
@@ -331,7 +368,12 @@ class FlxAnim implements IFlxDestroyable
 	{
 		symbolDictionary.set(Name, new FlxSymbol(Name, Timeline));
 		var params = new FlxElement(new SymbolParameters(Looped ? Loop : PlayOnce));
-		animsMap.set(Name, {instance: params, frameRate: FrameRate});
+		animsMap.set(Name, {
+			instance: params,
+			frameRate: FrameRate,
+			timescale: 1,
+			loopPoint: 0
+		});
 	}
 
 	public inline function get_length()

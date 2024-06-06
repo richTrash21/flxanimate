@@ -112,6 +112,7 @@ class FlxSymbol
 		label.removeCallbacks();
 		return true;
 	}
+	@:access(flxanimate.animate.FlxLayer)
 	public function getNextToFrameLabel(label:String, ?layer:EitherType<Int, String> = null)
 	{
 		if (layer == null) layer = 0;
@@ -119,16 +120,11 @@ class FlxSymbol
 		if (label == null) return null;
 
 		var layer = timeline.get(layer);
-		@:privateAccess
 		var j = layer._keyframes.indexOf(label);
 		var frame:FlxKeyFrame;
-		@:privateAccess
 		while (j++ < layer._keyframes.length)
-		{
-			@:privateAccess
 			if ((frame = layer._keyframes[j]).name != null && frame.name != label.name)
 				return frame;
-		}
 
 		return null;
 	}
@@ -266,9 +262,7 @@ class FlxSymbol
 				if (element.symbol == null)
 					continue;
 
-				var instance = (element.symbol.instance == "") ? element.symbol.name : element.symbol.instance;
-
-				if (instance == name)
+				if ((element.symbol.instance == "" ? element.symbol.name : element.symbol.instance) == name)
 					return element;
 				else
 					continue;
@@ -280,20 +274,17 @@ class FlxSymbol
 			{
 				var keyframe = layer.get(frame);
 
-				if (keyframe == null) continue;
+				if (keyframe != null)
+					for (element in keyframe.getList())
+					{
+						if (element.symbol == null)
+							continue;
 
-				for (element in keyframe.getList())
-				{
-					if (element.symbol == null)
-						continue;
-
-					var instance = (element.symbol.instance == "") ? element.symbol.name : element.symbol.instance;
-
-					if (instance == name)
-						return element;
-					else
-						continue;
-				}
+						if ((element.symbol.instance == "" ? element.symbol.name : element.symbol.instance) == name)
+							return element;
+						else
+							continue;
+					}
 			}
 		}
 		return null;

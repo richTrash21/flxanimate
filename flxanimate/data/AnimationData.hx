@@ -72,12 +72,12 @@ class AnimationData
 		{
 			switch (filter)
 			{
-				case "GF":
+				case "GF", "GlowFilter":
 					var glow:GlowFilter = Reflect.field(filters, filter);
 					bitmapFilters.push(new openfl.filters.GlowFilter(FlxColor.fromString(glow.C), glow.A, glow.BLX, glow.BLY, glow.STR, glow.Q, glow.IN,
 						glow.KK));
 
-				case "BLF":
+				case "BLF", "BlurFilter":
 					var blur:BlurFilter = Reflect.field(filters, filter);
 					bitmapFilters.push(new openfl.filters.BlurFilter(blur.BLX, blur.BLY, blur.Q));
 			}
@@ -86,25 +86,27 @@ class AnimationData
 		return bitmapFilters;
 	}
 
+	@:access(openfl.geom.ColorTransform)
 	public static function parseColorEffect(colorEffect:ColorEffect = None, ?CT:ColorTransform)
 	{
-		if (CT == null)
-		{
-			CT = new ColorTransform();
-		}
-		else
-		{
-			@:privateAccess
-			CT.__identity();
-		}
-
 		if (colorEffect != null)
 		{
+			if (colorEffect == None) return null;
+			
+			if (CT == null)
+			{
+				CT = new ColorTransform();
+			}
+			else
+			{
+				CT.__identity();
+			}
+
 			switch (colorEffect)
 			{
 				case None:
-					// nothing
-
+					// Nothing
+					
 				case Tint(color, opacity):
 					CT.redMultiplier -= opacity;
 					CT.redOffset = Math.round(color.red * opacity);
@@ -709,7 +711,7 @@ abstract Filters({})
 
 	function get_GF()
 	{
-		return AnimationData.setFieldBool(this, ["GF"]);
+		return AnimationData.setFieldBool(this, ["GF", "GlowFilter"]);
 	}
 }
 

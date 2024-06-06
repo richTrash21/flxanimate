@@ -71,11 +71,10 @@ class SymbolParameters
 		if (type == null) return this.loop = null;
 		this.loop = switch (type)
 		{
-			case MovieClip: Loop;
-			case Button: SingleFrame;
-			default: loop;
+			case MovieClip:	Loop;
+			case Button:	SingleFrame;
+			default:		loop;
 		}
-
 		return loop;
 	}
 

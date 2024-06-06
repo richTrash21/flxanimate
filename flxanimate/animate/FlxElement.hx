@@ -1,10 +1,12 @@
 package flxanimate.animate;
 
-import flixel.util.FlxDestroyUtil.IFlxDestroyable;
-import flixel.math.FlxPoint;
-import flxanimate.data.AnimationData;
+import flixel.graphics.frames.FlxFrame;
 import flixel.math.FlxMatrix;
+import flixel.math.FlxPoint;
+import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import openfl.geom.ColorTransform;
+import flxanimate.data.AnimationData;
+import flxanimate.animate.FlxAnim;
 
 class FlxElement implements IFlxDestroyable
 {
@@ -78,6 +80,8 @@ class FlxElement implements IFlxDestroyable
 			params.reverse = element.SI.LP == null ? false : StringTools.contains(element.SI.LP, "R");
 			params.firstFrame = element.SI.FF;
 			params.colorEffect = AnimationData.fromColorJson(element.SI.C);
+			if (params.type == MovieClip)
+				params.filters = AnimationData.fromFilterJson(element.SI.F);
 			params.name = element.SI.SN;
 			params.transformationPoint.set(element.SI.TRP.x, element.SI.TRP.y);
 		} else {
@@ -86,11 +90,7 @@ class FlxElement implements IFlxDestroyable
 
 		var m3d = symbol ? element.SI.M3D : element.ASI.M3D;
 
-		m = if(m3d is Array) {
-			[m3d[0], m3d[1], m3d[4], m3d[5], m3d[12], m3d[13]];
-		} else {
-			[for (field in matrixNames) Reflect.field(m3d,field)];
-		}
+		m = m3d is Array ? [m3d[0], m3d[1], m3d[4], m3d[5], m3d[12], m3d[13]] : [for (field in matrixNames) Reflect.field(m3d,field)];
 
 		if (!symbol && m3d == null)
 		{
@@ -102,7 +102,7 @@ class FlxElement implements IFlxDestroyable
 		if (pos == null)
 			pos = {x: 0, y: 0};
 		return new FlxElement(
-			(symbol) ? element.SI.bitmap.N : element.ASI.N,
+			symbol ? element.SI.bitmap.N : element.ASI.N,
 			params,
 			new FlxMatrix(m[0], m[1], m[2], m[3], m[4] + pos.x, m[5] + pos.y)
 		);

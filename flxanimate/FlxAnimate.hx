@@ -159,7 +159,8 @@ class FlxAnimate extends FlxSprite
 		var colorEffect = colorTransformsPool.get();
 		var matrix = matrixesPool.get();
 
-		if (instance.symbol != null) colorEffect.concat(instance.symbol._colorEffect);
+		if (instance.symbol != null && instance.symbol._colorEffect != null)
+			colorEffect.concat(instance.symbol._colorEffect);
 		matrix.concat(instance.matrix);
 
 		colorEffect.concat(colorFilter);
@@ -175,30 +176,28 @@ class FlxAnimate extends FlxSprite
 			return;
 		}
 
-		var symbol = anim.symbolDictionary.get(instance.symbol.name);
-		var firstFrame:Int = instance.symbol.firstFrame + curFrame;
-		switch (instance.symbol.type)
+		var symbol:FlxSymbol = anim.symbolDictionary.get(instance.symbol.name);
+		var firstFrame:Int = switch (instance.symbol.type)
 		{
-			case Button: firstFrame = setButtonFrames(firstFrame);
-			default:
-		}
-
-		firstFrame = switch (instance.symbol.loop)
-		{
-			case Loop: firstFrame % symbol.length;
-			case PlayOnce: cast FlxMath.bound(firstFrame, 0, symbol.length - 1);
-			default: firstFrame;
+			case Button:	setButtonFrames();
+			case Graphic:
+				switch (instance.symbol.loop)
+				{
+					case Loop:		(instance.symbol.firstFrame + curFrame) % symbol.length;
+					case PlayOnce:	cast FlxMath.bound(instance.symbol.firstFrame + curFrame, 0, symbol.length - 1);
+					default:		instance.symbol.firstFrame + curFrame;
+				}
+			default:		instance.symbol.firstFrame;
 		}
 
 		var layers = symbol.timeline.getList();
+		var layer:FlxLayer;
+		var frame:FlxKeyFrame;
 		for (i in 0...layers.length)
 		{
-			var layer = layers[layers.length - 1 - i];
+			layer = layers[layers.length - 1 - i];
 
-			if (!layer.visible && mainSymbol) continue;
-			var frame = layer.get(firstFrame);
-
-			if (frame == null) continue;
+			if (!layer.visible && mainSymbol || (frame = layer.get(firstFrame)) == null) continue;
 
 			if (frame.callbacks != null)
 			{
@@ -207,15 +206,11 @@ class FlxAnimate extends FlxSprite
 
 			for (element in frame.getList())
 			{
-				var firstframe = 0;
-				if (element.symbol != null && element.symbol.loop != SingleFrame)
-				{
-					firstframe = firstFrame - frame.index;
-				}
 				var coloreffect = colorTransformsPool.get();
-				coloreffect.concat(frame._colorEffect);
+				if (frame._colorEffect != null)
+					coloreffect.concat(frame._colorEffect);
 				coloreffect.concat(colorEffect);
-				parseElement(element, firstframe, matrix, coloreffect);
+				parseElement(element, element.symbol == null || element.symbol.loop == SingleFrame ? 0 : firstFrame - frame.index, matrix, coloreffect);
 				colorTransformsPool.put(coloreffect);
 			}
 		}
@@ -225,8 +220,9 @@ class FlxAnimate extends FlxSprite
 	}
 
 	var pressed:Bool = false;
-	function setButtonFrames(frame:Int)
+	function setButtonFrames()
 	{
+		var frame:Int = 0;
 		#if FLX_MOUSE
 		var badPress:Bool = false;
 		var goodPress:Bool = false;
@@ -276,7 +272,7 @@ class FlxAnimate extends FlxSprite
 
 	function drawLimb(limb:FlxFrame, _matrix:FlxMatrix, ?colorTransform:ColorTransform)
 	{
-		if (alpha == 0 || colorTransform != null && (colorTransform.alphaMultiplier == 0 || colorTransform.alphaOffset == -255) || limb == null || limb.type == EMPTY)
+		if (limb == null || limb.type == EMPTY || colorTransform != null && (colorTransform.alphaMultiplier == 0 || colorTransform.alphaOffset == -255))
 			return;
 
 		for (camera in cameras)
