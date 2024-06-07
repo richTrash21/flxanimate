@@ -91,6 +91,7 @@ class FlxAnimate extends FlxSprite
 	 */
 	public function new(X:Float = 0, Y:Float = 0, ?Path:String, ?Settings:Settings)
 	{
+		_cashePoints = [];
 		super(X, Y);
 		#if FLX_CNE_FORK
 		shaderEnabled = false;
@@ -128,15 +129,28 @@ class FlxAnimate extends FlxSprite
 		anim._loadAtlas(atlasSetting(Path));
 		frames = FlxAnimateFrames.fromTextureAtlas(Path);
 	}
+
+	var _cashePoints(default, null):Array<FlxPoint>;
 	/**
 	 * the function `draw()` renders the symbol that `anim` has currently plus a pivot that you can toggle on or off.
 	 */
 	public override function draw():Void
 	{
-		if(alpha <= 0) return;
+		if(alpha == 0) return;
 
 		updateTrig();
 		updateSkewMatrix();
+
+		for (i => camera in cameras)
+		{
+			final _point:FlxPoint = getScreenPosition(_cashePoints[i], camera).subtractPoint(offset);
+			_point.addPoint(origin);
+			if (isPixelPerfectRender(camera))
+			{
+				_point.floor();
+			}
+			_cashePoints[i] = _point;
+		}
 
 		parseElement(anim.curInstance, anim.curFrame, _matrix, colorTransform, true);
 		#if !ANIMATE_NO_PIVOTPOINT
@@ -156,8 +170,8 @@ class FlxAnimate extends FlxSprite
 	 */
 	function parseElement(instance:FlxElement, curFrame:Int, m:FlxMatrix, colorFilter:ColorTransform, mainSymbol:Bool = false)
 	{
-		var colorEffect = colorTransformsPool.get();
-		var matrix = matrixesPool.get();
+		final colorEffect = colorTransformsPool.get();
+		final matrix = matrixesPool.get();
 
 		if (instance.symbol != null && instance.symbol._colorEffect != null)
 			colorEffect.concat(instance.symbol._colorEffect);
@@ -176,8 +190,8 @@ class FlxAnimate extends FlxSprite
 			return;
 		}
 
-		var symbol:FlxSymbol = anim.symbolDictionary.get(instance.symbol.name);
-		var firstFrame:Int = switch (instance.symbol.type)
+		final symbol:FlxSymbol = anim.symbolDictionary.get(instance.symbol.name);
+		final firstFrame:Int = switch (instance.symbol.type)
 		{
 			case Button:	setButtonFrames();
 			case Graphic:
@@ -187,10 +201,11 @@ class FlxAnimate extends FlxSprite
 					case PlayOnce:	cast FlxMath.bound(instance.symbol.firstFrame + curFrame, 0, symbol.length - 1);
 					default:		instance.symbol.firstFrame + curFrame;
 				}
-			default:		instance.symbol.firstFrame;
+			// default:		instance.symbol.firstFrame;
+			default:		0;
 		}
 
-		var layers = symbol.timeline.getList();
+		final layers = symbol.timeline.getList();
 		var layer:FlxLayer;
 		var frame:FlxKeyFrame;
 		for (i in 0...layers.length)
@@ -206,12 +221,12 @@ class FlxAnimate extends FlxSprite
 
 			for (element in frame.getList())
 			{
-				var coloreffect = colorTransformsPool.get();
+				final colorEffect2 = colorTransformsPool.get();
 				if (frame._colorEffect != null)
-					coloreffect.concat(frame._colorEffect);
-				coloreffect.concat(colorEffect);
-				parseElement(element, element.symbol == null || element.symbol.loop == SingleFrame ? 0 : firstFrame - frame.index, matrix, coloreffect);
-				colorTransformsPool.put(coloreffect);
+					colorEffect2.concat(frame._colorEffect);
+				colorEffect2.concat(colorEffect);
+				parseElement(element, element.symbol == null || element.symbol.loop == SingleFrame ? 0 : firstFrame - frame.index, matrix, colorEffect2);
+				colorTransformsPool.put(colorEffect2);
 			}
 		}
 
@@ -275,7 +290,7 @@ class FlxAnimate extends FlxSprite
 		if (limb == null || limb.type == EMPTY || colorTransform != null && (colorTransform.alphaMultiplier == 0 || colorTransform.alphaOffset == -255))
 			return;
 
-		for (camera in cameras)
+		for (i => camera in cameras)
 		{
 			if (!camera.visible || !camera.exists)
 				continue;
@@ -290,7 +305,6 @@ class FlxAnimate extends FlxSprite
 			rMatrix.concat(_matrix);
 			if (limbOnScreen(limb, _matrix, camera))
 			{
-				getScreenPosition(_point, camera).subtractPoint(offset);
 				rMatrix.translate(-origin.x, -origin.y);
 				#if ANIMATE_NO_PIVOTPOINT
 				rMatrix.scale(scale.x, scale.y);
@@ -305,13 +319,7 @@ class FlxAnimate extends FlxSprite
 
 				rMatrix.concat(matrixExposed ? transformMatrix : _skewMatrix);
 
-				_point.addPoint(origin);
-				if (isPixelPerfectRender(camera))
-				{
-					_point.floor();
-				}
-
-				rMatrix.translate(_point.x, _point.y);
+				rMatrix.translate(_cashePoints[i].x, _cashePoints[i].y);
 				camera.drawPixels(limb, null, rMatrix, colorTransform, blend, antialiasing, #if FLX_CNE_FORK shaderEnabled ? shader : null #else shader #end);
 				#if FLX_DEBUG
 				FlxBasic.visibleCount++;
@@ -428,6 +436,7 @@ class FlxAnimate extends FlxSprite
 		#end*/
 		anim = FlxDestroyUtil.destroy(anim);
 		skew = FlxDestroyUtil.put(skew);
+		_cashePoints = FlxDestroyUtil.putArray(_cashePoints);
 		super.destroy();
 	}
 
