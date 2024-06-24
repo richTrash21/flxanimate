@@ -182,13 +182,12 @@ class AnimationData
 		//if ([None, null].indexOf(colorEffect) == -1)
 		if(colorEffect != None && colorEffect != null)
 		{
-			var params = colorEffect.getParameters();
-			CT = switch (colorEffect.getName())
+			CT = switch (colorEffect)
 			{
-				case "Tint": new FlxTint(params[0], params[1]);
-				case "Alpha": new FlxAlpha(params[0]);
-				case "Brightness": new FlxBrightness(params[0]);
-				case "Advanced": new FlxAdvanced(params[0]);
+				case Tint(color, opacity): new FlxTint(color, opacity);
+				case Alpha(stillAlpha): new FlxAlpha(stillAlpha);
+				case Brightness(bright): new FlxBrightness(bright);
+				case Advanced(transform): new FlxAdvanced(transform);
 				default: new FlxColorEffect();
 			}
 		}

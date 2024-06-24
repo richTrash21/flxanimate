@@ -242,7 +242,7 @@ class FlxKeyFrame
 		classicTween = value;
 
 		if (_parent != null)
-			_tFrame = (!classicTween) ? null : _parent._keyframes[_parent._keyframes.indexOf(this) + 1];
+			_tFrame = classicTween ? _parent._keyframes[_parent._keyframes.indexOf(this) + 1] : null;
 
 		return value;
 	}

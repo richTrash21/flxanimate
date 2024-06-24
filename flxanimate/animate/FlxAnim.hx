@@ -14,10 +14,9 @@ import flxanimate.data.AnimationData;
 import flixel.sound.FlxSound;
 #end
 
-typedef SymbolStuff = {
+typedef AnimStuff = {
 	var instance:FlxElement;
 	var frameRate:Float;
-	var timescale:Float;
 	var loopPoint:Int;
 }
 typedef ClickStuff = {
@@ -102,9 +101,8 @@ class FlxAnim implements IFlxDestroyable
 	 */
 	public var curFrame(get, set):Int;
 
-	var animsMap:Map<String, SymbolStuff> = new Map();
+	var animsMap:Map<String, AnimStuff> = new Map();
 
-	public var animTimeScale(default, null):Float = 1.;
 	public var loopPoint(default, null):Int = 0;
 
 	/**
@@ -180,29 +178,40 @@ class FlxAnim implements IFlxDestroyable
 
 		Force = (Force || finished);
 
+		var curThing:AnimStuff = null;
 		if (Name != "")
 		{
-			if (animsMap.exists(Name))
+			curThing = animsMap.get(Name);
+			if (curThing == null)
 			{
-				var curThing = animsMap.get(Name);
-
-				framerate = (curThing.frameRate == 0) ? metadata.frameRate : curThing.frameRate;
-
-				Force = (Force || curInstance != curThing.instance);
-
-				curInstance = curThing.instance;
-			}
-			else
-			{
+				function editCurThing()
+					curThing = {
+						instance: curInstance,
+						frameRate: metadata.frameRate,
+						loopPoint: 0
+					}
+				
 				if (Name == metadata.name)
+				{
 					curInstance = stageInstance;
+					editCurThing();
+				}
 				else if (symbolDictionary.exists(Name))
 				{
 					curInstance.symbol.reset();
 					curInstance.symbol.name = Name;
+					editCurThing();
 				}
 				else
 					FlxG.log.error('There\'s no animation called $Name!');
+			}
+			else
+			{
+				framerate = curThing.frameRate == 0 ? metadata.frameRate : curThing.frameRate;
+
+				Force = (Force || curInstance != curThing.instance);
+
+				curInstance = curThing.instance;
 			}
 		}
 
@@ -211,6 +220,16 @@ class FlxAnim implements IFlxDestroyable
 			curFrame = (Reverse) ? Frame - length : Frame;
 
 		reversed = Reverse;
+		if (curThing == null)
+		{
+			framerate = metadata.frameRate;
+			loopPoint = 0;
+		}
+		else
+		{
+			framerate = curThing.frameRate == 0 ? metadata.frameRate : curThing.frameRate;
+			loopPoint = curThing.loopPoint;
+		}
 
 		resume();
 	}
@@ -286,9 +305,9 @@ class FlxAnim implements IFlxDestroyable
 	public function update(elapsed:Float)
 	{
 		elapsed *= timeScale #if (flixel >= "5.5.0") * FlxG.animationTimeScale #end;
-		if (frameDelay == 0 || !isPlaying || finished || elapsed <= 0) return;
 		if (curInstance != null)
 			curInstance.updateRender(elapsed, curFrame, symbolDictionary, swfRender);
+		if (frameDelay == 0 || !isPlaying || finished || elapsed <= 0) return;
 
 		_tick += elapsed;
 
@@ -375,7 +394,6 @@ class FlxAnim implements IFlxDestroyable
 			animsMap.set(Name, {
 				instance: params,
 				frameRate: FrameRate,
-				timescale: 1,
 				loopPoint: 0
 			});
 		else
@@ -409,7 +427,7 @@ class FlxAnim implements IFlxDestroyable
 			FlxG.log.error('$SymbolName does not exist as a symbol! maybe you misspelled it?');
 			return;
 		}
-		var params = new FlxElement(new SymbolParameters((Looped) ? Loop : PlayOnce), new FlxMatrix(1,0,0,1,X,Y));
+		var params = new FlxElement(new SymbolParameters(Looped ? Loop : PlayOnce), new FlxMatrix(1,0,0,1,X,Y));
 		var timeline = new FlxTimeline();
 		timeline.add("Layer 1");
 
@@ -431,7 +449,6 @@ class FlxAnim implements IFlxDestroyable
 		animsMap.set(Name, {
 			instance: params,
 			frameRate: FrameRate,
-			timescale: 1,
 			loopPoint: 0
 		});
 	}
@@ -457,7 +474,6 @@ class FlxAnim implements IFlxDestroyable
 		animsMap.set(Name, {
 			instance: params,
 			frameRate: FrameRate,
-			timescale: 1,
 			loopPoint: 0
 		});
 	}

@@ -571,39 +571,37 @@ class FlxAnimate extends FlxSprite
 
 		for (camera in cameras)
 		{
-			_mat.identity();
-			limb.prepareMatrix(_mat);
-			var matrix = _mat;
-			matrix.concat(_matrix);
-
 			if (camera == null || !camera.visible || !camera.exists)
 				return;
 
+			_mat.identity();
+			limb.prepareMatrix(_mat);
+			_mat.concat(_matrix);
 
 			if (!filterin)
 			{
 				getScreenPosition(_point, camera).subtractPoint(offset);
 				if (limb == _pivot || limb == _indicator)
 				{
-					matrix.scale(0.9, 0.9);
+					_mat.scale(0.9, 0.9);
 
-					matrix.a /= camera.zoom;
-					matrix.d /= camera.zoom;
-					matrix.tx /= camera.zoom;
-					matrix.ty /= camera.zoom;
+					_mat.a /= camera.zoom;
+					_mat.d /= camera.zoom;
+					_mat.tx /= camera.zoom;
+					_mat.ty /= camera.zoom;
 				}
 				else
 				{
-					matrix.translate(-origin.x, -origin.y);
+					_mat.translate(-origin.x, -origin.y);
 
-					matrix.scale(scale.x, scale.y);
+					_mat.scale(scale.x, scale.y);
 
 					if (bakedRotationAngle <= 0)
 					{
 						updateTrig();
 
 						if (angle != 0)
-							matrix.rotateWithTrig(_cosAngle, _sinAngle);
+							_mat.rotateWithTrig(_cosAngle, _sinAngle);
 					}
 
 					_point.addPoint(origin);
@@ -614,14 +612,14 @@ class FlxAnimate extends FlxSprite
 					_point.floor();
 				}
 
-				matrix.concat(matrixExposed ? transformMatrix : _skewMatrix);
+				_mat.concat(matrixExposed ? transformMatrix : _skewMatrix);
 
-				matrix.translate(_point.x, _point.y);
+				_mat.translate(_point.x, _point.y);
 
-				if (!limbOnScreen(limb, matrix, camera))
+				if (!limbOnScreen(limb, _mat, camera))
 					continue;
 			}
-			camera.drawPixels(limb, null, matrix, colorTransform, blendMode, (!filterin) ? antialiasing : true, null);
+			camera.drawPixels(limb, null, _mat, colorTransform, blendMode, filterin || antialiasing, null);
 		}
 
 		width = rect.width;
@@ -660,7 +658,6 @@ class FlxAnimate extends FlxSprite
 
 		_point.copyFromFlash(rect.topLeft);
 
-		//if ([_indicator, _pivot].indexOf(limb) == -1)
 		if (_indicator != limb && _pivot != limb)
 			_flashRect = _flashRect.union(rect);
 
@@ -713,11 +710,9 @@ class FlxAnimate extends FlxSprite
 	 * Sets variables via a typedef. Something similar as having an ID class.
 	 * @param Settings
 	 */
+	@:access(flxanimate.animate.FlxAnim)
 	public function setTheSettings(?Settings:Settings):Void
 	{
-		@:privateAccess
-		if (true)
-		{
 			antialiasing = Settings.Antialiasing;
 			if (Settings.ButtonSettings != null)
 			{
@@ -739,7 +734,6 @@ class FlxAnimate extends FlxSprite
 				scrollFactor = Settings.ScrollFactor;
 			if (Settings.Offset != null)
 				offset = Settings.Offset;
-		}
 	}
 
 	public static function fromSettings()
