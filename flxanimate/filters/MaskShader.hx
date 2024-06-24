@@ -17,9 +17,10 @@ uniform vec2 relativePos;
 
 void main()
 {
-	vec2 maskPos = vec2(openfl_TextureCoordv.x + (relativePos.x), openfl_TextureCoordv.y + (relativePos.y));
+	vec2 maskPos = vec2(openfl_TextureCoordv.x + relativePos.x, openfl_TextureCoordv.y + relativePos.y);
 
-	float maskAlpha = texture2D(mainPalette, maskPos).a;
+	vec4 maskRender = texture2D(mainPalette, maskPos);
+	float maskAlpha = maskRender.a;
 
 	if ((maskPos.x < 0. || maskPos.x > 1.) || (maskPos.y < 0. || maskPos.y > 1.))
 		maskAlpha = 0.;

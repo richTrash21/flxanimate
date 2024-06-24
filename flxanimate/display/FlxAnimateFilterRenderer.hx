@@ -98,7 +98,7 @@ class FlxAnimateFilterRenderer
 		}
 	}
 
-	public function applyFilter(bmp:BitmapData, target:BitmapData, target1:BitmapData, target2:BitmapData, filters:Array<BitmapFilter>, rect:Rectangle, ?mask:BitmapData, ?maskPos:FlxPoint)
+	public function applyFilter(bmp:BitmapData, target:BitmapData, target2:BitmapData, target3:BitmapData, filters:Array<BitmapFilter>, rect:Rectangle, ?mask:BitmapData, ?maskPos:FlxPoint)
 	{
 		if (mask != null)
 		{
@@ -118,10 +118,8 @@ class FlxAnimateFilterRenderer
 		renderer.__worldColorTransform.__identity();
 
 		var bitmap:BitmapData = target;
-		var bitmap2 = target1;
-
-		var bitmap3 = target2;
-
+		var bitmap2:BitmapData = target2;
+		var bitmap3:BitmapData = target3;
 
 		bmp.__renderTransform.translate(Math.abs(rect.x), Math.abs(rect.y));
 		renderer.__setRenderTarget(bitmap);
@@ -130,6 +128,7 @@ class FlxAnimateFilterRenderer
 
 		if (filters != null)
 		{
+			var cacheBitmap;
 			for (filter in filters)
 			{
 				if (filter.__preserveObject)
@@ -142,10 +141,11 @@ class FlxAnimateFilterRenderer
 				{
 					renderer.__setBlendMode(filter.__shaderBlendMode);
 					renderer.__setRenderTarget(bitmap2);
-					renderer.__renderFilterPass(bitmap, filter.__initShader(renderer, i, (filter.__preserveObject) ? bitmap3 : null), filter.__smooth);
+					renderer.__renderFilterPass(bitmap, filter.__initShader(renderer, i, filter.__preserveObject ? bitmap3 : null), filter.__smooth);
 
-					renderer.__setRenderTarget(bitmap);
-					renderer.__renderFilterPass(bitmap2, renderer.__defaultDisplayShader, filter.__smooth);
+					cacheBitmap = bitmap;
+					bitmap = bitmap2;
+					bitmap2 = cacheBitmap;
 				}
 
 				filter.__renderDirty = false;

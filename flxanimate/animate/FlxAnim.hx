@@ -14,7 +14,12 @@ import flxanimate.data.AnimationData;
 import flixel.sound.FlxSound;
 #end
 
-typedef SymbolStuff = {var instance:FlxElement; var frameRate:Float;};
+typedef SymbolStuff = {
+	var instance:FlxElement;
+	var frameRate:Float;
+	var timescale:Float;
+	var loopPoint:Int;
+}
 typedef ClickStuff = {
 	?OnClick:Void->Void,
 	?OnRelease:Void->Void
@@ -99,7 +104,8 @@ class FlxAnim implements IFlxDestroyable
 
 	var animsMap:Map<String, SymbolStuff> = new Map();
 
-
+	public var animTimeScale(default, null):Float = 1.;
+	public var loopPoint(default, null):Int = 0;
 
 	/**
 	 *  The looping method of `curSymbol`.
@@ -176,7 +182,17 @@ class FlxAnim implements IFlxDestroyable
 
 		if (Name != "")
 		{
-			if (!animsMap.exists(Name))
+			if (animsMap.exists(Name))
+			{
+				var curThing = animsMap.get(Name);
+
+				framerate = (curThing.frameRate == 0) ? metadata.frameRate : curThing.frameRate;
+
+				Force = (Force || curInstance != curThing.instance);
+
+				curInstance = curThing.instance;
+			}
+			else
 			{
 				if (Name == metadata.name)
 					curInstance = stageInstance;
@@ -187,17 +203,6 @@ class FlxAnim implements IFlxDestroyable
 				}
 				else
 					FlxG.log.error('There\'s no animation called $Name!');
-			}
-			else
-			{
-				var curThing = animsMap.get(Name);
-
-
-				framerate = (curThing.frameRate == 0) ? metadata.frameRate : curThing.frameRate;
-
-				Force = (Force || curInstance != curThing.instance);
-
-				curInstance = curThing.instance;
 			}
 		}
 
@@ -280,15 +285,30 @@ class FlxAnim implements IFlxDestroyable
 
 	public function update(elapsed:Float)
 	{
+		elapsed *= timeScale #if (flixel >= "5.5.0") * FlxG.animationTimeScale #end;
+		if (frameDelay == 0 || !isPlaying || finished || elapsed <= 0) return;
 		if (curInstance != null)
-			curInstance.updateRender(elapsed * timeScale #if (flixel >= "5.5.0") * FlxG.animationTimeScale #end, curFrame, symbolDictionary, swfRender);
-		if (frameDelay == 0 || !isPlaying || finished) return;
+			curInstance.updateRender(elapsed, curFrame, symbolDictionary, swfRender);
 
 		_tick += elapsed;
 
 		while (_tick > frameDelay)
 		{
-			(reversed) ? curFrame-- : curFrame++;
+			// (reversed) ? curFrame-- : curFrame++;
+			if (reversed)
+			{
+				if (loopType == Loop && curFrame == loopPoint)
+					curFrame = length - 1;
+				else
+					curFrame--;
+			}
+			else
+			{
+				if (loopType == Loop && curFrame == length - 1)
+					curFrame = loopPoint;
+				else
+					curFrame++;
+			}
 			curSymbol.fireCallbacks();
 			_tick -= frameDelay;
 		}
@@ -305,9 +325,13 @@ class FlxAnim implements IFlxDestroyable
 		}
 	}
 	function get_finished()
-	{
-		return (loopType == PlayOnce) && (reversed && curFrame == 0 || !reversed && curFrame >= length - 1);
-	}
+		return switch(loopType)
+		{
+			case SingleFrame:	true;
+			case PlayOnce:		reversed && curFrame == 0 || !reversed && curFrame >= length - 1;
+			default:			false;
+		}
+	
 	function get_curFrame()
 	{
 		return (curSymbol != null) ? curSymbol.curFrame : 0;
@@ -317,18 +341,12 @@ class FlxAnim implements IFlxDestroyable
 		if (curSymbol == null)
 			return 0;
 
-		curSymbol.curFrame = switch (loopType)
+		return curSymbol.curFrame = (symbolType == MovieClip && !swfRender) ? 0 : switch (loopType)
 		{
-			case Loop: (Value < 0) ? curSymbol.length - 1 : Value % curSymbol.length;
-			case PlayOnce: cast FlxMath.bound(Value, 0, curSymbol.length - 1);
-			case _: Value;
+			case Loop:		(Value < 0) ? curSymbol.length - 1 : Value % curSymbol.length;
+			case PlayOnce:	cast FlxMath.bound(Value, 0, curSymbol.length - 1);
+			default:		Value;
 		}
-
-		if (symbolType == MovieClip && !swfRender)
-			curSymbol.curFrame = 0;
-
-
-		return curSymbol.curFrame;
 	}
 	/**
 	 * Creates an animation using an already made symbol from a texture atlas
@@ -344,7 +362,7 @@ class FlxAnim implements IFlxDestroyable
 		{
 			return;
 		}
-		var params = new FlxElement(new SymbolParameters((Looped) ? Loop : PlayOnce), new FlxMatrix(1,0,0,1,X,Y));
+		var params = new FlxElement(new SymbolParameters(Looped ? Loop : PlayOnce), new FlxMatrix(1,0,0,1,X,Y));
 		for (name in symbolDictionary.keys())
 		{
 			if (startsWith(name, SymbolName))
@@ -354,7 +372,12 @@ class FlxAnim implements IFlxDestroyable
 			}
 		}
 		if (params.symbol.name != null)
-			animsMap.set(Name, {instance: params, frameRate: FrameRate});
+			animsMap.set(Name, {
+				instance: params,
+				frameRate: FrameRate,
+				timescale: 1,
+				loopPoint: 0
+			});
 		else
 			FlxG.log.error('No symbol was found with the name $SymbolName!');
 	}
@@ -405,7 +428,12 @@ class FlxAnim implements IFlxDestroyable
 
 		symbolDictionary.set(symbol.name, symbol);
 
-		animsMap.set(Name, {instance: params, frameRate: FrameRate});
+		animsMap.set(Name, {
+			instance: params,
+			frameRate: FrameRate,
+			timescale: 1,
+			loopPoint: 0
+		});
 	}
 
 	function set_framerate(value:Float):Float
@@ -426,7 +454,12 @@ class FlxAnim implements IFlxDestroyable
 	{
 		symbolDictionary.set(Name, new FlxSymbol(haxe.io.Path.withoutDirectory(Name), Timeline));
 		var params = new FlxElement(new SymbolParameters((Looped) ? Loop : PlayOnce));
-		animsMap.set(Name, {instance: params, frameRate: FrameRate});
+		animsMap.set(Name, {
+			instance: params,
+			frameRate: FrameRate,
+			timescale: 1,
+			loopPoint: 0
+		});
 	}
 
 	public function get_length()
@@ -541,8 +574,7 @@ class FlxAnim implements IFlxDestroyable
 
 			for (element in elements.getList())
 			{
-				if (element.symbol == null) continue;
-				if (element.symbol.instance != "" && element.symbol.instance == instance)
+				if (element.symbol != null && element.symbol.instance != "" && element.symbol.instance == instance)
 				{
 					return symbolDictionary.get(element.symbol.name);
 				}
@@ -553,9 +585,14 @@ class FlxAnim implements IFlxDestroyable
 		return null;
 	}
 
+	inline public function existsByName(name:String)
+	{
+		return animsMap.exists(name);
+	}
+
 	function get_curSymbol()
 	{
-		return (symbolDictionary != null) ? symbolDictionary.get(curInstance.symbol.name) : null;
+		return symbolDictionary.get(curInstance.symbol.name);
 	}
 
 	public function destroy()

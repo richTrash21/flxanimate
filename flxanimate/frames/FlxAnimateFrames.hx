@@ -16,6 +16,9 @@ import haxe.xml.Access;
 
 class FlxAnimateFrames extends FlxAtlasFrames
 {
+	// Well.. - Redar13
+	public static var framesCollections = new Map<String, FlxAnimateFrames>();
+
 	public function new()
 	{
 		super(null);
@@ -27,6 +30,12 @@ class FlxAnimateFrames extends FlxAtlasFrames
 
 	public var parents:Array<FlxGraphic>;
 
+	public static function clearCache()
+	{
+		for (_ => i in FlxAnimateFrames.framesCollections) i.destroy();
+		FlxAnimateFrames.framesCollections.clear();
+	}
+	
 	/**
 	 * Helper function to parse several Spritemaps from a texture atlas via `fromSpritemap()`
 	 *
@@ -36,14 +45,18 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	 */
 	public static function fromTextureAtlas(Path:String):FlxAnimateFrames
 	{
-		var frames:FlxAnimateFrames = new FlxAnimateFrames();
+		var frames:FlxAnimateFrames = framesCollections.get(Path);
+		if (frames != null)
+			return frames;
+
+		frames = new FlxAnimateFrames();
 
 		var texts = Assets.list(TEXT).filter((text) -> StringTools.startsWith(text, '$Path/sprite'));
 
 		var texts = [];
 		var isDone = false;
 
-		if (Assets.exists('$Path/spritemap.json'))
+		if (Utils.exists('$Path/spritemap.json'))
 		{
 			texts.push('$Path/spritemap.json');
 			isDone = true;
@@ -52,7 +65,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		var i = 1;
 		while (!isDone)
 		{
-			if (Assets.exists('$Path/spritemap$i.json'))
+			if (Utils.exists('$Path/spritemap$i.json'))
 				texts.push('$Path/spritemap$i.json');
 
 			else
@@ -94,7 +107,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		if (Path is String)
 		{
 			var str:String = cast (Path, String).split("\\").join("/");
-			var text = (StringTools.contains(str, "/")) ? Assets.getText(str) : str;
+			var text = (StringTools.contains(str, "/")) ? Utils.getText(str) : str;
 			json = haxe.Json.parse(text.split(String.fromCharCode(0xFEFF)).join(""));
 		}
 		else
@@ -161,10 +174,10 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	 */
 	public static function fromSparrow(Path:FlxSparrow, ?Image:FlxGraphicAsset):FlxAtlasFrames
 	{
-		if (Path is String && !Assets.exists(Path))
+		if (Path is String && !Utils.exists(Path))
 			return null;
 
-		var data:Xml = (Path is String) ? Xml.parse(Assets.getText(Path)).firstElement() : Path.firstElement();
+		var data:Xml = (Path is String) ? Xml.parse(Utils.getText(Path)).firstElement() : Path.firstElement();
 		if (Image == null)
 		{
 			if (Path is String)
@@ -256,9 +269,9 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	 */
 	public static function fromJson(Path:FlxJson, ?Image:FlxGraphicAsset):FlxAtlasFrames
 	{
-		if (Path is String && !Assets.exists(Path))
+		if (Path is String && !Utils.exists(Path))
 			return null;
-		var data:JsonNormal = (Path is String) ? haxe.Json.parse(Assets.getText(Path)) : Path;
+		var data:JsonNormal = (Path is String) ? haxe.Json.parse(Utils.getText(Path)) : Path;
 		if (Image == null)
 		{
 			if (Path is String)
@@ -289,9 +302,9 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	 */
 	public static function fromStarling(Path:FlxPropertyList, ?Image:FlxGraphicAsset):FlxAtlasFrames
 	{
-		if (Path is String && !Assets.exists(Path))
+		if (Path is String && !Utils.exists(Path))
 			return null;
-		var data:Plist = (Path is String) ? PropertyList.parse(Assets.getText(Path)) : Path;
+		var data:Plist = (Path is String) ? PropertyList.parse(Utils.getText(Path)) : Path;
 		if (Image == null)
 		{
 			if (Path is String)
@@ -337,9 +350,9 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	 */
 	public static function fromCocos2D(Path:String, ?Image:FlxGraphicAsset):FlxAtlasFrames
 	{
-		if (!Assets.exists(Path))
+		if (!Utils.exists(Path))
 			return null;
-		var data:Plist = PropertyList.parse(Assets.getText(Path));
+		var data:Plist = PropertyList.parse(Utils.getText(Path));
 		if (data.metadata.format == 2)
 		{
 			return fromStarling(Path, Image);
@@ -391,7 +404,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	public static function fromEaselJS(Path:String, ?Image:FlxGraphicAsset):FlxAnimateFrames
 	{
 		var hugeFrames:FlxAnimateFrames = new FlxAnimateFrames();
-		var separatedJS = Assets.getText(Path).split("\n");
+		var separatedJS = Utils.getText(Path).split("\n");
 		var lines:Array<String> = [];
 		for (line in separatedJS)
 		{
@@ -415,7 +428,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 			var times = 0;
 			var name = names[i];
 			var json = jsons[i];
-			var bitmap = FlxG.bitmap.add(Assets.getBitmapData((Image == null) ? '${imagePath.join("/")}/${json.images[0]}' : Image));
+			var bitmap = FlxG.bitmap.add(Utils.getBitmapData((Image == null) ? '${imagePath.join("/")}/${json.images[0]}' : Image));
 			var frames = new FlxAtlasFrames(bitmap);
 			var initialFrame = [json.frames[0][5], json.frames[0][6]];
 			for (frame in json.frames)
