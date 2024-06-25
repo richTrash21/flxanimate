@@ -1,40 +1,44 @@
 package flxanimate;
 
+import flixel.graphics.FlxGraphic;
+import flixel.graphics.frames.FlxFrame;
+import flixel.graphics.frames.FlxFramesCollection;
+import flixel.math.FlxAngle;
+import flixel.math.FlxMath;
+import flixel.math.FlxMatrix;
+import flixel.math.FlxRect;
+import flixel.math.FlxPoint;
+import flixel.sound.FlxSound;
+import flixel.util.FlxColor;
+import flixel.util.FlxDestroyUtil;
+import flixel.util.FlxPool;
+import flixel.FlxBasic;
+import flixel.FlxCamera;
+import flixel.FlxG;
+import flixel.FlxSprite;
+
+import openfl.display.BlendMode;
+import openfl.display.Sprite;
+import openfl.display.BitmapData;
+import openfl.filters.BitmapFilter;
+import openfl.geom.ColorTransform;
+import openfl.geom.Rectangle;
 import openfl.geom.Matrix;
 import openfl.geom.Point;
-import flxanimate.Utils;
-import flxanimate.interfaces.IFilterable;
-import openfl.display.BlendMode;
-import flixel.graphics.frames.FlxFramesCollection;
-import haxe.extern.EitherType;
-import flxanimate.display.FlxAnimateFilterRenderer;
-import openfl.filters.BitmapFilter;
-import flxanimate.geom.FlxMatrix3D;
-import openfl.display.Sprite;
-import flixel.util.FlxColor;
-import flixel.graphics.FlxGraphic;
-import openfl.geom.Rectangle;
-import openfl.display.BitmapData;
-import flixel.util.FlxDestroyUtil;
-import flixel.math.FlxRect;
-import flixel.graphics.frames.FlxFrame;
-import flixel.math.FlxPoint;
-import flixel.FlxCamera;
-import flxanimate.animate.*;
-import flxanimate.zip.Zip;
 import openfl.Assets;
-import haxe.io.BytesInput;
-import flixel.sound.FlxSound;
-import flixel.FlxG;
-import flxanimate.data.AnimationData;
-import flixel.FlxSprite;
+
 import flxanimate.animate.FlxAnim;
+import flxanimate.animate.*;
+import flxanimate.data.AnimationData;
+import flxanimate.display.FlxAnimateFilterRenderer;
 import flxanimate.frames.FlxAnimateFrames;
-import flixel.math.FlxMatrix;
-import openfl.geom.ColorTransform;
-import flixel.math.FlxMath;
-import flixel.FlxBasic;
-import flixel.util.FlxPool;
+import flxanimate.geom.FlxMatrix3D;
+import flxanimate.interfaces.IFilterable;
+import flxanimate.zip.Zip;
+import flxanimate.Utils;
+
+import haxe.extern.EitherType;
+import haxe.io.BytesInput;
 
 typedef Settings = {
 	?ButtonSettings:Map<String, flxanimate.animate.FlxAnim.ButtonSettings>,
@@ -209,6 +213,11 @@ class FlxAnimate extends FlxSprite
 	 */
 	public override function draw():Void
 	{
+		if(alpha == 0) return;
+
+		updateTrig();
+		updateSkewMatrix();
+	
 		_matrix.identity();
 		if (flipX)
 		{
@@ -224,7 +233,6 @@ class FlxAnimate extends FlxSprite
 		}
 
 		_flashRect.setEmpty();
-
 
 		parseElement(anim.curInstance, _matrix, colorTransform, cameras, scrollFactor);
 
@@ -253,6 +261,17 @@ class FlxAnimate extends FlxSprite
 
 	static var _skewMatrix:FlxMatrix = new FlxMatrix();
 
+	function updateSkewMatrix():Void
+	{
+		_skewMatrix.identity();
+
+		if (skew.x != 0 || skew.y != 0)
+		{
+			_skewMatrix.b = Math.tan(skew.y * FlxAngle.TO_RAD);
+			_skewMatrix.c = Math.tan(skew.x * FlxAngle.TO_RAD);
+		}
+	}
+	
 	/**
 	 * Tranformation matrix for this sprite.
 	 * Used only when matrixExposed is set to true
@@ -321,8 +340,8 @@ class FlxAnimate extends FlxSprite
 				@:privateAccess
 				renderFilter(instance.symbol, instance.symbol.filters, renderer);
 				instance.symbol._renderDirty = false;
-
 			}
+
 			if (instance.symbol._filterFrame != null)
 			{
 				if (instance.symbol.colorEffect != null)
@@ -330,7 +349,6 @@ class FlxAnimate extends FlxSprite
 
 				matrix.copyFrom(instance.symbol._filterMatrix);
 				matrix.concat(m);
-
 
 				drawLimb(instance.symbol._filterFrame, matrix, colorEffect, filterin, instance.symbol.blendMode, cameras);
 			}
@@ -388,18 +406,15 @@ class FlxAnimate extends FlxSprite
 				if (frame.colorEffect != null)
 					coloreffect.concat(frame.colorEffect.__create());
 
-				if (toBitmap)
+				if (toBitmap && !frame._renderDirty && layer._filterFrame != null)
 				{
-					if (!frame._renderDirty && layer._filterFrame != null)
-					{
-						var mat = matrixesPool.get();
-						mat.copyFrom(layer._filterMatrix);
-						mat.concat(matrix);
+					var mat = matrixesPool.get();
+					mat.copyFrom(layer._filterMatrix);
+					mat.concat(matrix);
 
-						drawLimb(layer._filterFrame, mat, coloreffect, filterin, cameras);
-						matrixesPool.put(mat);
-						continue;
-					}
+					drawLimb(layer._filterFrame, mat, coloreffect, filterin, cameras);
+					matrixesPool.put(mat);
+					continue;
 				}
 
 				var mat = toBitmap ? matrixesPool.get() : matrix;
@@ -418,7 +433,7 @@ class FlxAnimate extends FlxSprite
 
 					var mat = matrixesPool.get();
 					mat.copyFrom(layer._filterMatrix);
-					mat.concat(matrix);
+					mat.concat(m);
 
 					drawLimb(layer._filterFrame, mat, coloreffect, filterin, cameras);
 					matrixesPool.put(mat);
@@ -598,8 +613,6 @@ class FlxAnimate extends FlxSprite
 
 					if (bakedRotationAngle <= 0)
 					{
-						updateTrig();
-
 						if (angle != 0)
 							_mat.rotateWithTrig(_cosAngle, _sinAngle);
 					}
