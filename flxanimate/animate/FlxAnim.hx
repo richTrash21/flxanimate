@@ -306,42 +306,43 @@ class FlxAnim implements IFlxDestroyable
 
 	public function update(elapsed:Float)
 	{
-		elapsed *= timeScale #if (flixel >= "5.5.0") * FlxG.animationTimeScale #end;
-		if (frameDelay == 0 || !isPlaying || finished || elapsed <= 0) return;
+		var animElapsed = elapsed * timeScale #if (flixel >= "5.5.0") * FlxG.animationTimeScale #end;
+		if (frameDelay != 0 && isPlaying && !finished && animElapsed > 0)
+		{
+			_tick += animElapsed;
+		
+			while (_tick > frameDelay)
+			{
+				// reversed ? curFrame-- : curFrame++;
+				_tick -= frameDelay;
+				if (reversed)
+				{
+					if (loopType == Loop && curFrame == loopPoint)
+						curFrame = length - 1;
+					else
+						curFrame--;
+				}
+				else
+				{
+					if (loopType == Loop && curFrame == length - 1)
+						curFrame = loopPoint;
+					else
+						curFrame++;
+				}
+				curSymbol.fireCallbacks();
+			}
+
+
+			if (finished)
+			{
+				if (onComplete != null)
+					onComplete();
+
+				pause();
+			}
+		}
 		if (curInstance != null)
 			curInstance.updateRender(elapsed, curFrame, symbolDictionary, swfRender);
-
-		_tick += elapsed;
-
-		while (_tick > frameDelay)
-		{
-			// reversed ? curFrame-- : curFrame++;
-			_tick -= frameDelay;
-			if (reversed)
-			{
-				if (loopType == Loop && curFrame == loopPoint)
-					curFrame = length - 1;
-				else
-					curFrame--;
-			}
-			else
-			{
-				if (loopType == Loop && curFrame == length - 1)
-					curFrame = loopPoint;
-				else
-					curFrame++;
-			}
-			curSymbol.fireCallbacks();
-		}
-
-
-		if (finished)
-		{
-			if (onComplete != null)
-				onComplete();
-
-			pause();
-		}
 	}
 	function get_finished()
 		return switch(loopType)
