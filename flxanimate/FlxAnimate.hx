@@ -305,7 +305,7 @@ class FlxAnimate extends FlxSprite
 		var matrix = instance._matrix;
 
 		matrix.copyFrom(instance.matrix);
-		matrix.translate(instance.x, instance.y);
+		// matrix.translate(instance.x, instance.y);
 		matrix.concat(m);
 
 

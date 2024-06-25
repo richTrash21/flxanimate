@@ -216,9 +216,11 @@ class FlxAnim implements IFlxDestroyable
 		}
 
 
-		if (Force)
+		if (Force || finished)
+		{
 			curFrame = (Reverse) ? Frame - length : Frame;
-
+			_tick = 0;
+		}
 		reversed = Reverse;
 		if (curThing == null)
 		{
@@ -305,15 +307,16 @@ class FlxAnim implements IFlxDestroyable
 	public function update(elapsed:Float)
 	{
 		elapsed *= timeScale #if (flixel >= "5.5.0") * FlxG.animationTimeScale #end;
+		if (frameDelay == 0 || !isPlaying || finished || elapsed <= 0) return;
 		if (curInstance != null)
 			curInstance.updateRender(elapsed, curFrame, symbolDictionary, swfRender);
-		if (frameDelay == 0 || !isPlaying || finished || elapsed <= 0) return;
 
 		_tick += elapsed;
 
 		while (_tick > frameDelay)
 		{
-			// (reversed) ? curFrame-- : curFrame++;
+			// reversed ? curFrame-- : curFrame++;
+			_tick -= frameDelay;
 			if (reversed)
 			{
 				if (loopType == Loop && curFrame == loopPoint)
@@ -329,25 +332,22 @@ class FlxAnim implements IFlxDestroyable
 					curFrame++;
 			}
 			curSymbol.fireCallbacks();
-			_tick -= frameDelay;
 		}
 
 
-		if (loopType != SingleFrame && curFrame == (reversed ? 0 : length - 1))
+		if (finished)
 		{
-			if (loopType == PlayOnce)
-				pause();
-
 			if (onComplete != null)
 				onComplete();
 
+			pause();
 		}
 	}
 	function get_finished()
 		return switch(loopType)
 		{
 			case SingleFrame:	true;
-			case PlayOnce:		reversed && curFrame == 0 || !reversed && curFrame >= length - 1;
+			case PlayOnce:		reversed && curFrame <= 0 || !reversed && curFrame >= length - 1;
 			default:			false;
 		}
 	
