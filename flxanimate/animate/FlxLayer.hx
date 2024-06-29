@@ -294,36 +294,28 @@ class FlxLayer extends FlxObject implements IFilterable
 
 		if (_currFrame != null)
 		{
-			if (frame >= _currFrame.index && frame < _currFrame.duration) return;
+			if (frame >= _currFrame.index && frame < _currFrame.index + _currFrame.duration) return;
 
 			var i = _keyframes.indexOf(_currFrame);
 
 			var prevFrame = _currFrame;
 
-			if (frame >= _currFrame.index + _currFrame.duration)
+			var nextKeyframe = _currFrame;
+			if (frame >= nextKeyframe.index + nextKeyframe.duration)
 			{
-				var keyframe = _keyframes[i];
-				while (frame >= keyframe.index + keyframe.duration)
+				while (nextKeyframe != null && frame >= nextKeyframe.index + nextKeyframe.duration)
 				{
-					keyframe = _keyframes[i++];
-					if (keyframe == null)
-						break;
+					nextKeyframe = _keyframes[i++];
 				}
-
-				_currFrame = keyframe;
 			}
-			else if (frame < _currFrame.index)
+			else if (frame < nextKeyframe.index)
 			{
-				var keyframe = _keyframes[i];
-				while (frame < keyframe.index)
+				while (nextKeyframe != null && frame < nextKeyframe.index)
 				{
-					keyframe = _keyframes[i--];
-					if (keyframe == null)
-						break;
+					nextKeyframe = _keyframes[i--];
 				}
-
-				_currFrame = keyframe;
 			}
+			_currFrame = nextKeyframe;
 			if (onFrameUpdate != null)
 				onFrameUpdate(prevFrame, _currFrame);
 		}

@@ -347,7 +347,7 @@ class FlxAnim implements IFlxDestroyable
 		return switch(loopType)
 		{
 			case SingleFrame:	true;
-			case PlayOnce:		reversed && curFrame <= 0 || !reversed && curFrame >= length - 1;
+			case PlayOnce:		reversed && curFrame == 0 || !reversed && curFrame >= length - 1;
 			default:			false;
 		}
 	
@@ -455,7 +455,7 @@ class FlxAnim implements IFlxDestroyable
 
 	function set_framerate(value:Float):Float
 	{
-		frameDelay = 1 / value;
+		frameDelay = value == 0 ? 0 : 1 / value;
 		return framerate = value;
 	}
 	/**
@@ -479,14 +479,11 @@ class FlxAnim implements IFlxDestroyable
 	}
 
 	public function get_length()
-	{
 		return curSymbol.length;
-	}
 
 	public function getFrameLabel(name:String, ?layer:EitherType<Int, String>)
-	{
 		return curSymbol.getFrameLabel(name, layer);
-	}
+
 	public function toString()
 	{
 		return FlxStringUtil.getDebugString([
@@ -494,6 +491,7 @@ class FlxAnim implements IFlxDestroyable
 			LabelValuePair.weak("framerate", framerate)
 		]);
 	}
+
 	/**
 	 * Redirects the frame into a frame with a frame label of that type.
 	 * @param name the name of the label.
@@ -509,6 +507,7 @@ class FlxAnim implements IFlxDestroyable
 
 		resume();
 	}
+
 	/**
 	 * Checks the next frame label name you're looking for.
 	 * **WARNING: DO NOT** confuse with `anim.curSymbol.getNextToFrameLabel`!!
@@ -516,63 +515,46 @@ class FlxAnim implements IFlxDestroyable
 	 * @return A `String`. WARNING: it can be `null`
 	 */
 	public function getNextToFrameLabel(name:String):Null<String>
-	{
 		return curSymbol.getNextToFrameLabel(name).name;
-	}
+
 	/**
 	 * Links a callback into a label.
 	 * @param label the name of the label.
 	 * @param callback the callback you're going to add
 	 */
 	public function addCallbackTo(label:String, callback:()->Void)
-	{
 		return curSymbol.addCallbackTo(label, callback);
-	}
 
 	public function removeCallbackFrom(label:String, callback:()->Void)
-	{
 		return curSymbol.removeCallbackFrom(label, callback);
-	}
 
 	public function removeAllCallbacksFrom(label:String)
-	{
 		return curSymbol.removeAllCallbacksFrom(label);
-	}
 
 	public function getFrameLabels(?layer:EitherType<Int, String>)
-	{
 		return curSymbol.getFrameLabels(layer);
-	}
 
 	function get_loopType()
-	{
 		return curInstance.symbol.loop;
-	}
 
 	function set_loopType(type:Loop)
-	{
 		return curInstance.symbol.loop = type;
-	}
+	
 	function get_symbolType()
-	{
 		return curInstance.symbol.type;
-	}
+	
 	function set_symbolType(type:SymbolT)
-	{
 		return curInstance.symbol.type = type;
-	}
+	
 	function get_reversed()
-	{
 		return curInstance.symbol.reverse;
-	}
+	
 	function set_reversed(value:Bool)
-	{
 		return curInstance.symbol.reverse = value;
-	}
+	
 	public function getByName(name:String)
-	{
 		return animsMap.get(name);
-	}
+	
 
 	public function getByInstance(instance:String, ?frame:Int = null, ?layer:EitherType<String, Int>)
 	{
@@ -601,6 +583,16 @@ class FlxAnim implements IFlxDestroyable
 		return null;
 	}
 
+	public function getSymbolNameByLayerMark(layerMark:String)
+	{
+		var mainSymbol = symbolDictionary.get(stageInstance.symbol.name);
+		var label = mainSymbol == null ? null : mainSymbol.getFrameLabel(layerMark);
+		if (label == null) // search from main symbol
+			return null;
+		var elements = label.getList();
+		return elements.length > 0 ? elements[0].symbol.name : null;
+	}
+	
 	inline public function existsByName(name:String)
 	{
 		return animsMap.exists(name);
@@ -652,7 +644,7 @@ class FlxMetaData
 	{
 		this.name = name;
 		this.frameRate = frameRate;
-		showHiddenLayers = true;
+		showHiddenLayers = false;
 	}
 	public function destroy()
 	{

@@ -358,7 +358,7 @@ class FlxAnimate extends FlxSprite
 			if (instance.symbol.colorEffect != null && (!filterin || filterInstance != instance))
 				colorEffect.concat(instance.symbol.colorEffect.c_Transform);
 
-			final firstFrame:Int = switch (instance.symbol.type)
+			final curIndexFrame:Int = switch (instance.symbol.type)
 			{
 				case Button: setButtonFrames();
 				default: instance.symbol._curFrame;
@@ -375,7 +375,7 @@ class FlxAnimate extends FlxSprite
 				if (layer._clipper != null)
 				{
 					var layer = layer._clipper;
-					layer._setCurFrame(firstFrame);
+					layer._setCurFrame(curIndexFrame);
 					var frame = layer._currFrame;
 					if (frame._renderDirty)
 					{
@@ -393,7 +393,7 @@ class FlxAnimate extends FlxSprite
 					}
 				}
 
-				layer._setCurFrame(firstFrame);
+				layer._setCurFrame(curIndexFrame);
 
 				var frame = layer._currFrame;
 
