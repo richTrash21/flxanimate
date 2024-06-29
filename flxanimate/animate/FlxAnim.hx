@@ -117,7 +117,7 @@ class FlxAnim implements IFlxDestroyable
 	 * Default value is `1.0`
 	 * @since `4.0.0`
 	 */
-	public var timeScale:Float = 1.0;
+	public var timeScale:Float = 1.;
 
 	/**
 	 	The type of the current symbol.
@@ -207,8 +207,6 @@ class FlxAnim implements IFlxDestroyable
 			}
 			else
 			{
-				framerate = curThing.frameRate == 0 ? metadata.frameRate : curThing.frameRate;
-
 				Force = (Force || curInstance != curThing.instance);
 
 				curInstance = curThing.instance;
@@ -218,7 +216,7 @@ class FlxAnim implements IFlxDestroyable
 
 		if (Force || finished)
 		{
-			curFrame = (Reverse) ? Frame - length : Frame;
+			curFrame = Reverse ? length - 1 - Frame : Frame;
 			_tick = 0;
 		}
 		reversed = Reverse;
@@ -248,12 +246,13 @@ class FlxAnim implements IFlxDestroyable
 		if (element != null)
 			curInstance = element;
 		else
-		{
 			curInstance = stageInstance;
-		}
 
 		if (Force)
-			curFrame = (!Reverse) ? Frame : length - 1 - Frame;
+		{
+			curFrame = Reverse ? length - 1 - Frame : Frame;
+			_tick = 0;
+		}
 
 		resume();
 	}
@@ -293,13 +292,13 @@ class FlxAnim implements IFlxDestroyable
 
 	function setSymbols(Anim:AnimAtlas)
 	{
-		symbolDictionary.set(Anim.AN.SN, new FlxSymbol(haxe.io.Path.withoutDirectory(Anim.AN.SN), FlxTimeline.fromJSON(Anim.AN.TL)));
+		symbolDictionary.set(Anim.AN.SN, new FlxSymbol(Utils.withoutDirectory(Anim.AN.SN), FlxTimeline.fromJSON(Anim.AN.TL)));
 
 		if (Anim.SD != null)
 		{
 			for (symbol in Anim.SD.S)
 			{
-				symbolDictionary.set(symbol.SN, new FlxSymbol(haxe.io.Path.withoutDirectory(symbol.SN), FlxTimeline.fromJSON(symbol.TL)));
+				symbolDictionary.set(symbol.SN, new FlxSymbol(Utils.withoutDirectory(symbol.SN), FlxTimeline.fromJSON(symbol.TL)));
 			}
 		}
 	}
@@ -470,8 +469,8 @@ class FlxAnim implements IFlxDestroyable
 	 */
 	public function addByCustomTimeline(Name:String, Timeline:FlxTimeline, FrameRate:Float = 0, Looped:Bool = true)
 	{
-		symbolDictionary.set(Name, new FlxSymbol(haxe.io.Path.withoutDirectory(Name), Timeline));
-		var params = new FlxElement(new SymbolParameters((Looped) ? Loop : PlayOnce));
+		symbolDictionary.set(Name, new FlxSymbol(Utils.withoutDirectory(Name), Timeline));
+		var params = new FlxElement(new SymbolParameters(Looped ? Loop : PlayOnce));
 		animsMap.set(Name, {
 			instance: params,
 			frameRate: FrameRate,

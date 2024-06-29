@@ -109,7 +109,7 @@ class FlxKeyFrame
 
 		for (element in _elements)
 		{
-			element.updateRender(elapsed, curFrame, dictionary);
+			element.updateRender(elapsed, curFrame, dictionary, swfRender);
 		}
 	}
 	public function add(element:EitherType<FlxElement, Function>)

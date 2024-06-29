@@ -117,8 +117,6 @@ class SymbolParameters implements IFilterable
 
 	public var filters(default, set):Array<BitmapFilter>;
 
-	public var cacheAsBitmapMatrix:FlxMatrix;
-
 	var _needSecondBmp:Bool = false;
 
 
@@ -141,7 +139,6 @@ class SymbolParameters implements IFilterable
 		colorEffect = None;
 		_curFrame = 0;
 		filters = null;
-		cacheAsBitmapMatrix = new FlxMatrix();
 		_filterMatrix = new FlxMatrix();
 	}
 

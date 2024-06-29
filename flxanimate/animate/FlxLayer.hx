@@ -148,10 +148,8 @@ class FlxLayer extends FlxObject implements IFilterable
 				_currFrame._renderDirty = true;
 				_prevFrame = _currFrame;
 			}
-			_currFrame.updateRender(elapsed, curFrame, dictionary);
+			_currFrame.updateRender(elapsed, curFrame, dictionary, swfRender);
 		}
-
-
 	}
 	public function get(frame:EitherType<String, Int>)
 	{
@@ -170,13 +168,9 @@ class FlxLayer extends FlxObject implements IFilterable
 			}
 		}
 		var index = 0;
-		if ((frame is String))
+		if (frame is String)
 		{
-			if (!_labels.exists(frame)) return null;
-
-			var label = _labels.get(frame);
-
-			return label;
+			return _labels.get(frame);
 		}
 		else
 		{

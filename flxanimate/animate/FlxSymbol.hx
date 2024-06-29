@@ -385,10 +385,8 @@ class FlxSymbol implements IFlxDestroyable
 		{
 			for (label in layer._labels.iterator())
 			{
-				if (label.index != frame)
-					continue;
-
-				label.fireCallbacks();
+				if (label.index == frame)
+					label.fireCallbacks();
 			}
 		}
 		if (onCallback != null)

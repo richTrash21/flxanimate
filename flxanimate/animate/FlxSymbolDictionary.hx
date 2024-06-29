@@ -22,7 +22,7 @@ class FlxSymbolDictionary
 
 	public function getLibrary(library:String)
 	{
-		var path = Path.directory(Path.addTrailingSlash(library));
+		var path = Utils.directory(Path.addTrailingSlash(library));
 
 		var libraries:Map<String, FlxSymbol> = [];
 		for (instance in _symbols.keys())

@@ -89,8 +89,6 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 
 	public function updateRender(elapsed:Float, curFrame:Int, dictionary:Map<String, FlxSymbol>, ?swfRender:Bool = false)
 	{
-		update(elapsed);
-
 		if (symbol != null && dictionary.exists(symbol.name))
 		{
 			var length = dictionary[symbol.name].length;
@@ -112,6 +110,7 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 			}
 			dictionary[symbol.name].updateRender(elapsed, curFF, dictionary, swfRender);
 		}
+		update(elapsed);
 	}
 	public static function fromJSON(element:Element)
 	{

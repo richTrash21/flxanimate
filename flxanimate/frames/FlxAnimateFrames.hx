@@ -46,48 +46,41 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	public static function fromTextureAtlas(Path:String):FlxAnimateFrames
 	{
 		var frames:FlxAnimateFrames = framesCollections.get(Path);
-		if (frames != null)
-			return frames;
-
-		frames = new FlxAnimateFrames();
-
-		var texts = Assets.list(TEXT).filter((text) -> StringTools.startsWith(text, '$Path/sprite'));
-
-		var texts = [];
-		var isDone = false;
-
-		if (Utils.exists('$Path/spritemap.json'))
+		if (frames == null)
 		{
-			texts.push('$Path/spritemap.json');
-			isDone = true;
-		}
-
-		var i = 1;
-		while (!isDone)
-		{
-			if (Utils.exists('$Path/spritemap$i.json'))
-				texts.push('$Path/spritemap$i.json');
-
+			frames = new FlxAnimateFrames();
+	
+			// var texts = Assets.list(TEXT).filter(text -> StringTools.startsWith(text, '$Path/sprite'));
+	
+			var texts = [];
+	
+			if (Utils.exists('$Path/spritemap.json'))
+			{
+				texts.push('$Path/spritemap.json');
+			}
 			else
-				isDone = true;
-
-			i++;
+			{
+				var i = 1;
+				while (Utils.exists('$Path/spritemap$i.json'))
+					texts.push('$Path/spritemap${i++}.json');
+			}
+	
+			for (text in texts)
+			{
+				var spritemapFrames = fromSpriteMap(text);
+	
+				if (spritemapFrames != null)
+					frames.addAtlas(spritemapFrames);
+			}
+	
+			if (frames.frames.length == 0)
+			{
+				FlxG.log.error("the Frames parsing couldn't parse any of the frames, it's completely empty! \n Maybe you misspelled the Path?");
+				return null;
+			}
+	
+			framesCollections.set(Path, frames);
 		}
-
-		for (text in texts)
-		{
-			var spritemapFrames = fromSpriteMap(text);
-
-			if (spritemapFrames != null)
-				frames.addAtlas(spritemapFrames);
-		}
-
-		if (frames.frames == [])
-		{
-			FlxG.log.error("the Frames parsing couldn't parse any of the frames, it's completely empty! \n Maybe you misspelled the Path?");
-			return null;
-		}
-
 		return frames;
 	}
 
@@ -120,9 +113,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		if (Image == null)
 		{
 			if (Path is String)
-			{
 				Image = haxe.io.Path.addTrailingSlash(haxe.io.Path.directory(Path)) + json.meta.image;
-			}
 			else
 				return null;
 		}
