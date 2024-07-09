@@ -135,7 +135,7 @@ class SymbolParameters implements IFilterable
 		this.type = type;
 		this.loop = loop;
 		firstFrame = 0;
-		transformationPoint = new FlxPoint();
+		transformationPoint = FlxPoint.get();
 		colorEffect = None;
 		_curFrame = 0;
 		filters = null;
@@ -150,7 +150,7 @@ class SymbolParameters implements IFilterable
 		firstFrame = 0;
 		name = null;
 		colorEffect = null;
-		transformationPoint = null;
+		transformationPoint = FlxDestroyUtil.put(transformationPoint);
 
 		if (_filterFrame != null)
 			FlxG.bitmap.remove(_filterFrame.parent);
