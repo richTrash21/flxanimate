@@ -1,15 +1,14 @@
 package flxanimate.animate;
 
-import flixel.util.FlxDestroyUtil;
-import flixel.math.FlxMath;
 import haxe.extern.EitherType;
 import flxanimate.animate.SymbolParameters;
-import flixel.util.FlxStringUtil;
-import openfl.geom.ColorTransform;
-import flixel.util.FlxDestroyUtil.IFlxDestroyable;
-import flixel.FlxG;
-import flixel.math.FlxMatrix;
 import flxanimate.data.AnimationData;
+import flixel.math.FlxMath;
+import flixel.math.FlxMatrix;
+import flixel.util.FlxDestroyUtil;
+import flixel.util.FlxDestroyUtil.IFlxDestroyable;
+import flixel.util.FlxStringUtil;
+import flixel.FlxG;
 #if FLX_SOUND_SYSTEM
 import flixel.system.FlxSound;
 #end
@@ -54,6 +53,7 @@ class FlxAnim implements IFlxDestroyable
 	 * When ever the animation is playing.
 	 */
 	public var isPlaying(default, null):Bool;
+	public var callback:(name:String, frameNumber:Int) -> Void;
 	public var onComplete:()->Void;
 
 	public var framerate(default, set):Float;
@@ -124,13 +124,14 @@ class FlxAnim implements IFlxDestroyable
 				var symbol = symbolDictionary.get(Name);
 				if (symbol == null)
 				{
-					var nameFrame = getSymbolNameByLayerMark(Name);
-					if (nameFrame != null)
+					final keyFrame = getLabel(Name);
+					if (keyFrame != null)
 					{
-						symbol = symbolDictionary.get(nameFrame);
+						_addAnimByFrameLabel(Name, keyFrame, null, 0, false, 0, 0);
+						curThing = animsMap.get(Name);
 					}
 				}
-				if (symbol != null)
+				if (curThing == null && symbol != null)
 				{
 					curThing = {
 						instance: symbol.name == curSymbol.name ? curInstance : new FlxElement(new SymbolParameters(Name)),
@@ -138,6 +139,7 @@ class FlxAnim implements IFlxDestroyable
 						timescale: 1,
 						loopPoint: 0
 					}
+					animsMap.set(Name, curThing);
 				}
 
 				if (curThing == null)
@@ -165,6 +167,10 @@ class FlxAnim implements IFlxDestroyable
 		isPlaying = true;
 	}
 
+	public function resume()
+	{
+		isPlaying = true;
+	}
 	public function pause()
 	{
 		isPlaying = false;
@@ -215,12 +221,15 @@ class FlxAnim implements IFlxDestroyable
 
 			@:privateAccess
 			curSymbol._shootCallback = true;
+			fireCallback();
 		}
 
 		if (finished)
 		{
 			if (onComplete != null)
+			{
 				onComplete();
+			}
 			pause();
 		}
 	}
@@ -229,11 +238,12 @@ class FlxAnim implements IFlxDestroyable
 		return switch(loopType)
 		{
 			case SingleFrame:	true;
-			case PlayOnce:		reversed && curFrame == 0 || !reversed && curFrame >= length - 1;
-			default:			false;
+			case PlayOnce:		reversed && curFrame <= 0 || !reversed && curFrame >= length - 1;
+			default:					false;
+			// default:				reversed && curFrame == 0 || !reversed && curFrame >= length - 1;
 		}
 	}
-	
+
 	function get_curFrame()
 	{
 		return curSymbol.curFrame;
@@ -242,9 +252,9 @@ class FlxAnim implements IFlxDestroyable
 	{
 		curSymbol.curFrame = switch (loopType)
 		{
-			case Loop:		Value % curSymbol.length;
+			case Loop:			Value % curSymbol.length;
 			case PlayOnce:	cast FlxMath.bound(Value, 0, curSymbol.length - 1);
-			default:		Value;
+			default:				Value;
 		}
 
 		return curSymbol.curFrame;
@@ -259,32 +269,37 @@ class FlxAnim implements IFlxDestroyable
 	 */
 	public function addBySymbol(Name:String, SymbolName:String, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0)
 	{
-		var params = new FlxElement(new SymbolParameters(Looped ? Loop : PlayOnce), new FlxMatrix(1,0,0,1,X,Y));
+		final keyFrame = getLabel(SymbolName);
+		if (keyFrame != null)
+		{
+			_addAnimByFrameLabel(Name, keyFrame, null, FrameRate, Looped, X, Y);
+			return;
+		}
+		var neededName:String = null;
 		for (name in symbolDictionary.keys())
 		{
 			if (startsWith(name, SymbolName))
 			{
-				params.symbol.name = name;
+				neededName = name;
 				break;
 			}
 		}
-		if (params.symbol.name == null)
+		if (neededName != null)
 		{
-			var symbolName = getSymbolNameByLayerMark(SymbolName);
-			if (symbolName != null) // search from main symbol
-			{
-				params.symbol.name = symbolName;
-			}
-		}
-		if (params.symbol.name != null)
+			var matrix = FlxAnimate.matrixesPool.get();
+			matrix.translate(X, Y);
+			var params = new FlxElement(new SymbolParameters(neededName, Looped ? Loop : PlayOnce), matrix);
 			animsMap.set(Name, {
 				instance: params,
 				frameRate: FrameRate,
 				timescale: 1,
 				loopPoint: 0
 			});
+		}
 		else
+		{
 			FlxG.log.error('No symbol was found with the name $SymbolName!');
+		}
 	}
 	function startsWith(reference:String, string:String):Bool
 	{
@@ -305,22 +320,59 @@ class FlxAnim implements IFlxDestroyable
 	}
 	public function addBySymbolIndices(Name:String, SymbolName:String, Indices:Array<Int>, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0)
 	{
-		var isExists:Bool = !symbolDictionary.exists(SymbolName);
-		if (!isExists)
+		final keyFrame = getLabel(SymbolName);
+		if (keyFrame != null)
 		{
-			var nameFrame = getSymbolNameByLayerMark(SymbolName);
-			if (nameFrame != null)
-			{
-				SymbolName = nameFrame;
-				isExists = true;
-			}
+			_addAnimByFrameLabel(Name, keyFrame, null, FrameRate, Looped, X, Y);
+			return;
 		}
-		if (isExists)
+		if (!symbolDictionary.exists(SymbolName))
 		{
 			FlxG.log.error('$SymbolName does not exist as a symbol! maybe you misspelled it?');
 			return;
 		}
-		var params = new FlxElement(new SymbolParameters(Looped ? Loop : PlayOnce), new FlxMatrix(1,0,0,1,X,Y));
+		_addBySymbolIndices(Name, SymbolName, Indices, FrameRate, Looped, X, Y);
+	}
+
+	public function addAnimByFrameLabel(Name:String, Label:String, ?instance:FlxSymbol, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0)
+	{
+		final keyFrame = getLabel(Label, instance);
+		if (keyFrame != null)
+		{
+			_addAnimByFrameLabel(Name, keyFrame, instance, FrameRate, Looped, X, Y);
+		}
+	}
+
+
+	function _addAnimByFrameLabel(Name:String, keyFrame:FlxKeyFrame, ?instance:FlxSymbol, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0)
+	{
+      // final offset:Int = Looped ? 0 : -1;
+     	final offset:Int = 0;
+			// trace([Name, instance == null ? stageInstance.symbol.name : instance.name, keyFrame.index, keyFrame.duration]);
+			if (keyFrame.duration > 1)
+			{
+				_addBySymbolIndices(Name, instance == null ? stageInstance.symbol.name : instance.name, [for (i in keyFrame.index...keyFrame.index + keyFrame.duration + offset) i], FrameRate, Looped, X, Y);
+			}
+			else
+			{
+				var listElements:Array<FlxElement> = keyFrame.getList();
+				var element:FlxElement;
+				for (i in 0...listElements.length)
+				{
+					element = listElements[listElements.length - 1 - i];
+					if (element != null && element.symbol != null)
+					{
+						addBySymbol(Name, element.symbol.name, FrameRate, Looped, X, Y);
+						break;
+					}
+				}
+			}
+		}
+
+	function _addBySymbolIndices(Name:String, SymbolName:String, Indices:Array<Int>, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0)
+	{
+		var params = new FlxElement(new SymbolParameters(Looped ? Loop : PlayOnce));
+		params.matrix.translate(X,Y);
 		var timeline = new FlxTimeline();
 		timeline.add("Layer 1");
 
@@ -339,7 +391,6 @@ class FlxAnim implements IFlxDestroyable
 		params.symbol.name = symbol.name;
 
 		symbolDictionary.set(Name, symbol);
-
 
 		animsMap.set(Name, {
 			instance: params,
@@ -381,7 +432,7 @@ class FlxAnim implements IFlxDestroyable
 		return curSymbol.length;
 	}
 
-	public function getFrameLabel(name:String, ?layer:EitherType<Int, String>)
+	public function getFrameLabel(name:String, ?layer:EitherType<Int, String>):FlxKeyFrame
 	{
 		return curSymbol.getFrameLabel(name, layer);
 	}
@@ -392,16 +443,13 @@ class FlxAnim implements IFlxDestroyable
 			LabelValuePair.weak("framerate", framerate)
 		]);
 	}
-	
-	public function getSymbolNameByLayerMark(layerMark:String)
+
+	public function getLabel(Label:String, ?instance:FlxSymbol)
 	{
-		var mainSymbol = symbolDictionary.get(stageInstance.symbol.name);
-		var label = mainSymbol == null ? null : mainSymbol.getFrameLabel(layerMark);
-		if (label == null) // search from main symbol
-			return null;
-		var elements = label.getList();
-		return elements.length > 0 ? elements[0].symbol.name : null;
+		instance = instance == null ? symbolDictionary.get(stageInstance.symbol.name) : instance;
+		return instance == null ? null : instance.getFrameLabel(Label);
 	}
+
 	/**
 	 * Redirects the frame into a frame with a frame label of that type.
 	 * @param name the name of the label.
@@ -492,17 +540,19 @@ class FlxAnim implements IFlxDestroyable
 
 		var layers = layer == null ? curSymbol.timeline.getList() : [curSymbol.timeline.get(layer)];
 
-		for (layer in layers)
+		if (instance != "")
 		{
-			if (layer == null) continue;
-
-			for (element in layer.get(frame).getList())
+			for (layer in layers)
 			{
-				if (element.symbol == null) continue;
-				if (element.symbol.instance != "" && element.symbol.instance == instance)
+				if (layer == null) continue;
+
+				for (element in layer.get(frame).getList())
 				{
-					symbol = symbolDictionary.get(element.symbol.name);
-					break;
+					if (element.symbol != null && element.symbol.instance == instance)
+					{
+						symbol = symbolDictionary.get(element.symbol.name);
+						break;
+					}
 				}
 			}
 		}
@@ -516,6 +566,15 @@ class FlxAnim implements IFlxDestroyable
 		return symbolDictionary.get(curInstance.symbol.name);
 	}
 
+	inline function fireCallback():Void
+	{
+		if (callback != null)
+		{
+			callback((curSymbol == null) ? null : curSymbol.name, curFrame);
+		}
+
+	}
+
 	public function destroy()
 	{
 		isPlaying = false;
@@ -523,12 +582,15 @@ class FlxAnim implements IFlxDestroyable
 		framerate = 0;
 		_tick = 0;
 		buttonMap = null;
-		animsMap = null;
 		curInstance = FlxDestroyUtil.destroy(curInstance);
 		stageInstance = FlxDestroyUtil.destroy(stageInstance);
 		metadata = FlxDestroyUtil.destroy(metadata);
 		swfRender = false;
 		_parent = null;
+		// for (_ => i in animsMap)
+		// 	i.instance.destroy();
+
+		animsMap = null;
 		symbolDictionary = null;
 	}
 }

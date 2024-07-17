@@ -48,7 +48,8 @@ class SymbolParameters
 		reverse = false;
 		firstFrame = 0;
 		name = null;
-		colorEffect = null;
+		if (_colorEffect != null)
+			FlxAnimate.colorTransformsPool.release(_colorEffect);
 		_colorEffect = null;
 		transformationPoint = FlxDestroyUtil.put(transformationPoint);
 		if (filters != null)

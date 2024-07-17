@@ -95,7 +95,7 @@ class AnimationData
 			
 			if (CT == null)
 			{
-				CT = new ColorTransform();
+				CT = FlxAnimate.colorTransformsPool.get();
 			}
 			else
 			{

@@ -39,22 +39,19 @@ typedef Settings = {
 	?Offset:FlxPoint,
 }
 
-class DestroyableColorTransform extends ColorTransform implements IFlxDestroyable {
-	public function destroy() {
-		@:privateAccess
-		__identity();
-	}
-}
-
 class DestroyableFlxMatrix extends FlxMatrix implements IFlxDestroyable {
 	public function destroy() {
 		identity();
 	}
 }
 
+@:access(openfl.geom.Rectangle)
 class FlxAnimate extends FlxSprite
 {
-	public static var colorTransformsPool:FlxPool<DestroyableColorTransform> = new FlxPool(DestroyableColorTransform);
+	public static var colorTransformsPool(get, never):openfl.utils.ObjectPool<ColorTransform>;
+	inline static function get_colorTransformsPool()
+		@:privateAccess
+		return ColorTransform.__pool;
 	public static var matrixesPool:FlxPool<DestroyableFlxMatrix> = new FlxPool(DestroyableFlxMatrix);
 	public var anim(default, null):FlxAnim;
 
@@ -69,6 +66,9 @@ class FlxAnimate extends FlxSprite
 	#if FLX_CNE_FORK
 	public var shaderEnabled:Bool = false;
 	#end
+
+	public var relativeX:Float = 0;
+	public var relativeY:Float = 0;
 
 	public var showPivot(default, set):Bool = false;
 
@@ -101,6 +101,7 @@ class FlxAnimate extends FlxSprite
 			loadAtlas(Path);
 		if (Settings != null)
 			setTheSettings(Settings);
+		rect = Rectangle.__pool.get();
 	}
 
 	function set_showPivot(v:Bool) {
@@ -152,17 +153,29 @@ class FlxAnimate extends FlxSprite
 			_cashePoints[i] = _point;
 		}
 
-		parseElement(anim.curInstance, anim.curFrame, _matrix, colorTransform, true);
+		_flashRect.setEmpty();
+
+		if (frames != null)
+			parseElement(anim.curInstance, anim.curFrame, _matrix, colorTransform, true);
 		#if !ANIMATE_NO_PIVOTPOINT
 		if (showPivot)
 		{
-			var matrix = matrixesPool.get();
-			matrix.tx = origin.x;
-			matrix.ty = origin.y;
-			drawLimb(_pivot, matrix);
-			matrixesPool.put(matrix);
+			var mat = matrixesPool.get();
+			mat.tx = origin.x - _pivot.frame.width * 0.5;
+			mat.ty = origin.y - _pivot.frame.height * 0.5;
+			drawLimb(_pivot, mat);
+			matrixesPool.put(mat);
 		}
 		#end
+		width = _flashRect.width;
+		height = _flashRect.height;
+		frameWidth = Math.round(width);
+		frameHeight = Math.round(height);
+
+		relativeX = _flashRect.x - x;
+		relativeY = _flashRect.y - y;
+
+		// trace(_flashRect);
 	}
 	/**
 	 * This basically renders an element of any kind, both limbs and symbols.
@@ -172,20 +185,28 @@ class FlxAnimate extends FlxSprite
 	{
 		final colorEffect = colorTransformsPool.get();
 		final matrix = matrixesPool.get();
-
 		if (instance.symbol != null && instance.symbol._colorEffect != null)
 			colorEffect.concat(instance.symbol._colorEffect);
-		matrix.concat(instance.matrix);
-
 		colorEffect.concat(colorFilter);
-		matrix.concat(m);
-
+		matrix.concat(instance.matrix);
+		/* // testing.
+		if (instance.symbol != null)
+		{
+			matrix.translate(-instance.symbol.transformationPoint.x * (flipX ? 1 : -1), -instance.symbol.transformationPoint.y * (flipY ? 1 : -1));
+			matrix.concat(m);
+			matrix.translate(instance.symbol.transformationPoint.x * (flipX ? 1 : -1), instance.symbol.transformationPoint.y * (flipY ? 1 : -1));
+		}
+		else
+		*/
+		{
+			matrix.concat(m);
+		}
 
 		if (instance.bitmap != null)
 		{
 			drawLimb(frames.getByName(instance.bitmap), matrix, colorEffect);
 
-			colorTransformsPool.put(colorEffect);
+			colorTransformsPool.release(colorEffect);
 			matrixesPool.put(matrix);
 			return;
 		}
@@ -222,15 +243,15 @@ class FlxAnimate extends FlxSprite
 			for (element in frame.getList())
 			{
 				final colorEffect2 = colorTransformsPool.get();
+				colorEffect2.concat(colorEffect);
 				if (frame._colorEffect != null)
 					colorEffect2.concat(frame._colorEffect);
-				colorEffect2.concat(colorEffect);
 				parseElement(element, element.symbol == null || element.symbol.loop == SingleFrame ? 0 : firstFrame - frame.index, matrix, colorEffect2);
-				colorTransformsPool.put(colorEffect2);
+				colorTransformsPool.release(colorEffect2);
 			}
 		}
 
-		colorTransformsPool.put(colorEffect);
+		colorTransformsPool.release(colorEffect);
 		matrixesPool.put(matrix);
 	}
 
@@ -283,6 +304,8 @@ class FlxAnimate extends FlxSprite
 		return frame;
 	}
 
+	var rect:Rectangle;
+
 	static var rMatrix = new FlxMatrix();
 
 	function drawLimb(limb:FlxFrame, _matrix:FlxMatrix, ?colorTransform:ColorTransform)
@@ -295,6 +318,7 @@ class FlxAnimate extends FlxSprite
 			if (!camera.visible || !camera.exists)
 				continue;
 
+			/*
 			rMatrix.identity();
 			rMatrix.translate(-limb.offset.x, -limb.offset.y);
 			if (limb.angle == FlxFrameAngle.ANGLE_NEG_90)
@@ -302,8 +326,10 @@ class FlxAnimate extends FlxSprite
 				rMatrix.rotateByNegative90();
 				rMatrix.translate(0, limb.sourceSize.x);
 			}
+			*/
+			limb.prepareMatrix(rMatrix);
 			rMatrix.concat(_matrix);
-			if (limbOnScreen(limb, _matrix, camera))
+			if (true)
 			{
 				rMatrix.translate(-origin.x, -origin.y);
 				#if ANIMATE_NO_PIVOTPOINT
@@ -320,11 +346,15 @@ class FlxAnimate extends FlxSprite
 				rMatrix.concat(matrixExposed ? transformMatrix : _skewMatrix);
 
 				rMatrix.translate(_cashePoints[i].x, _cashePoints[i].y);
-				camera.drawPixels(limb, null, rMatrix, colorTransform, blend, antialiasing, #if FLX_CNE_FORK shaderEnabled ? shader : null #else shader #end);
-				#if FLX_DEBUG
-				FlxBasic.visibleCount++;
-				#end
+				if (!limbOnScreen(limb, rMatrix, camera))
+				{
+					continue;
+				}
 			}
+			camera.drawPixels(limb, null, rMatrix, colorTransform, blend, antialiasing, #if FLX_CNE_FORK shaderEnabled ? shader : null #else shader #end);
+			#if FLX_DEBUG
+			FlxBasic.visibleCount++;
+			#end
 		}
 		// doesnt work, needs to be remade
 		//#if FLX_DEBUG
@@ -365,21 +395,32 @@ class FlxAnimate extends FlxSprite
 		if (Camera == null)
 			Camera = FlxG.camera;
 
-		// TODO: Fix it
-		var minX:Float = x + m.tx - offset.x - scrollFactor.x * Camera.scroll.x;
-		var minY:Float = y + m.ty - offset.y - scrollFactor.y * Camera.scroll.y;
+		limb.frame.copyToFlash(rect);
 
-		var radiusX:Float = limb.frame.width * Math.max(1, m.a);
-		var radiusY:Float = limb.frame.height * Math.max(1, m.d);
-		var radius:Float = Math.max(radiusX, radiusY);
-		radius *= FlxMath.SQUARE_ROOT_OF_TWO;
-		minY -= radius;
-		minX -= radius;
-		radius *= 2;
+		rect.offset(-rect.x, -rect.y);
 
-		_point.set(minX, minY);
+		rect.__transform(rect, m);
 
-		return Camera.containsPoint(_point, radius, radius);
+		#if !ANIMATE_NO_PIVOTPOINT
+		if (_pivot != limb)
+		#end
+		{
+			if (_flashRect.width == 0 || _flashRect.height == 0)
+			{
+				_flashRect.copyFrom(rect);
+			}
+			else if (rect.width != 0 && rect.height != 0)
+			{
+				_flashRect.setTo(
+					_flashRect.x > rect.x ? rect.x : _flashRect.x,
+					_flashRect.y > rect.y ? rect.y : _flashRect.y,
+					_flashRect.right < rect.right ? rect.width : _flashRect.width,
+					_flashRect.bottom < rect.bottom ? rect.height : _flashRect.height
+				);
+			}	
+		}
+
+		return Camera.containsPoint(_point.set(rect.x, rect.y), rect.width, rect.height);
 	}
 
 	// function checkSize(limb:FlxFrame, m:FlxMatrix)
@@ -437,6 +478,7 @@ class FlxAnimate extends FlxSprite
 		anim = FlxDestroyUtil.destroy(anim);
 		skew = FlxDestroyUtil.put(skew);
 		_cashePoints = FlxDestroyUtil.putArray(_cashePoints);
+		Rectangle.__pool.release(rect);
 		super.destroy();
 	}
 

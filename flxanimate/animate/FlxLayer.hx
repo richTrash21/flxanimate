@@ -77,28 +77,32 @@ class FlxLayer implements IFlxDestroyable
 		if (keyFrame.name != null)
 			_labels.set(keyFrame.name, keyFrame);
 
-		var keyframe = get(cast FlxMath.bound(index, 0, length - 1));
+		var preKeyFrame:FlxKeyFrame;
 		if (length == 0)
 		{
-			keyframe = new FlxKeyFrame(0, 1);
-			_keyframes.push(keyframe);
-		}
-		var difference:Int = cast Math.abs(index - keyframe.index);
-
-		if (index == keyframe.index)
-		{
-			keyFrame.duration += keyframe.duration - 1;
-
-			_keyframes.insert(_keyframes.indexOf(keyframe), keyFrame);
-			_keyframes.remove(keyframe);
-			keyframe.destroy();
+			preKeyFrame = new FlxKeyFrame(0, 1);
+			_keyframes.push(preKeyFrame);
 		}
 		else
 		{
-			var dur = keyframe.duration;
-			keyframe.duration += difference - dur;
+			preKeyFrame = get(cast FlxMath.bound(index, 0, length - 1));
+		}
+		var difference:Int = cast Math.abs(index - preKeyFrame.index);
+
+		if (index == preKeyFrame.index)
+		{
+			keyFrame.duration += preKeyFrame.duration - 1;
+
+			_keyframes.insert(_keyframes.indexOf(preKeyFrame), keyFrame);
+			_keyframes.remove(preKeyFrame);
+			preKeyFrame.destroy();
+		}
+		else
+		{
+			var dur = preKeyFrame.duration;
+			preKeyFrame.duration += difference - dur;
 			keyFrame.duration += cast FlxMath.bound(dur - difference - 1, 0);
-			_keyframes.insert(_keyframes.indexOf(keyframe) + 1, keyFrame);
+			_keyframes.insert(_keyframes.indexOf(preKeyFrame) + 1, keyFrame);
 		}
 
 		keyFrame._parent = this;

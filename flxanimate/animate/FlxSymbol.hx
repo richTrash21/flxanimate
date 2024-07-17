@@ -128,7 +128,7 @@ class FlxSymbol
 
 		return null;
 	}
-	public function getFrameLabel(name:String, ?layer:EitherType<Int, String> = null)
+	public function getFrameLabel(name:String, ?layer:EitherType<Int, String> = null):FlxKeyFrame
 	{
 		var frame:FlxKeyFrame = null;
 		var layers = layer == null ? timeline.getList() : [timeline.get(layer)];

@@ -30,7 +30,7 @@ class FlxKeyFrame
 		this.duration = duration;
 
 		this.name = name;
-		_elements = (elements == null) ? [] : elements;
+		_elements = elements == null ? [] : elements;
 		this.colorEffect = colorEffect;
 	}
 
@@ -110,7 +110,15 @@ class FlxKeyFrame
 	}
 	public function removeCallbacks()
 	{
-		callbacks = [];
+		if (callbacks == null)
+		{
+			callbacks = [];
+		}
+		else
+		{
+			while(callbacks.length > 0)
+				callbacks.pop();
+		}
 	}
 	public function clone()
 	{
@@ -121,8 +129,21 @@ class FlxKeyFrame
 
 	public function destroy()
 	{
+		if (_colorEffect != null)
+			FlxAnimate.colorTransformsPool.release(_colorEffect);
 		_colorEffect = null;
-		// TODO: Do actualy destroy
+		// if (_parent != null)
+		// 	_parent.remove(this);
+		_parent = null;
+		if (callbacks != null)
+			while(callbacks.length > 0)
+				callbacks.pop();
+		// for (i in _elements)
+		// 	if (i != null)
+		// 		i.destroy();
+		while(_elements.length > 0)
+			_elements.pop();
+		_elements = null;
 	}
 
 	public function toString()

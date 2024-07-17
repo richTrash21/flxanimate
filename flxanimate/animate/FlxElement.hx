@@ -4,7 +4,6 @@ import flixel.graphics.frames.FlxFrame;
 import flixel.math.FlxMatrix;
 import flixel.math.FlxPoint;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
-import openfl.geom.ColorTransform;
 import flxanimate.data.AnimationData;
 import flxanimate.animate.FlxAnim;
 
@@ -34,7 +33,7 @@ class FlxElement implements IFlxDestroyable
 	{
 		this.bitmap = bitmap;
 		this.symbol = symbol;
-		this.matrix = matrix == null ? new FlxMatrix() : matrix;
+		this.matrix = matrix == null ? FlxAnimate.matrixesPool.get() : matrix;
 	}
 
 	public function toString()
@@ -44,11 +43,13 @@ class FlxElement implements IFlxDestroyable
 	public function destroy()
 	{
 		// _parent = null;
-		if (symbol != null) {
+		if (symbol != null)
+		{
 			symbol.destroy();
 			symbol = null;
 		}
 		bitmap = null;
+		FlxAnimate.matrixesPool.put(cast matrix);
 		matrix = null;
 	}
 
@@ -101,10 +102,18 @@ class FlxElement implements IFlxDestroyable
 		var pos = symbol ? element.SI.bitmap.POS : element.ASI.POS;
 		if (pos == null)
 			pos = {x: 0, y: 0};
-		return new FlxElement(
+
+		// if (symbol)
+		// {
+		// 	pos.x -= params.transformationPoint.x;
+		// 	pos.y -= params.transformationPoint.y;
+		// }
+		
+		var element = new FlxElement(
 			symbol ? element.SI.bitmap.N : element.ASI.N,
-			params,
-			new FlxMatrix(m[0], m[1], m[2], m[3], m[4] + pos.x, m[5] + pos.y)
+			params
 		);
+		element.matrix.setTo(m[0], m[1], m[2], m[3], m[4] + pos.x, m[5] + pos.y);
+		return element;
 	}
 }

@@ -20,7 +20,7 @@ class ButtonEvent
 	 * @param   Callback   The callback function to call when this even fires.
 	 * @param   sound      The sound to play when this event fires.
 	 */
-	public function new(?Callback:Void->Void, ?sound:FlxSound)
+	public function new(?Callback:Void->Void#if FLX_SOUND_SYSTEM , ?sound:FlxSound#end)
 	{
 		callback = Callback;
 
