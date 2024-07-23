@@ -63,10 +63,6 @@ class FlxAnimate extends FlxSprite
 
 	// public var rectangle:FlxRect;
 
-	#if FLX_CNE_FORK
-	public var shaderEnabled:Bool = false;
-	#end
-
 	public var relativeX:Float = 0;
 	public var relativeY:Float = 0;
 
@@ -93,9 +89,6 @@ class FlxAnimate extends FlxSprite
 	{
 		_cashePoints = [];
 		super(X, Y);
-		#if FLX_CNE_FORK
-		shaderEnabled = false;
-		#end
 		anim = new FlxAnim(this);
 		if (Path != null)
 			loadAtlas(Path);
