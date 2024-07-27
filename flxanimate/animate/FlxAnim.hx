@@ -568,11 +568,11 @@ class FlxAnim implements IFlxDestroyable
 			if (layer == null) continue;
 			var elements = layer.get(frame);
 
-			if (elements == null) continue;
+			if (elements == null || instance == "") continue;
 
 			for (element in elements.getList())
 			{
-				if (element.symbol != null && element.symbol.instance != "" && element.symbol.instance == instance)
+				if (element.symbol != null && element.symbol.instance == instance)
 				{
 					return symbolDictionary.get(element.symbol.name);
 				}

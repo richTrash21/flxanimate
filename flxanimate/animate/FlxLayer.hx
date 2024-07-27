@@ -285,7 +285,6 @@ class FlxLayer extends FlxObject implements IFilterable
 	@:allow(flxanimate.FlxAnimate)
 	function _setCurFrame(frame:Int)
 	{
-
 		if (length == 0 || frame > length)
 		{
 			_currFrame = null;
@@ -294,25 +293,25 @@ class FlxLayer extends FlxObject implements IFilterable
 
 		if (_currFrame != null)
 		{
-			if (frame >= _currFrame.index && frame < _currFrame.index + _currFrame.duration) return;
+			if (_currFrame.index <= frame && _currFrame.index + _currFrame.duration > frame) return;
 
 			var i = _keyframes.indexOf(_currFrame);
 
 			var prevFrame = _currFrame;
 
 			var nextKeyframe = _currFrame;
-			if (frame >= nextKeyframe.index + nextKeyframe.duration)
+			if (nextKeyframe.index + nextKeyframe.duration <= frame)
 			{
-				while (nextKeyframe != null && frame >= nextKeyframe.index + nextKeyframe.duration)
+				while (nextKeyframe != null && nextKeyframe.index + nextKeyframe.duration <= frame)
 				{
-					nextKeyframe = _keyframes[i++];
+					nextKeyframe = _keyframes[++i];
 				}
 			}
-			else if (frame < nextKeyframe.index)
+			else if (nextKeyframe.index > frame)
 			{
-				while (nextKeyframe != null && frame < nextKeyframe.index)
+				while (nextKeyframe != null && nextKeyframe.index > frame)
 				{
-					nextKeyframe = _keyframes[i--];
+					nextKeyframe = _keyframes[--i];
 				}
 			}
 			_currFrame = nextKeyframe;

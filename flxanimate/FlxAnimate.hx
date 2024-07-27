@@ -113,7 +113,6 @@ class FlxAnimate extends FlxSprite
 		if (Settings != null)
 			setTheSettings(Settings);
 
-
 		rect = Rectangle.__pool.get();
 	}
 
@@ -310,7 +309,7 @@ class FlxAnimate extends FlxSprite
 		colorEffect.__copyFrom(colorFilter);
 
 
-		var symbol = (instance.symbol != null) ? anim.symbolDictionary.get(instance.symbol.name) : null;
+		var symbol:FlxSymbol = (instance.symbol != null) ? anim.symbolDictionary.get(instance.symbol.name) : null;
 
 		if (instance.bitmap == null && symbol == null)
 			return;

@@ -164,12 +164,14 @@ class FlxSymbol implements IFlxDestroyable
 
 		var layer = timeline.get(layer);
 		var j = layer._keyframes.indexOf(label);
-		while (j++ < layer._keyframes.length)
+		var name:String;
+		while (j < layer._keyframes.length)
 		{
-			var name = layer._keyframes[j].name;
+			name = layer._keyframes[j].name;
 			//if ([null, label.name].indexOf(layer._keyframes[j].name) == -1)
 			if (name != null && name != label.name)
 				return layer._keyframes[j];
+			j++;
 		}
 
 		return null;

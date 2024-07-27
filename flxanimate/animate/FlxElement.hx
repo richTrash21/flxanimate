@@ -87,18 +87,19 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 		return value;
 	}
 
+	var _updCurSym:FlxSymbol;
 	public function updateRender(elapsed:Float, curFrame:Int, dictionary:Map<String, FlxSymbol>, ?swfRender:Bool = false)
 	{
-		if (symbol != null && dictionary.exists(symbol.name))
+		if (symbol != null && (_updCurSym = dictionary.get(symbol.name)) != null)
 		{
-			var length = dictionary[symbol.name].length;
-			var curFF = curFrame + symbol.firstFrame;
+			var length = _updCurSym.length;
+			var curFF = symbol.firstFrame + curFrame;
 
 			curFF = (symbol.type == MovieClip) ? 0 : switch (symbol.loop)
 			{
-				case Loop: curFF % length;
-				case PlayOnce: cast FlxMath.bound(curFF, 0, length - 1);
-				default: symbol.firstFrame;
+				case Loop:		curFF % length;
+				case PlayOnce:	cast FlxMath.bound(curFF, 0, length - 1);
+				default:		symbol.firstFrame;
 			}
 
 			symbol.update(curFF);
@@ -108,13 +109,14 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 				symbol._renderDirty = false;
 				_parent._renderDirty = true;
 			}
-			dictionary[symbol.name].updateRender(elapsed, curFF, dictionary, swfRender);
+			_updCurSym.updateRender(elapsed, curFF, dictionary, swfRender);
+			_updCurSym = null;
 		}
 		update(elapsed);
 	}
+
 	public static function fromJSON(element:Element)
 	{
-
 		var symbol = element.SI != null;
 		var params:SymbolParameters = null;
 		if (symbol)
