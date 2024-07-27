@@ -17,7 +17,6 @@ import flixel.system.FlxSound;
 typedef AnimStuff = {
 	var instance:FlxElement;
 	var frameRate:Float;
-	var timescale:Float;
 	var loopPoint:Int;
 }
 typedef ClickStuff = {
@@ -57,8 +56,6 @@ class FlxAnim implements IFlxDestroyable
 	public var onComplete:()->Void;
 
 	public var framerate(default, set):Float;
-
-	public var animTimeScale(default, null):Float = 1.;
 	public var loopPoint(default, null):Int = 0;
 
 	public var timeScale:Float = 1.;
@@ -136,7 +133,6 @@ class FlxAnim implements IFlxDestroyable
 					curThing = {
 						instance: symbol.name == curSymbol.name ? curInstance : new FlxElement(new SymbolParameters(Name)),
 						frameRate: metadata.frameRate,
-						timescale: 1,
 						loopPoint: 0
 					}
 					animsMap.set(Name, curThing);
@@ -152,8 +148,6 @@ class FlxAnim implements IFlxDestroyable
 
 			framerate = curThing.frameRate == 0 ? metadata.frameRate : curThing.frameRate;
 			loopPoint = curThing.loopPoint;
-			animTimeScale = curThing.timescale;
-			if (animTimeScale == 0) animTimeScale = 1;
 			if (curInstance != curThing.instance)
 				isNewAnim = true;
 
@@ -195,7 +189,7 @@ class FlxAnim implements IFlxDestroyable
 
 	public function update(elapsed:Float)
 	{
-		elapsed *= timeScale * animTimeScale;
+		elapsed *= timeScale;
 		if (frameDelay == 0 || !isPlaying || finished || elapsed <= 0) return;
 
 		_tick += elapsed;
@@ -292,7 +286,6 @@ class FlxAnim implements IFlxDestroyable
 			animsMap.set(Name, {
 				instance: params,
 				frameRate: FrameRate,
-				timescale: 1,
 				loopPoint: 0
 			});
 		}
@@ -346,28 +339,25 @@ class FlxAnim implements IFlxDestroyable
 
 	function _addAnimByFrameLabel(Name:String, keyFrame:FlxKeyFrame, ?instance:FlxSymbol, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0)
 	{
-      // final offset:Int = Looped ? 0 : -1;
-     	final offset:Int = 0;
-			// trace([Name, instance == null ? stageInstance.symbol.name : instance.name, keyFrame.index, keyFrame.duration]);
-			if (keyFrame.duration > 1)
+		if (keyFrame.duration > 1)
+		{
+			_addBySymbolIndices(Name, instance == null ? stageInstance.symbol.name : instance.name, [for (i in keyFrame.index...keyFrame.index + keyFrame.duration) i], FrameRate, Looped, X, Y);
+		}
+		else
+		{
+			var listElements:Array<FlxElement> = keyFrame.getList();
+			var element:FlxElement;
+			for (i in 0...listElements.length)
 			{
-				_addBySymbolIndices(Name, instance == null ? stageInstance.symbol.name : instance.name, [for (i in keyFrame.index...keyFrame.index + keyFrame.duration + offset) i], FrameRate, Looped, X, Y);
-			}
-			else
-			{
-				var listElements:Array<FlxElement> = keyFrame.getList();
-				var element:FlxElement;
-				for (i in 0...listElements.length)
+				element = listElements[listElements.length - 1 - i];
+				if (element != null && element.symbol != null)
 				{
-					element = listElements[listElements.length - 1 - i];
-					if (element != null && element.symbol != null)
-					{
-						addBySymbol(Name, element.symbol.name, FrameRate, Looped, X, Y);
-						break;
-					}
+					addBySymbol(Name, element.symbol.name, FrameRate, Looped, X, Y);
+					break;
 				}
 			}
 		}
+	}
 
 	function _addBySymbolIndices(Name:String, SymbolName:String, Indices:Array<Int>, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0)
 	{
@@ -395,7 +385,6 @@ class FlxAnim implements IFlxDestroyable
 		animsMap.set(Name, {
 			instance: params,
 			frameRate: FrameRate,
-			timescale: 1,
 			loopPoint: 0
 		});
 	}
@@ -422,7 +411,6 @@ class FlxAnim implements IFlxDestroyable
 		animsMap.set(Name, {
 			instance: params,
 			frameRate: FrameRate,
-			timescale: 1,
 			loopPoint: 0
 		});
 	}
