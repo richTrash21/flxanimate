@@ -360,7 +360,7 @@ class FlxAnimate extends FlxSprite
 			final curIndexFrame:Int = switch (instance.symbol.type)
 			{
 				case Button: setButtonFrames();
-				default: instance.symbol._curFrame;
+				default:	 instance.symbol._curFrame;
 			}
 
 			var layers = symbol.timeline.getList();

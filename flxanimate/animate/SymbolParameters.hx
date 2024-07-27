@@ -30,24 +30,20 @@ import flixel.FlxG;
  *      - `Filters`.
  * - Symbol `Animation` behaviour.
  */
+@:allow(flxanimate.FlxAnimate)
 class SymbolParameters implements IFilterable
 {
-	@:allow(flxanimate.FlxAnimate)
 	var _filterCamera:FlxCamera;
 
 	@:allow(flxanimate.animate.FlxElement)
 	var _parent:FlxElement;
 
-	@:allow(flxanimate.FlxAnimate)
 	var _filterFrame:FlxFrame;
 
-	@:allow(flxanimate.FlxAnimate)
 	var _bmp1:BitmapData;
 
-	@:allow(flxanimate.FlxAnimate)
 	var _bmp2:BitmapData;
 
-	@:allow(flxanimate.FlxAnimate)
 	var _filterMatrix:FlxMatrix;
 
 	/**
@@ -84,7 +80,6 @@ class SymbolParameters implements IFilterable
 
 	@:allow(flxanimate.animate.FlxKeyFrame)
 	@:allow(flxanimate.animate.FlxElement)
-	@:allow(flxanimate.FlxAnimate)
 	/**
 	 * Internal, checks the current frame it's at at the moment to force a filter render.
 	 */
@@ -103,13 +98,10 @@ class SymbolParameters implements IFilterable
 	var _cacheAsBitmap:Bool = false;
 
 	@:allow(flxanimate.animate.FlxElement)
-	@:allow(flxanimate.FlxAnimate)
 	@:allow(flxanimate.animate.FlxKeyFrame)
 	var _renderDirty:Bool = false;
 
 	@:allow(flxanimate.animate.FlxKeyFrame)
-
-	@:allow(flxanimate.FlxAnimate)
 	@:allow(flxanimate.animate.FlxAnim)
 	var _colorEffect(get, null):ColorTransform;
 
@@ -196,7 +188,7 @@ class SymbolParameters implements IFilterable
 
 		if (filters == null || filters.length == 0 || _renderDirty) return;
 
-			@:privateAccess
+		@:privateAccess
 		for (filter in filters)
 		{
 			if (filter.__renderDirty)

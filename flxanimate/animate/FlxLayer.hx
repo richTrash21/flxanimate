@@ -115,7 +115,6 @@ class FlxLayer extends FlxObject implements IFilterable
 
 	public function updateRender(elapsed:Float, curFrame:Int, dictionary:Map<String, FlxSymbol>, ?swfRender:Bool = false)
 	{
-		update(elapsed);
 		var _prevFrame = _currFrame;
 		_setCurFrame(curFrame);
 		if (_clipper == null && type.getName() == "Clipped")
@@ -150,6 +149,7 @@ class FlxLayer extends FlxObject implements IFilterable
 			}
 			_currFrame.updateRender(elapsed, curFrame, dictionary, swfRender);
 		}
+		update(elapsed);
 	}
 	public function get(frame:EitherType<String, Int>)
 	{

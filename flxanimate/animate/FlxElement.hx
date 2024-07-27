@@ -92,13 +92,10 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 	{
 		if (symbol != null && (_updCurSym = dictionary.get(symbol.name)) != null)
 		{
-			var length = _updCurSym.length;
-			var curFF = symbol.firstFrame + curFrame;
-
-			curFF = (symbol.type == MovieClip) ? 0 : switch (symbol.loop)
+			var curFF = (symbol.type == MovieClip) ? 0 : switch (symbol.loop)
 			{
-				case Loop:		curFF % length;
-				case PlayOnce:	cast FlxMath.bound(curFF, 0, length - 1);
+				case Loop:		(symbol.firstFrame + curFrame) % _updCurSym.length;
+				case PlayOnce:	cast FlxMath.bound(symbol.firstFrame + curFrame, 0, _updCurSym.length - 1);
 				default:		symbol.firstFrame;
 			}
 
