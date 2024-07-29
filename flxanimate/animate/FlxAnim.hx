@@ -340,8 +340,6 @@ class FlxAnim implements IFlxDestroyable
 				pause();
 			}
 		}
-		if (curInstance != null)
-			curInstance.updateRender(elapsed, curFrame, symbolDictionary, swfRender);
 	}
 	function get_finished()
 		return switch(loopType)

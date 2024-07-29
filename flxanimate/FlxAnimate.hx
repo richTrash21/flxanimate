@@ -82,6 +82,7 @@ class FlxAnimate extends FlxSprite
 
 	static var renderer:FlxAnimateFilterRenderer;
 
+	// TODO: FlxCamerasPool
 	var filterCamera:FlxCamera;
 	var maskCamera:FlxCamera;
 
@@ -100,6 +101,7 @@ class FlxAnimate extends FlxSprite
 	 * @param Y 		The initial Y position of the sprite.
 	 * @param Path      The path to the texture atlas, **NOT** the path of the any of the files inside the texture atlas (`Animation.json`, `spritemap.json`, etc).
 	 * @param Settings  Optional settings for the animation (antialiasing, framerate, reversed, etc.).
+	 * @param predraw  Optional thing for init sizes.
 	 */
 	public function new(X:Float = 0, Y:Float = 0, ?Path:String, ?Settings:Settings)
 	{
@@ -114,9 +116,10 @@ class FlxAnimate extends FlxSprite
 			setTheSettings(Settings);
 
 		rect = Rectangle.__pool.get();
+			
 	}
 
-	public var isValid(default, null):Bool;
+	public var isValid(default, null):Bool = false;
 	/**
 	 * Loads a regular atlas.
 	 * @param Path The path where the atlas is located. Must be the folder, **NOT** any of the contents of it!
@@ -223,9 +226,7 @@ class FlxAnimate extends FlxSprite
 		if (flipX)
 		{
 			_matrix.a *= -1;
-
 			_matrix.tx += width;
-
 		}
 		if (flipY)
 		{
@@ -235,6 +236,8 @@ class FlxAnimate extends FlxSprite
 
 		_flashRect.setEmpty();
 
+		if (anim.curInstance != null)
+			anim.curInstance.updateRender(_lastElapsed, anim.curFrame, anim.symbolDictionary, anim.swfRender);
 		if (frames != null)
 			parseElement(anim.curInstance, _matrix, colorTransform, cameras);
 
@@ -699,9 +702,10 @@ class FlxAnimate extends FlxSprite
 		super.destroy();
 	}
 
+	var _lastElapsed:Float;
 	public override function updateAnimation(elapsed:Float)
 	{
-		anim.update(elapsed);
+		anim.update(_lastElapsed = elapsed);
 	}
 
 	public function setButtonPack(button:String, callbacks:ClickStuff #if FLX_SOUND_SYSTEM , sound:FlxSound #end):Void
@@ -716,10 +720,12 @@ class FlxAnimate extends FlxSprite
 		{
 			showPivot = value;
 
-			if (showPivot && _pivot == null)
+			if (showPivot)
 			{
-				_pivot = FlxGraphic.fromBitmapData(Assets.getBitmapData("flxanimate/images/pivot.png"), "__pivot").imageFrame.frame;
-				_indicator = FlxGraphic.fromBitmapData(Assets.getBitmapData("flxanimate/images/indicator.png"), "__indicator").imageFrame.frame;
+				if (_pivot == null)
+					_pivot = FlxGraphic.fromBitmapData(Assets.getBitmapData("flxanimate/images/pivot.png"), "__pivot").imageFrame.frame;
+				if (_indicator == null)
+					_indicator = FlxGraphic.fromBitmapData(Assets.getBitmapData("flxanimate/images/indicator.png"), "__indicator").imageFrame.frame;
 			}
 		}
 
