@@ -582,8 +582,7 @@ abstract SymbolInstance({}) from {}
 	}
 	function get_FF()
 	{
-		var ff:Null<Int> = AnimationData.setFieldBool(this, ["FF", "firstFrame"]);
-		return (ff == null) ? 0 : ff;
+		return AnimationData.setFieldBool(this, ["FF", "firstFrame"]) ?? 0;
 	}
 
 	function get_LP()

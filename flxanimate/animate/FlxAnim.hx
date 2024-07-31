@@ -9,6 +9,10 @@ import openfl.geom.ColorTransform;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import flixel.FlxG;
 import flixel.math.FlxMatrix;
+
+import flixel.util.FlxSignal;
+import flixel.util.FlxSignal.FlxTypedSignal;
+
 import flxanimate.data.AnimationData;
 #if FLX_SOUND_SYSTEM
 import flixel.sound.FlxSound;
@@ -81,10 +85,18 @@ class FlxAnim implements IFlxDestroyable
 	 * When ever the animation is playing.
 	 */
 	public var isPlaying(default, null):Bool;
+	
 	/**
-	 * The callback when the animation's over.
+	 * A signal dispatched when the animation's over,
+	 * when the current frame is equal to the current symbol's length.
+	*/
+	public var onComplete:FlxSignal = new FlxSignal();
+
+	/**
+	 * A signal dispatched when the animation advances one frame.
+	 * @param frame The current frame number.
 	 */
-	public var onComplete:()->Void;
+	public var onFrame:FlxTypedSignal<Int->Void> = new FlxTypedSignal();
 
 	/**
 	 * The framerate of the current animation.
@@ -329,15 +341,15 @@ class FlxAnim implements IFlxDestroyable
 						curFrame++;
 				}
 				curSymbol.fireCallbacks();
+				onFrame.dispatch(curFrame);
 			}
 
 
 			if (finished)
 			{
-				if (onComplete != null)
-					onComplete();
-
-				pause();
+				if (loopType == PlayOnce)
+					pause();
+				onComplete.dispatch();
 			}
 		}
 	}
@@ -365,6 +377,21 @@ class FlxAnim implements IFlxDestroyable
 			default:		Value;
 		}
 	}
+
+	/**
+	 * Creates an animation based on a frame label's starting frame and duration.0
+	 * @param Name The name of the animation to add.
+	 * @param FrameLabel The frame label to use as the starting frame.
+	 * @param FrameRate The framerate of the animation to use.
+	 * @param Looped Whether the animation should loop or not.
+	 * @param X A x offset to apply to the animation.
+	 * @param Y A y offset to apply to the animation.
+	 */
+	public function addByFrameLabel(Name:String, FrameLabel:String, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0) {
+		var keyFrame = getFrameLabel(FrameLabel);
+		addBySymbolIndices(Name, stageInstance.symbol.name, keyFrame.getFrameIndices(), FrameRate, Looped, X, Y);
+	}
+
 	/**
 	 * Creates an animation using an already made symbol from a texture atlas
 	 * @param Name The name of the animation
@@ -638,11 +665,14 @@ class FlxMetaData
 
 	public var showHiddenLayers:Bool;
 
+	public var skipFilters:Bool;
+
 	public function new(name:String, frameRate:Float)
 	{
 		this.name = name;
 		this.frameRate = frameRate;
 		showHiddenLayers = false;
+		skipFilters = false;
 	}
 	public function destroy()
 	{

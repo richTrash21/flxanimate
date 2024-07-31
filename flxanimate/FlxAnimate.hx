@@ -77,14 +77,28 @@ class FlxAnimate extends FlxSprite
 
 	public var showPivot(default, set):Bool;
 
+	public var filters:Array<BitmapFilter> = null;
+
 	var _pivot:FlxFrame;
 	var _indicator:FlxFrame;
 
 	static var renderer:FlxAnimateFilterRenderer;
 
 	// TODO: FlxCamerasPool
-	var filterCamera:FlxCamera;
-	var maskCamera:FlxCamera;
+	var filterCamera(get, default):FlxCamera;
+	inline function get_filterCamera():FlxCamera
+	{
+		if (filterCamera == null)
+			filterCamera = new FlxCamera(0, 0, 0, 0, 1);
+		return filterCamera;
+	}
+	var maskCamera(get, default):FlxCamera;
+	inline function get_maskCamera():FlxCamera
+	{
+		if (maskCamera == null)
+			maskCamera = new FlxCamera(0, 0, 0, 0, 1);
+		return maskCamera;
+	}
 
 	public var relativeX:Float = 0;
 
@@ -297,9 +311,10 @@ class FlxAnimate extends FlxSprite
 		var mainSymbol = instance == anim.curInstance;
 		var filterin = filterInstance != null;
 
+		var skipFilters = anim.metadata.skipFilters;
+	
 		if (cameras == null)
 			cameras = this.cameras;
-
 
 		var matrix = instance._matrix;
 
@@ -307,10 +322,8 @@ class FlxAnimate extends FlxSprite
 		matrix.translate(instance.x, instance.y);
 		matrix.concat(m);
 
-
 		var colorEffect = instance._color;
 		colorEffect.__copyFrom(colorFilter);
-
 
 		var symbol:FlxSymbol = (instance.symbol != null) ? anim.symbolDictionary.get(instance.symbol.name) : null;
 
@@ -323,19 +336,18 @@ class FlxAnimate extends FlxSprite
 			return;
 		}
 
-		if (instance.symbol.cacheAsBitmap && (!filterin || filterInstance != instance))
+		var cacheToBitmap = !skipFilters && (instance.symbol.cacheAsBitmap || this.filters != null && mainSymbol) && (!filterin || filterin && filterInstance != instance);
+
+		if (cacheToBitmap)
 		{
 			if (instance.symbol._renderDirty)
 			{
 				instance.symbol._filterMatrix.identity();
-				// instance.symbol._filterMatrix.copyFrom(matrix);
+				// instance.symbol._filterMatrix.copyFrom(instance.matrix);
 
-				if (filterCamera == null)
-					filterCamera = new FlxCamera(0, 0, 0, 0, 1);
 				var colTr = ColorTransform.__pool.get();
 				parseElement(instance, instance.symbol._filterMatrix, colTr, instance, [filterCamera]);
 				ColorTransform.__pool.release(colTr);
-
 
 				@:privateAccess
 				renderFilter(instance.symbol, instance.symbol.filters);
@@ -347,10 +359,19 @@ class FlxAnimate extends FlxSprite
 				if (instance.symbol.colorEffect != null)
 					colorEffect.concat(instance.symbol.colorEffect.c_Transform);
 
-				// matrix.concat(instance.symbol._filterMatrix);
 				matrix.copyFrom(instance.symbol._filterMatrix);
-				//matrix.concat(instance.matrix);
 				matrix.concat(m);
+				// matrix.concat(instance.matrix);
+				// matrix.translate(instance.x, instance.y);
+				// matrix.concat(m);
+				// // matrix.copyFrom(instance.matrix);
+				// // matrix.concat(instance.symbol._filterMatrix);
+				// matrix.concat(instance.matrix);
+				// matrix.translate(instance.x, instance.y);
+				// matrix.concat(m);
+				// matrix.concat(instance.matrix);
+				// matrix.translate(instance.x, instance.y);
+				// matrix.concat(m);
 
 				drawLimb(instance.symbol._filterFrame, matrix, colorEffect, filterin, instance.symbol.blendMode, cameras);
 			}
@@ -381,8 +402,6 @@ class FlxAnimate extends FlxSprite
 					var frame = layer._currFrame;
 					if (frame._renderDirty)
 					{
-						if (filterCamera == null)
-							filterCamera = new FlxCamera(0, 0, 0, 0, 1);
 						var colTr = ColorTransform.__pool.get();
 						var mat = matrixesPool.get();
 						renderLayer(frame, mat, colTr, null, [filterCamera]);
@@ -403,6 +422,9 @@ class FlxAnimate extends FlxSprite
 
 				var toBitmap = frame.filters != null || layer.type.getName() == "Clipped";
 
+				if (skipFilters)
+					toBitmap = false;
+	
 				var coloreffect = ColorTransform.__pool.get();
 				coloreffect.__copyFrom(colorEffect);
 				if (frame.colorEffect != null)
@@ -412,7 +434,10 @@ class FlxAnimate extends FlxSprite
 				{
 					var mat = matrixesPool.get();
 					mat.copyFrom(layer._filterMatrix);
-					mat.concat(matrix);
+					mat.concat(m);
+					// mat.concat(instance.matrix);
+					// mat.translate(instance.x, instance.y);
+					// mat.concat(matrix);
 
 					drawLimb(layer._filterFrame, mat, coloreffect, filterin, cameras);
 					matrixesPool.put(mat);
@@ -427,15 +452,14 @@ class FlxAnimate extends FlxSprite
 					matrixesPool.put(cast mat);
 					layer._filterMatrix.identity();
 
-					if (maskCamera == null)
-						maskCamera = new FlxCamera(0, 0, 0, 0, 1);
 					renderFilter(layer, frame.filters, (layer._clipper != null) ? maskCamera : null);
 
 					frame._renderDirty = false;
 
 					var mat = matrixesPool.get();
 					mat.copyFrom(layer._filterMatrix);
-					mat.concat(matrix);
+					mat.concat(m);
+					// mat.concat(matrix);
 
 					drawLimb(layer._filterFrame, mat, coloreffect, filterin, cameras);
 					matrixesPool.put(mat);
@@ -452,8 +476,6 @@ class FlxAnimate extends FlxSprite
 	function renderFilter(filterInstance:IFilterable, filters:Array<BitmapFilter>, ?mask:FlxCamera)
 	{
 		var masking = mask != null;
-		if (filterCamera == null)
-			filterCamera = new FlxCamera(0, 0, 0, 0, 1);
 		filterCamera.render();
 
 		var rect = filterCamera.canvas.getBounds(null);
@@ -511,7 +533,7 @@ class FlxAnimate extends FlxSprite
 			Rectangle.__pool.release(extension);
 		}
 
-		FlxAnimate.renderer.applyFilter(filterInstance._bmp1, filterInstance._filterFrame.parent.bitmap, filterInstance._bmp1, filterInstance._bmp2, filters, rect, gfxMask, point);
+		FlxAnimate.renderer.applyFilter(gfx, filterInstance._filterFrame.parent.bitmap, filterInstance._bmp1, filterInstance._bmp2, filters, rect, gfxMask, point);
 		point = FlxDestroyUtil.put(point);
 
 		filterInstance._filterMatrix.translate(Math.round(b.x + rect.x), Math.round(b.y + rect.y));
@@ -578,7 +600,7 @@ class FlxAnimate extends FlxSprite
 		return frame;
 	}
 	var _mat:FlxMatrix = new FlxMatrix();
-	function drawLimb(limb:FlxFrame, _matrix:FlxMatrix, ?colorTransform:ColorTransform = null, filterin:Bool = false, blendMode:BlendMode = NORMAL, cameras:Array<FlxCamera> = null)
+	function drawLimb(limb:FlxFrame, _matrix:FlxMatrix, ?colorTransform:ColorTransform = null, filterin:Bool = false, ?blendMode:BlendMode, cameras:Array<FlxCamera> = null)
 	{
 		if (colorTransform != null && (colorTransform.alphaMultiplier == 0 || colorTransform.alphaOffset == -255) || limb == null || limb.type == EMPTY)
 			return;
@@ -586,6 +608,9 @@ class FlxAnimate extends FlxSprite
 		if (cameras == null)
 			cameras = this.cameras;
 
+		if (blendMode == null)
+			blendMode = BlendMode.NORMAL;
+	
 		for (camera in cameras)
 		{
 			if (camera == null || !camera.visible || !camera.exists)
@@ -633,7 +658,7 @@ class FlxAnimate extends FlxSprite
 				if (!limbOnScreen(limb, _mat, camera))
 					continue;
 			}
-			camera.drawPixels(limb, null, _mat, colorTransform, blendMode, filterin || antialiasing, null);
+			camera.drawPixels(limb, null, _mat, colorTransform, blendMode, filterin || antialiasing, this.shader);
 		}
 
 		#if FLX_DEBUG
@@ -751,7 +776,7 @@ class FlxAnimate extends FlxSprite
 			if (Settings.FrameRate != null)
 				anim.framerate = (Settings.FrameRate > 0) ? anim.metadata.frameRate : Settings.FrameRate;
 			if (Settings.OnComplete != null)
-				anim.onComplete = Settings.OnComplete;
+				anim.onComplete.add(Settings.OnComplete);
 			if (Settings.ShowPivot != null)
 				showPivot = Settings.ShowPivot;
 			if (Settings.Antialiasing != null)
