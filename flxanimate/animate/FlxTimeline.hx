@@ -35,7 +35,7 @@ class FlxTimeline implements IFlxDestroyable
 	 * **WARNING**: Do not confuse `getListNames()` with `getList`!
 	 * @return an `Array` of `String`
 	 */
-	public function getListNames()
+	public inline function getListNames()
 	{
 		return [for (layer in _layers) layer.name];
 	}
@@ -45,7 +45,7 @@ class FlxTimeline implements IFlxDestroyable
 	 * **WARNING**: Do not confuse `getListNames()` with `getList`!
 	 * @return an `Array` of `FlxLayer`
 	 */
-	public function getList()
+	public inline function getList()
 	{
 		return _layers;
 	}
@@ -155,7 +155,7 @@ class FlxTimeline implements IFlxDestroyable
 		return layer;
 	}
 
-	public function updateRender(elapsed:Float, curFrame:Int, dictionary:Map<String, FlxSymbol>, ?swfRender:Bool = false)
+	public inline function updateRender(elapsed:Float, curFrame:Int, dictionary:Map<String, FlxSymbol>, ?swfRender:Bool = false)
 	{
 		for (layer in _layers)
 		{
@@ -163,7 +163,7 @@ class FlxTimeline implements IFlxDestroyable
 		}
 	}
 
-	function get_length()
+	inline function get_length()
 	{
 		return _layers.length;
 	}

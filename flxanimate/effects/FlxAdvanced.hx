@@ -17,7 +17,7 @@ class FlxAdvanced extends FlxColorEffect
 	{
 		return c_Transform;
 	}
-	function set_colorTransform(value:ColorTransform)
+	inline function set_colorTransform(value:ColorTransform)
 	{
 		c_Transform.__copyFrom(value);
 		//c_Transform.redMultiplier = value.redMultiplier;

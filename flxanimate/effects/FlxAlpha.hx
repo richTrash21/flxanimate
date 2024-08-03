@@ -15,7 +15,7 @@ class FlxAlpha extends FlxColorEffect
 	{
 		c_Transform.alphaMultiplier = alpha;
 	}
-	function set_alpha(value:Float)
+	inline function set_alpha(value:Float)
 	{
 		if (alpha != value) renderDirty = true;
 

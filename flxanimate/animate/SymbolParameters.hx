@@ -231,7 +231,7 @@ class SymbolParameters implements IFilterable
 		colorEffect = None;
 	}
 
-	function get__colorEffect()
+	inline function get__colorEffect()
 	{
 		return null;
 	}

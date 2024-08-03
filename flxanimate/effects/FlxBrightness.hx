@@ -19,7 +19,7 @@ class FlxBrightness extends FlxColorEffect
 			c_Transform.redOffset = c_Transform.greenOffset = c_Transform.blueOffset = 255 * brightness;
 	}
 
-	function set_brightness(value:Float)
+	inline function set_brightness(value:Float)
 	{
 		if (brightness != value) renderDirty = true;
 

@@ -73,21 +73,21 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 		matrix = null;
 	}
 
-	function set_bitmap(value:String)
+	inline function set_bitmap(value:String)
 	{
 		if (value != bitmap && symbol != null && symbol.cacheAsBitmap)
 			symbol._renderDirty = true;
 
 		return bitmap = value;
 	}
-	function set_matrix(value:FlxMatrix)
+	inline function set_matrix(value:FlxMatrix)
 	{
 		(value == null) ? matrix.identity() : matrix = value;
 
 		return value;
 	}
 
-	var _updCurSym:FlxSymbol;
+	static var _updCurSym:FlxSymbol;
 	public function updateRender(elapsed:Float, curFrame:Int, dictionary:Map<String, FlxSymbol>, ?swfRender:Bool = false)
 	{
 		if (symbol != null && (_updCurSym = dictionary.get(symbol.name)) != null)
@@ -107,7 +107,6 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 				_parent._renderDirty = true;
 			}
 			_updCurSym.updateRender(elapsed, curFF, dictionary, swfRender);
-			_updCurSym = null;
 		}
 		update(elapsed);
 	}

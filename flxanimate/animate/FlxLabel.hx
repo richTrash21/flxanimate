@@ -16,7 +16,7 @@ class FlxLabel
 		this.frame = frame;
 		callbacks = [];
 	}
-	public function fireCallbacks()
+	public inline function fireCallbacks()
 	{
 		for (callback in callbacks)
 		{
@@ -24,7 +24,7 @@ class FlxLabel
 		}
 	}
 	@:allow(flxanimate.animate.FlxSymbol)
-	function removeCallbacks()
+	inline function removeCallbacks()
 	{
 		callbacks = [];
 	}

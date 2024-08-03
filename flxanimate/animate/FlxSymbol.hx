@@ -75,7 +75,7 @@ class FlxSymbol implements IFlxDestroyable
 	 * Hides a layer from the timeline.
 	 * @param layer The name of the layer.
 	 */
-	public function hideLayer(layer:String)
+	public inline function hideLayer(layer:String)
 	{
 		timeline.hide(layer);
 	}
@@ -83,7 +83,7 @@ class FlxSymbol implements IFlxDestroyable
 	 * Shows a layer from the timeline.
 	 * @param layer The name of the layer.
 	 */
-	public function showLayer(layer:String)
+	public inline function showLayer(layer:String)
 	{
 		timeline.show(layer);
 	}
@@ -201,7 +201,7 @@ class FlxSymbol implements IFlxDestroyable
 		return frame;
 	}
 
-	public function updateRender(elapsed:Float, curFrame:Int, dictionary:Map<String, FlxSymbol>, ?swfRender:Bool = false)
+	public inline function updateRender(elapsed:Float, curFrame:Int, dictionary:Map<String, FlxSymbol>, ?swfRender:Bool = false)
 	{
 		timeline.updateRender(elapsed, curFrame, dictionary, swfRender);
 	}
@@ -395,19 +395,19 @@ class FlxSymbol implements IFlxDestroyable
 			onCallback();
 	}
 
-	function get_length()
+	inline function get_length()
 	{
 		return timeline.totalFrames;
 	}
-	function get_layers()
+	inline function get_layers()
 	{
 		return timeline.getListNames();
 	}
-	function get_curFrame()
+	inline function get_curFrame()
 	{
 		return _curFrame;
 	}
-	function set_curFrame(value:Int)
+	inline function set_curFrame(value:Int)
 	{
 		return _curFrame = value;
 	}

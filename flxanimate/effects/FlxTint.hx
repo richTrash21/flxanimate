@@ -43,13 +43,13 @@ class FlxTint extends FlxColorEffect
 		c_Transform.blueOffset = Math.round(tint.blue * multiplier);
 	}
 
-	function set_tint(value:FlxColor)
+	inline function set_tint(value:FlxColor)
 	{
 		if (tint != value) renderDirty = true;
 
 		return tint = value;
 	}
-	function set_multiplier(value:Float)
+	inline function set_multiplier(value:Float)
 	{
 		if (tint != value) renderDirty = true;
 

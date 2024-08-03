@@ -34,12 +34,12 @@ class FlxSymbolDictionary
 		return libraries;
 	}
 
-	public function existsSymbol(symbol:String)
+	public inline function existsSymbol(symbol:String)
 	{
 		return _symbols.exists(symbol);
 	}
 
-	public function getSymbol(symbol:String)
+	public inline function getSymbol(symbol:String)
 	{
 		return _symbols.get(symbol);
 	}

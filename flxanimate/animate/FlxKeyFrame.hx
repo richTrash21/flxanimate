@@ -92,7 +92,7 @@ class FlxKeyFrame
 	 * For example, if the keyframe spans from `10` to `15`, the array will be `[10, 11, 12, 13, 14, 15]`.
 	 * @return The integer array.
 	*/
-	public function getFrameIndices():Array<Int> {
+	public inline function getFrameIndices():Array<Int> {
 		return [for (i in index...(index + duration)) i];
 	}
 
@@ -110,7 +110,7 @@ class FlxKeyFrame
 			}
 		}
 	}
-	public function updateRender(elapsed:Float, curFrame:Int, dictionary:Map<String, FlxSymbol>, ?swfRender:Bool = false)
+	public inline function updateRender(elapsed:Float, curFrame:Int, dictionary:Map<String, FlxSymbol>, ?swfRender:Bool = false)
 	{
 		var curFrame = curFrame - index;
 
@@ -146,11 +146,11 @@ class FlxKeyFrame
 
 		return element;
 	}
-	public function get(element:Int)
+	public inline function get(element:Int)
 	{
 		return _elements[element];
 	}
-	public function getList()
+	public inline function getList()
 	{
 		return _elements;
 	}
@@ -185,7 +185,7 @@ class FlxKeyFrame
 			i++;
 		}
 	}
-	public function removeCallbacks()
+	public inline function removeCallbacks()
 	{
 		callbacks = [];
 	}
@@ -210,7 +210,7 @@ class FlxKeyFrame
 		}
 	}
 
-	public function toString()
+	public inline function toString()
 	{
 		return '{index: $index, duration: $duration}';
 	}

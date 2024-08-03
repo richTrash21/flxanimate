@@ -272,7 +272,7 @@ class FlxAnim implements IFlxDestroyable
 	/**
 	 * Pauses the current animation.
 	 */
-	public function pause()
+	public inline function pause()
 	{
 		isPlaying = false;
 	}
@@ -280,24 +280,23 @@ class FlxAnim implements IFlxDestroyable
 	/**
 	 * stops the current animation.
 	 */
-	public function stop()
+	public inline function stop()
 	{
 		pause();
 		curFrame = 0;
 	}
 
-	public function finish()
+	public inline function finish()
 	{
 		stop();
 
-		if (!reversed)
-			curFrame = length - 1;
+		curFrame = reversed ? 0 : length - 1;
 	}
 
 	/**
 	 * Resumes the current animation.
 	 */
-	public function resume()
+	public inline function resume()
 	{
 		isPlaying = true;
 	}
@@ -478,7 +477,7 @@ class FlxAnim implements IFlxDestroyable
 		});
 	}
 
-	function set_framerate(value:Float):Float
+	inline function set_framerate(value:Float):Float
 	{
 		frameDelay = value == 0 ? 0 : 1 / value;
 		return framerate = value;
@@ -503,10 +502,10 @@ class FlxAnim implements IFlxDestroyable
 		});
 	}
 
-	public function get_length()
+	public inline function get_length()
 		return curSymbol.length;
 
-	public function getFrameLabel(name:String, ?layer:EitherType<Int, String>)
+	public inline function getFrameLabel(name:String, ?layer:EitherType<Int, String>)
 		return curSymbol.getFrameLabel(name, layer);
 
 	public function toString()
@@ -559,25 +558,25 @@ class FlxAnim implements IFlxDestroyable
 	public function getFrameLabels(?layer:EitherType<Int, String>)
 		return curSymbol.getFrameLabels(layer);
 
-	function get_loopType()
+	inline function get_loopType()
 		return curInstance.symbol.loop;
 
-	function set_loopType(type:Loop)
+	inline function set_loopType(type:Loop)
 		return curInstance.symbol.loop = type;
 	
-	function get_symbolType()
+	inline function get_symbolType()
 		return curInstance.symbol.type;
 	
-	function set_symbolType(type:SymbolT)
+	inline function set_symbolType(type:SymbolT)
 		return curInstance.symbol.type = type;
 	
-	function get_reversed()
+	inline function get_reversed()
 		return curInstance.symbol.reverse;
 	
-	function set_reversed(value:Bool)
+	inline function set_reversed(value:Bool)
 		return curInstance.symbol.reverse = value;
 	
-	public function getByName(name:String)
+	public inline function getByName(name:String)
 		return animsMap.get(name);
 	
 
@@ -623,7 +622,7 @@ class FlxAnim implements IFlxDestroyable
 		return animsMap.exists(name);
 	}
 
-	function get_curSymbol()
+	inline function get_curSymbol()
 	{
 		return symbolDictionary.get(curInstance.symbol.name);
 	}

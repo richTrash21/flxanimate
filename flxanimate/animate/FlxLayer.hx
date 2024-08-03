@@ -83,11 +83,11 @@ class FlxLayer extends FlxObject implements IFilterable
 		_filterMatrix = new FlxMatrix();
 	}
 
-	public function hide()
+	public inline function hide()
 	{
 		visible = false;
 	}
-	public function show()
+	public inline function show()
 	{
 		visible = true;
 	}
@@ -151,7 +151,7 @@ class FlxLayer extends FlxObject implements IFilterable
 		}
 		update(elapsed);
 	}
-	public function get(frame:EitherType<String, Int>)
+	public inline function get(frame:EitherType<String, Int>)
 	{
 		return _get(frame, false);
 	}
@@ -258,13 +258,13 @@ class FlxLayer extends FlxObject implements IFilterable
 		if (name != "" && name != null)
 			this.name = name;
 	}
-	function set__parent(par:FlxTimeline)
+	inline function set__parent(par:FlxTimeline)
 	{
 		_parent = par;
 		rename();
 		return par;
 	}
-	function get_length()
+	inline function get_length()
 	{
 		var keyframe = _keyframes[_keyframes.length - 1];
 		return (keyframe != null) ? keyframe.index + keyframe.duration : 0;
