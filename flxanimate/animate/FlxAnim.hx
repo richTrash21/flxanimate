@@ -89,14 +89,18 @@ class FlxAnim implements IFlxDestroyable
 	/**
 	 * A signal dispatched when the animation's over,
 	 * when the current frame is equal to the current symbol's length.
+	 * @param animName
+	 * @param symbolName
 	*/
-	public var onComplete:FlxSignal = new FlxSignal();
+	public var onComplete:FlxTypedSignal<(String, String)->Void> = new FlxTypedSignal();
 
 	/**
 	 * A signal dispatched when the animation advances one frame.
+	 * @param animName
+	 * @param symbolName
 	 * @param frame The current frame number.
 	 */
-	public var onFrame:FlxTypedSignal<Int->Void> = new FlxTypedSignal();
+	public var onFrame:FlxTypedSignal<(String, String, Int)->Void> = new FlxTypedSignal();
 
 	/**
 	 * The framerate of the current animation.
@@ -346,7 +350,7 @@ class FlxAnim implements IFlxDestroyable
 						curFrame++;
 				}
 				curSymbol.fireCallbacks();
-				onFrame.dispatch(curFrame);
+				onFrame.dispatch(curInstance.name, curSymbol.name, curFrame);
 			}
 
 
@@ -354,7 +358,7 @@ class FlxAnim implements IFlxDestroyable
 			{
 				if (loopType == PlayOnce)
 					pause();
-				onComplete.dispatch();
+				onComplete.dispatch(curInstance.name, curSymbol.name);
 			}
 		}
 	}
