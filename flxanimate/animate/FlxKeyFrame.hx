@@ -24,8 +24,8 @@ class FlxKeyFrame
 
 	private var _tFrame:FlxKeyFrame;
 
-	@:allow(flxanimate.FlxAnimate)
-	var _bitmapMatrix:FlxMatrix;
+	// @:allow(flxanimate.FlxAnimate)
+	// var _bitmapMatrix:FlxMatrix;
 
 	@:allow(flxanimate.animate.FlxSymbol)
 	@:allow(flxanimate.FlxAnimate)
@@ -50,7 +50,7 @@ class FlxKeyFrame
 	@:allow(flxanimate.FlxAnimate)
 	var _ff:Int = -1;
 
-	var clTMat:FlxMatrix = new FlxMatrix();
+	// var clTMat:FlxMatrix = new FlxMatrix();
 
 	public var filters(default, set):Array<BitmapFilter>;
 
@@ -64,7 +64,7 @@ class FlxKeyFrame
 		_elements = (elements == null) ? [] : elements;
 		this.colorEffect = colorEffect;
 		callbacks = [];
-		_bitmapMatrix = new FlxMatrix();
+		// _bitmapMatrix = FlxAnimate.matrixesPool.get();
 	}
 
 	function set_duration(duration:Int)
@@ -204,6 +204,7 @@ class FlxKeyFrame
 		duration = 0;
 		callbacks = null;
 		colorEffect = null;
+		// FlxAnimate.matrixesPool.put(_bitmapMatrix);
 		for (element in _elements)
 		{
 			element.destroy();
@@ -262,9 +263,10 @@ class FlxKeyFrame
 		var keyframe = new FlxKeyFrame(frame.I, frame.DU, frame.N);
 		keyframe.colorEffect = AnimationData.fromColorJson(frame.C);
 
-		if (frame.E != null)
+		var E = frame.E;
+		if (E != null)
 		{
-			for (element in frame.E)
+			for (element in E)
 			{
 				keyframe.add(FlxElement.fromJSON(element));
 			}

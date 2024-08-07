@@ -47,9 +47,10 @@ class AnimationData
 	 * Parses a Color Effect from a JSON file into a enumeration of `ColorEffect`.
 	 * @param effect The json field.
 	 */
-	public static function fromColorJson(effect:ColorEffects = null)
+	public static function fromColorJson(effect:ColorEffects = null):ColorEffect
 	{
-		var colorEffect = None;
+		// var colorEffect:ColorEffect = None;
+		var colorEffect:ColorEffect = null;
 
 		if (effect == null) return colorEffect;
 
@@ -63,16 +64,12 @@ class AnimationData
 				colorEffect = Brightness(effect.BRT);
 			case Advanced, "Advanced":
 			{
-				var CT = new ColorTransform();
-				CT.redMultiplier = effect.RM;
-				CT.redOffset = effect.RO;
-				CT.greenMultiplier = effect.GM;
-				CT.greenOffset = effect.GO;
-				CT.blueMultiplier = effect.BM;
-				CT.blueOffset = effect.BO;
-				CT.alphaMultiplier = effect.AM;
-				CT.alphaOffset = effect.AO;
-				colorEffect = Advanced(CT);
+				colorEffect = Advanced(new ColorTransform(
+					effect.RM, effect.RO,
+					effect.GM, effect.GO,
+					effect.BM, effect.BO,
+					effect.AM, effect.AO
+				));
 			}
 			default:
 				flixel.FlxG.log.error('color Effect mode "${effect.M}" is invalid or not supported!');

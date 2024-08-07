@@ -1,15 +1,16 @@
 package flxanimate.animate;
 
+import openfl.display.BlendMode;
+import openfl.geom.ColorTransform;
+import flixel.math.FlxMath;
+import flixel.math.FlxMatrix;
+import flixel.math.FlxPoint;
+import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import flixel.FlxCamera;
 import flixel.FlxG;
-import flixel.math.FlxMath;
-import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import flixel.FlxObject;
-import flxanimate.geom.FlxMatrix3D;
-import flixel.math.FlxPoint;
 import flxanimate.data.AnimationData;
-import flixel.math.FlxMatrix;
-import openfl.geom.ColorTransform;
+import flxanimate.geom.FlxMatrix3D;
 
 @:access(flxanimate.animate.SymbolParameters)
 class FlxElement extends FlxObject implements IFlxDestroyable
@@ -111,6 +112,48 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 		update(elapsed);
 	}
 
+	inline extern static final _eregOpt = "i";
+	inline extern static final _eregSpace = "(?:_)?";
+
+	// Suppost Eng & Rus
+	static final _eregADD		 = new EReg("add|сложение", _eregOpt);
+	static final _eregALPHA		 = new EReg("alpha|альфа", _eregOpt);
+	static final _eregDARKEN	 = new EReg("darken|(?:замена+" + _eregSpace + ")?теймны(м|й)", _eregOpt);
+	static final _eregDIFFERENCE = new EReg("difference|разница", _eregOpt);
+	static final _eregERASE		 = new EReg("erase|удаление", _eregOpt);
+	static final _eregHARDLIGHT	 = new EReg("hardlight|жесткий" + _eregSpace + "свет", _eregOpt);
+	static final _eregINVERT	 = new EReg("negative|invert|инверсия|негатив", _eregOpt);
+	static final _eregLAYER		 = new EReg("layer|слой", _eregOpt);
+	static final _eregLIGHTEN	 = new EReg("lighten|(?:замена+" + _eregSpace + ")?светлы(м|й)", _eregOpt);
+	static final _eregMULTIPLY	 = new EReg("multiply|умножение", _eregOpt);
+	// static final _eregNORMAL	 = new EReg("normal|нормальное", _eregOpt);
+	static final _eregOVERLAY	 = new EReg("overlay|перекрытие", _eregOpt);
+	static final _eregSCREEN	 = new EReg("screen|осветление", _eregOpt);
+	static final _eregSUBTRACT	 = new EReg("substract|нормальное", _eregOpt);
+	
+	// suppost list: openfl.display.OpenGLRenderer.hx:1030
+
+	static final _eregBlendStartKey	 = new EReg("_bl|blend" + _eregSpace + "|смешение" + _eregSpace + "|наложнение" + _eregSpace, _eregOpt);
+	static final _eregBlendEndKey	 = new EReg("(?:_)?end", _eregOpt);
+
+	public static function blendModeFromString(str:String):BlendMode
+	{
+		if (_eregADD.match(str))		 return BlendMode.ADD;
+		if (_eregALPHA.match(str))		 return BlendMode.ALPHA;
+		if (_eregDARKEN.match(str))		 return BlendMode.DARKEN;
+		if (_eregDIFFERENCE.match(str))	 return BlendMode.DIFFERENCE;
+		if (_eregERASE.match(str))		 return BlendMode.ERASE;
+		if (_eregHARDLIGHT.match(str))	 return BlendMode.HARDLIGHT;
+		if (_eregINVERT.match(str))		 return BlendMode.INVERT;
+		if (_eregLAYER.match(str))		 return BlendMode.LAYER;
+		if (_eregLIGHTEN.match(str))	 return BlendMode.LIGHTEN;
+		if (_eregMULTIPLY.match(str))	 return BlendMode.MULTIPLY;
+		if (_eregOVERLAY.match(str))	 return BlendMode.OVERLAY;
+		if (_eregSCREEN.match(str))		 return BlendMode.SCREEN;
+		if (_eregSUBTRACT.match(str))	 return BlendMode.SUBTRACT;
+		// return BlendMode.NORMAL;
+		return null;
+	}
 	public static function fromJSON(element:Element)
 	{
 		var symbol = element.SI != null;
@@ -122,21 +165,21 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 			params.type = switch (element.SI.ST)
 			{
 				case movieclip, "movieclip": MovieClip;
-				case button, "button": Button;
-				default: Graphic;
+				case button, "button":		 Button;
+				default:					 Graphic;
 			}
-			if (StringTools.contains(params.instance, "_bl"))
+			if (params.instance != null && params.instance.length > 0)
 			{
-				var _bl = params.instance.indexOf("_bl");
-
-				if (_bl != -1)
-					_bl += 3;
-
-				var end = params.instance.indexOf("_", _bl);
-				params.blendMode = cast Std.parseInt(params.instance.substring(_bl, end));
-
-				params.instance = params.instance.substring(end + 1);
-
+				if (_eregBlendStartKey.match(params.instance))
+				{
+					var endIsValid = _eregBlendEndKey.match(_eregBlendStartKey.matchedRight());
+					params.blendMode = blendModeFromString(endIsValid ? _eregBlendEndKey.matchedLeft() : _eregBlendStartKey.matchedRight());
+					// params.instance = params.instance.substring(end + 1);
+				}
+				else
+				{
+					params.blendMode = blendModeFromString(params.instance);
+				}
 			}
 			var lp:LoopType = (element.SI.LP == null) ? loop : element.SI.LP.split("R")[0];
 			params.loop = switch (lp) // remove the reverse sufix

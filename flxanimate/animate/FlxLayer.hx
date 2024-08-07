@@ -22,15 +22,14 @@ import flxanimate.motion.easing.*;
 
 class FlxLayer extends FlxObject implements IFilterable
 {
+	public var onFrameUpdate:(prevFrame:FlxKeyFrame, curFrame:FlxKeyFrame)->Void;
+
+	public var name(default, null):String;
+	public var type(default, set):LayerType;
+	public var length(get, null):Int;
+
 	@:allow(flxanimate.FlxAnimate)
 	var _filterCamera:FlxCamera;
-
-	/**
-	 *
-	 *
-	 * @since `4.0.0`
-	 */
-	public var onFrameUpdate:(prevFrame:FlxKeyFrame, curFrame:FlxKeyFrame)->Void;
 
 	var _mcMap:Map<String, Int>;
 	@:allow(flxanimate.FlxAnimate)
@@ -39,6 +38,9 @@ class FlxLayer extends FlxObject implements IFilterable
 	var _bmp1:BitmapData;
 	@:allow(flxanimate.FlxAnimate)
 	var _bmp2:BitmapData;
+	
+	// var _bmpGraphic1:FlxGraphic;
+	// var _bmpGraphic2:FlxGraphic;
 
 	@:allow(flxanimate.FlxAnimate)
 	var _filterMatrix:FlxMatrix;
@@ -49,13 +51,10 @@ class FlxLayer extends FlxObject implements IFilterable
 	@:allow(flxanimate.animate.FlxTimeline)
 	var _parent(default, set):FlxTimeline;
 
-	public var name(default, null):String;
-
 	@:allow(flxanimate.animate.FlxKeyFrame)
 	@:allow(flxanimate.animate.FlxSymbol)
 	var _labels:Map<String, FlxKeyFrame>;
 
-	public var type(default, set):LayerType;
 
 	@:allow(flxanimate.animate.FlxKeyFrame)
 	var _keyframes(default, null):Array<FlxKeyFrame>;
@@ -65,8 +64,6 @@ class FlxLayer extends FlxObject implements IFilterable
 
 	@:allow(flxanimate.FlxAnimate)
 	var _clipper:FlxLayer = null;
-
-	public var length(get, null):Int;
 
 	@:allow(flxanimate.FlxAnimate)
 	var _currFrame:FlxKeyFrame;
@@ -101,9 +98,9 @@ class FlxLayer extends FlxObject implements IFilterable
 		_filterFrame = FlxDestroyUtil.destroy(_filterFrame);
 		_filterCamera = FlxDestroyUtil.destroy(_filterCamera);
 		_filterMatrix = null;
-		FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp1)));
+		// FlxG.bitmap.remove(_bmpGraphic1);
 		_bmp1 = FlxDestroyUtil.dispose(_bmp1);
-		FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
+		// FlxG.bitmap.remove(_bmpGraphic2);
 		_bmp2 = FlxDestroyUtil.dispose(_bmp2);
 
 		for (keyframe in _keyframes)
@@ -327,24 +324,24 @@ class FlxLayer extends FlxObject implements IFilterable
 	{
 		if (_filterFrame == null || (rect.width > _filterFrame.parent.bitmap.width || rect.height > _filterFrame.parent.bitmap.height))
 		{
-			var wid = (_filterFrame == null || rect.width > _filterFrame.parent.width) ? rect.width * 1.25 : _filterFrame.parent.width;
-			var hei = (_filterFrame == null || rect.height > _filterFrame.parent.height) ? rect.height * 1.25 : _filterFrame.parent.height;
+			var wid = Math.ceil((_filterFrame == null || rect.width > _filterFrame.parent.width) ? rect.width : _filterFrame.parent.width);
+			var hei = Math.ceil((_filterFrame == null || rect.height > _filterFrame.parent.height) ? rect.height : _filterFrame.parent.height);
 			if (_filterFrame != null)
 			{
 				_filterFrame.parent.destroy();
-				FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp1)));
-				FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
+				// FlxG.bitmap.remove(_bmpGraphic1);
+				// FlxG.bitmap.remove(_bmpGraphic2);
 			}
 			else
 			{
 				@:privateAccess
 				_filterFrame = new FlxFrame(null);
 			}
-			_filterFrame.parent = FlxG.bitmap.add(new BitmapData(Math.ceil(wid), Math.ceil(hei),0), true);
-			_bmp1 = new BitmapData(Math.ceil(wid), Math.ceil(hei), 0);
-			FlxGraphic.fromBitmapData(_bmp1, true);
-			_bmp2 = new BitmapData(Math.ceil(wid), Math.ceil(hei), 0);
-			FlxGraphic.fromBitmapData(_bmp2, true);
+			_filterFrame.parent = FlxG.bitmap.add(new BitmapData(wid, hei, 0), true);
+			_bmp1 = new BitmapData(wid, hei, 0);
+			// _bmpGraphic1 = FlxGraphic.fromBitmapData(_bmp1, true);
+			_bmp2 = new BitmapData(wid, hei, 0);
+			// _bmpGraphic2 = FlxGraphic.fromBitmapData(_bmp2, true);
 			_filterFrame.frame = new FlxRect(0, 0, wid, hei);
 			_filterFrame.sourceSize.set(rect.width, rect.height);
 			@:privateAccess
@@ -364,13 +361,16 @@ class FlxLayer extends FlxObject implements IFilterable
 		if (layer == null) return null;
 		var frames = [];
 		var l = new FlxLayer(layer.LN);
-		if (layer.LT != null || layer.Clpb != null)
+		var Clpb = layer.Clpb;
+		var LT = layer.LT;
+		if (LT != null || Clpb != null)
 		{
-			l.type = (layer.LT != null) ? Clipper : Clipped(layer.Clpb);
+			l.type = (LT != null) ? Clipper : Clipped(Clpb);
 		}
-		if (layer.FR != null)
+		var FR = layer.FR;
+		if (FR != null)
 		{
-			for (frame in layer.FR)
+			for (frame in FR)
 			{
 				l.add(FlxKeyFrame.fromJSON(frame));
 			}

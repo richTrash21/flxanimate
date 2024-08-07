@@ -122,7 +122,7 @@ class FlxAnimateFilterRenderer
 		var bitmap3:BitmapData = target3;
 
 		bmp.__renderTransform.translate(Math.abs(rect.x), Math.abs(rect.y));
-		renderer.__setRenderTarget(bitmap);
+		renderer.__setRenderTarget(target);
 		renderer.__renderFilterPass(bmp, renderer.__defaultDisplayShader, true);
 		bmp.__renderTransform.identity();
 
@@ -133,19 +133,19 @@ class FlxAnimateFilterRenderer
 			{
 				if (filter.__preserveObject)
 				{
-					renderer.__setRenderTarget(bitmap3);
-					renderer.__renderFilterPass(bitmap, renderer.__defaultDisplayShader, filter.__smooth);
+					renderer.__setRenderTarget(target3);
+					renderer.__renderFilterPass(target, renderer.__defaultDisplayShader, filter.__smooth);
 				}
 
 				for (i in 0...filter.__numShaderPasses)
 				{
 					renderer.__setBlendMode(filter.__shaderBlendMode);
-					renderer.__setRenderTarget(bitmap2);
-					renderer.__renderFilterPass(bitmap, filter.__initShader(renderer, i, filter.__preserveObject ? bitmap3 : null), filter.__smooth);
+					renderer.__setRenderTarget(target2);
+					renderer.__renderFilterPass(target, filter.__initShader(renderer, i, filter.__preserveObject ? target3 : null), filter.__smooth);
 
-					cacheBitmap = bitmap;
-					bitmap = bitmap2;
-					bitmap2 = cacheBitmap;
+					cacheBitmap = target;
+					target = target2;
+					target2 = cacheBitmap;
 				}
 
 				filter.__renderDirty = false;

@@ -197,12 +197,14 @@ class FlxAnim implements IFlxDestroyable
 			if (curThing == null)
 			{
 				function editCurThing()
+				{
 					curThing = {
 						instance: curInstance,
 						frameRate: metadata.frameRate,
 						loopPoint: 0
 					}
-				
+					animsMap.set(Name, curThing);
+				}
 				if (Name == metadata.name)
 				{
 					curInstance = stageInstance;
@@ -214,7 +216,11 @@ class FlxAnim implements IFlxDestroyable
 					curInstance.symbol.name = Name;
 					editCurThing();
 				}
-				else
+				else if (addByFrameLabel(Name, Name) != null)
+				{
+					curThing = animsMap.get(Name);
+				}
+				if (curThing == null)
 					FlxG.log.error('There\'s no animation called $Name!');
 			}
 			else
@@ -377,6 +383,8 @@ class FlxAnim implements IFlxDestroyable
 		}
 	}
 
+	@:noCompletion var __addByFrameLabel:Bool;
+
 	/**
 	 * Creates an animation based on a frame label's starting frame and duration.0
 	 * @param Name The name of the animation to add.
@@ -386,9 +394,39 @@ class FlxAnim implements IFlxDestroyable
 	 * @param X A x offset to apply to the animation.
 	 * @param Y A y offset to apply to the animation.
 	 */
-	public function addByFrameLabel(Name:String, FrameLabel:String, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0) {
-		var keyFrame = getFrameLabel(FrameLabel);
-		addBySymbolIndices(Name, stageInstance.symbol.name, keyFrame.getFrameIndices(), FrameRate, Looped, X, Y);
+	public function addByFrameLabel(Name:String, FrameLabel:String, FrameRate:Float = 0, Indices:Array<Int> = null, Looped:Bool = true, X:Float = 0, Y:Float = 0) {
+		if (symbolDictionary == null)
+			return false;
+		var keyFrame = symbolDictionary.get(stageInstance.symbol.name)?.getFrameLabel(FrameLabel);
+		if (keyFrame == null)
+			return false;
+
+		__addByFrameLabel = true;
+		if (keyFrame.duration > 1)
+		{
+			addBySymbolIndices(Name, stageInstance.symbol.name,
+				Indices == null ? keyFrame.getFrameIndices() : Indices,
+				FrameRate, Looped, X, Y);
+		}
+		else
+		{
+			var listElements:Array<FlxElement> = keyFrame.getList();
+			var element:FlxElement;
+			for (i in 0...listElements.length)
+			{
+				element = listElements[listElements.length - 1 - i];
+				if (element != null && element.symbol != null)
+				{
+					if (Indices == null)
+						addBySymbol(Name, element.symbol.name, FrameRate, Looped, X, Y);
+					else
+						addBySymbolIndices(Name, element.symbol.name, Indices, FrameRate, Looped, X, Y);
+					break;
+				}
+			}
+		}
+		__addByFrameLabel = false;
+		return true;
 	}
 
 	/**
@@ -401,7 +439,7 @@ class FlxAnim implements IFlxDestroyable
 	 */
 	public function addBySymbol(Name:String, SymbolName:String, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0)
 	{
-		if (symbolDictionary == null)
+		if (symbolDictionary == null || (!__addByFrameLabel && addByFrameLabel(Name, SymbolName, FrameRate, null, Looped, X, Y)))
 		{
 			return;
 		}
@@ -442,10 +480,11 @@ class FlxAnim implements IFlxDestroyable
 	}
 	public function addBySymbolIndices(Name:String, SymbolName:String, Indices:Array<Int>, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0)
 	{
-		if (symbolDictionary == null)
+		if (symbolDictionary == null || (!__addByFrameLabel && addByFrameLabel(Name, SymbolName, FrameRate, Indices, Looped, X, Y)))
 		{
 			return;
 		}
+		__addByFrameLabel = false;
 		if (!symbolDictionary.exists(SymbolName))
 		{
 			FlxG.log.error('$SymbolName does not exist as a symbol! maybe you misspelled it?');
@@ -505,7 +544,7 @@ class FlxAnim implements IFlxDestroyable
 	public inline function get_length()
 		return curSymbol.length;
 
-	public inline function getFrameLabel(name:String, ?layer:EitherType<Int, String>)
+	public inline function getFrameLabel(name:String, ?layer:EitherType<Int, String>):FlxKeyFrame
 		return curSymbol.getFrameLabel(name, layer);
 
 	public function toString()
@@ -666,12 +705,15 @@ class FlxMetaData
 
 	public var skipFilters:Bool;
 
+	public var skipBlends:Bool;
+
 	public function new(name:String, frameRate:Float)
 	{
 		this.name = name;
 		this.frameRate = frameRate;
 		showHiddenLayers = false;
 		skipFilters = false;
+		skipBlends = false;
 	}
 	public function destroy()
 	{

@@ -181,11 +181,12 @@ class FlxSymbol implements IFlxDestroyable
 		var frame:FlxKeyFrame = null;
 		var layers = (layer == null) ? timeline.getList() : [timeline.get(layer)];
 
+		var fr;
 		for (layer in layers)
 		{
 			if (layer == null) continue;
 
-			var fr = layer.get(name);
+			fr = layer.get(name);
 			if (fr != null)
 			{
 				frame = fr;

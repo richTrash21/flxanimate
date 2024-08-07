@@ -91,7 +91,7 @@ class SymbolParameters implements IFilterable
 
 	public var colorEffect(default, set):FlxColorEffect;
 
-	public var blendMode(default, set):BlendMode = NORMAL;
+	public var blendMode(default, set):BlendMode = null;
 
 	public var cacheAsBitmap(get, set):Bool;
 
@@ -150,9 +150,9 @@ class SymbolParameters implements IFilterable
 		_filterFrame = FlxDestroyUtil.destroy(_filterFrame);
 		_filterCamera = FlxDestroyUtil.destroy(_filterCamera);
 		_filterMatrix = null;
-		FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp1)));
+		// FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp1)));
 		_bmp1 = FlxDestroyUtil.dispose(_bmp1);
-		FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
+		// FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
 		_bmp2 = FlxDestroyUtil.dispose(_bmp2);
 	}
 
@@ -164,7 +164,7 @@ class SymbolParameters implements IFilterable
 		if (type == Graphic)
 		{
 			filters = null;
-			blendMode = NORMAL;
+			blendMode = null;
 			FlxDestroyUtil.destroy(_filterFrame);
 			cacheAsBitmap = false;
 		}
@@ -280,9 +280,9 @@ class SymbolParameters implements IFilterable
 			{
 				FlxG.bitmap.remove(_filterFrame.parent);
 				_filterFrame = FlxDestroyUtil.destroy(_filterFrame);
-				FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp1)));
+				// FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp1)));
 				_bmp1 = FlxDestroyUtil.dispose(_bmp1);
-				FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
+				// FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
 				_bmp2 = FlxDestroyUtil.dispose(_bmp2);
 			}
 		}
@@ -292,15 +292,15 @@ class SymbolParameters implements IFilterable
 
 	function set_blendMode(value:BlendMode)
 	{
-		if (value == null)
-			value = NORMAL;
+		// if (value == null)
+		// 	value = NORMAL;
 
-		if (type == Graphic) return blendMode = NORMAL;
+		if (type == Graphic) return blendMode = null;
 
 		if (blendMode != value)
 		{
 			blendMode = value;
-			if (blendMode != NORMAL && _filterFrame == null)
+			if ((blendMode != null && blendMode != NORMAL) && _filterFrame == null)
 				_renderDirty = true;
 		}
 		return value;
@@ -310,8 +310,7 @@ class SymbolParameters implements IFilterable
 	{
 		if (type == Graphic) return false;
 
-
-		if (filters != null && filters.length > 0 || blendMode != NORMAL) return true;
+		if (filters != null && filters.length > 0 || (blendMode != null && blendMode != NORMAL)) return true;
 
 		return _cacheAsBitmap;
 	}
@@ -320,14 +319,14 @@ class SymbolParameters implements IFilterable
 	{
 		if (_filterFrame == null || (rect.width > _filterFrame.parent.bitmap.width || rect.height > _filterFrame.parent.bitmap.height))
 		{
-			var wid = (_filterFrame == null || rect.width > _filterFrame.parent.width) ? rect.width * 1.25 : _filterFrame.parent.width;
-			var hei = (_filterFrame == null || rect.height > _filterFrame.parent.height) ? rect.height * 1.25 : _filterFrame.parent.height;
+			var wid = Math.ceil((_filterFrame == null || rect.width > _filterFrame.parent.width) ? rect.width : _filterFrame.parent.width);
+			var hei = Math.ceil((_filterFrame == null || rect.height > _filterFrame.parent.height) ? rect.height : _filterFrame.parent.height);
 			if (_filterFrame != null)
 			{
 				_filterFrame.parent.destroy();
-				FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp1)));
-				if (_needSecondBmp)
-					FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
+				// FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp1)));
+				// if (_needSecondBmp)
+				// 	FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
 			}
 			else
 			{
@@ -335,13 +334,13 @@ class SymbolParameters implements IFilterable
 				_filterFrame = new FlxFrame(null);
 			}
 
-			_filterFrame.parent = FlxG.bitmap.add(new BitmapData(Math.ceil(wid), Math.ceil(hei),0));
-			_bmp1 = new BitmapData(Math.ceil(wid), Math.ceil(hei), 0);
-			FlxGraphic.fromBitmapData(_bmp1);
+			_filterFrame.parent = FlxG.bitmap.add(new BitmapData(wid, hei,0));
+			_bmp1 = new BitmapData(wid, hei, 0);
+			// FlxGraphic.fromBitmapData(_bmp1);
 			if (_needSecondBmp)
 			{
-				_bmp2 = new BitmapData(Math.ceil(wid), Math.ceil(hei), 0);
-				FlxGraphic.fromBitmapData(_bmp2);
+				_bmp2 = new BitmapData(wid, hei, 0);
+				// FlxGraphic.fromBitmapData(_bmp2);
 			}
 
 			_filterFrame.frame = new FlxRect(0, 0, wid, hei);
@@ -357,8 +356,8 @@ class SymbolParameters implements IFilterable
 				_bmp2.fillRect(_bmp2.rect, 0);
 			else if (_bmp2 != null)
 			{
-				FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
-				_bmp2 = null;
+				// FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
+				_bmp2 = FlxDestroyUtil.dispose(_bmp2);
 			}
 
 		}
