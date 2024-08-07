@@ -591,17 +591,20 @@ class FlxAnim implements IFlxDestroyable
 	 * @param label the name of the label.
 	 * @param callback the callback you're going to add
 	 */
-	public function addCallbackTo(label:String, callback:()->Void)
+	public inline function addCallbackTo(label:String, callback:()->Void)
 		return curSymbol.addCallbackTo(label, callback);
 
-	public function removeCallbackFrom(label:String, callback:()->Void)
+	public inline function removeCallbackFrom(label:String, callback:()->Void)
 		return curSymbol.removeCallbackFrom(label, callback);
 
-	public function removeAllCallbacksFrom(label:String)
+	public inline function removeAllCallbacksFrom(label:String)
 		return curSymbol.removeAllCallbacksFrom(label);
 
-	public function getFrameLabels(?layer:EitherType<Int, String>)
+	public inline function getFrameLabels(?layer:EitherType<Int, String>)
 		return curSymbol.getFrameLabels(layer);
+
+	public inline function getFrameLabelNames(?layer:EitherType<Int, String>)
+		return curSymbol.getFrameLabelNames(layer);
 
 	inline function get_loopType()
 		return curInstance.symbol.loop;
