@@ -216,7 +216,7 @@ class FlxAnim implements IFlxDestroyable
 					curInstance.symbol.name = Name;
 					editCurThing();
 				}
-				else if (addByFrameLabel(Name, Name) != null)
+				else if (addByFrameLabel(Name, Name))
 				{
 					curThing = animsMap.get(Name);
 				}
