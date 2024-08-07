@@ -330,7 +330,7 @@ class FlxAnimate extends FlxSprite
 		if (instance.bitmap == null && symbol == null)
 			return;
 
-		if (!anim.metadata.skipBlends && instance.symbol != null && instance.symbol.blendMode != null)
+		if (!anim.metadata.skipBlends && instance.symbol != null && instance.symbol.blendMode != NORMAL)
 			blendMode = instance.symbol.blendMode;
 
 		if (instance.bitmap != null)

@@ -91,7 +91,7 @@ class SymbolParameters implements IFilterable
 
 	public var colorEffect(default, set):FlxColorEffect;
 
-	public var blendMode(default, set):BlendMode = null;
+	public var blendMode(default, set):BlendMode = NORMAL;
 
 	public var cacheAsBitmap(get, set):Bool;
 
@@ -292,15 +292,15 @@ class SymbolParameters implements IFilterable
 
 	function set_blendMode(value:BlendMode)
 	{
-		// if (value == null)
-		// 	value = NORMAL;
+		if (value == null)
+			value = NORMAL;
 
-		if (type == Graphic) return blendMode = null;
+		if (type == Graphic) return blendMode = NORMAL;
 
 		if (blendMode != value)
 		{
 			blendMode = value;
-			if ((blendMode != null && blendMode != NORMAL) && _filterFrame == null)
+			if (blendMode != NORMAL && _filterFrame == null)
 				_renderDirty = true;
 		}
 		return value;
@@ -310,7 +310,7 @@ class SymbolParameters implements IFilterable
 	{
 		if (type == Graphic) return false;
 
-		if (filters != null && filters.length > 0 || (blendMode != null && blendMode != NORMAL)) return true;
+		if (filters != null && filters.length > 0 || blendMode != NORMAL) return true;
 
 		return _cacheAsBitmap;
 	}

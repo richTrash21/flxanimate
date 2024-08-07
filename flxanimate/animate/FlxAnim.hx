@@ -547,6 +547,12 @@ class FlxAnim implements IFlxDestroyable
 	public inline function getFrameLabel(name:String, ?layer:EitherType<Int, String>):FlxKeyFrame
 		return curSymbol.getFrameLabel(name, layer);
 
+	public function getLabel(Label:String, ?layer:EitherType<Int, String>, ?instance:FlxSymbol)
+	{
+		instance = instance == null ? symbolDictionary.get(stageInstance.symbol.name) : instance;
+		return instance == null ? null : instance.getFrameLabel(Label, layer);
+	}
+	
 	public function toString()
 	{
 		return FlxStringUtil.getDebugString([
