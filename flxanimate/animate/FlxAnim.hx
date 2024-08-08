@@ -350,7 +350,7 @@ class FlxAnim implements IFlxDestroyable
 						curFrame++;
 				}
 				curSymbol.fireCallbacks();
-				onFrame.dispatch(curInstance.name, curSymbol.name, curFrame);
+				onFrame.dispatch(curInstance.symbol.name, curSymbol.name, curFrame);
 			}
 
 
@@ -358,7 +358,7 @@ class FlxAnim implements IFlxDestroyable
 			{
 				if (loopType == PlayOnce)
 					pause();
-				onComplete.dispatch(curInstance.name, curSymbol.name);
+				onComplete.dispatch(curInstance.symbol.name, curSymbol.name);
 			}
 		}
 	}

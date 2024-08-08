@@ -32,6 +32,9 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 	 */
 	public var matrix(default, set):FlxMatrix;
 
+	public var flipX:Bool;
+	public var flipY:Bool;
+
 	@:allow(flxanimate.FlxAnimate)
 	var _matrix:FlxMatrix = new FlxMatrix();
 

@@ -44,7 +44,7 @@ typedef Settings = {
 	?ButtonSettings:Map<String, flxanimate.animate.FlxAnim.ButtonSettings>,
 	?FrameRate:Float,
 	?Reversed:Bool,
-	?OnComplete:Void->Void,
+	?OnComplete:String->String->Void,
 	?ShowPivot:Bool,
 	?Antialiasing:Bool,
 	?ScrollFactor:FlxPoint,
@@ -236,32 +236,32 @@ class FlxAnimate extends FlxSprite
 		updateTrig();
 		updateSkewMatrix();
 	
-		_matrix.identity();
-		if (flipX)
-		{
-			_matrix.a *= -1;
-			_matrix.tx += width;
-		}
-		if (flipY)
-		{
-			_matrix.d *= -1;
-			_matrix.ty += height;
-		}
-
-		_flashRect.setEmpty();
-
 		if (anim.curInstance != null)
+		{
+			_flashRect.setEmpty();
+	
 			anim.curInstance.updateRender(_lastElapsed, anim.curFrame, anim.symbolDictionary, anim.swfRender);
-		if (frames != null)
-			parseElement(anim.curInstance, _matrix, colorTransform, blend, cameras);
-
-		width = _flashRect.width;
-		height = _flashRect.height;
-		frameWidth = Math.round(width);
-		frameHeight = Math.round(height);
-
-		relativeX = _flashRect.x - x;
-		relativeY = _flashRect.y - y;
+			_matrix.identity();
+			if (flipX != anim.curInstance.flipX)
+			{
+				_matrix.a *= -1;
+				_matrix.tx += width;
+			}
+			if (flipY != anim.curInstance.flipY)
+			{
+				_matrix.d *= -1;
+				_matrix.ty += height;
+			}
+			if (frames != null)
+				parseElement(anim.curInstance, _matrix, colorTransform, blend, cameras);
+			width = _flashRect.width;
+			height = _flashRect.height;
+			frameWidth = Math.round(width);
+			frameHeight = Math.round(height);
+	
+			relativeX = _flashRect.x - x;
+			relativeY = _flashRect.y - y;	
+		}
 
 		if (showPivot)
 		{
