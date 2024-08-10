@@ -406,12 +406,12 @@ class FlxAnimate extends FlxSprite
 					if (frame._renderDirty)
 					{
 						var colTr = ColorTransform.__pool.get();
-						var mat = matrixesPool.get();
-						renderLayer(frame, mat, colTr, null, blendMode, [filterCamera]);
-						ColorTransform.__pool.release(colTr);
-						matrixesPool.put(mat);
-
 						layer._filterMatrix.identity();
+
+						// var mat = matrixesPool.get();
+						renderLayer(frame, layer._filterMatrix, colTr, null, blendMode, [filterCamera]);
+						ColorTransform.__pool.release(colTr);
+						// matrixesPool.put(mat);
 
 						frame._renderDirty = false;
 					}
@@ -423,7 +423,7 @@ class FlxAnimate extends FlxSprite
 
 				if (frame == null) continue;
 
-				var toBitmap = !skipFilters && (frame.filters != null || layer.type.getName() == "Clipped");
+				var toBitmap = !skipFilters && (frame.filters != null || layer.type == Clipper);
 
 				var coloreffect = ColorTransform.__pool.get();
 				coloreffect.__copyFrom(colorEffect);
@@ -445,12 +445,12 @@ class FlxAnimate extends FlxSprite
 					continue;
 				}
 
-				var mat = toBitmap ? matrixesPool.get() : matrix;
+				var mat = toBitmap ? layer._filterMatrix : matrix;
 				renderLayer(frame, mat, coloreffect, toBitmap ? null : filterInstance, blendMode, toBitmap ? [filterCamera] : cameras);
 
 				if (toBitmap)
 				{
-					matrixesPool.put(cast mat);
+					// matrixesPool.put(cast mat);
 					layer._filterMatrix.identity();
 
 					renderFilter(layer, frame.filters, (layer._clipper != null) ? maskCamera : null);
