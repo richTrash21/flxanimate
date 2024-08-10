@@ -227,7 +227,7 @@ class FlxAnim implements IFlxDestroyable
 				if (curThing == null)
 					FlxG.log.error('There\'s no animation called $Name!');
 			}
-			else
+			if (curThing != null)
 			{
 				Force = (Force || curInstance != curThing.instance);
 
