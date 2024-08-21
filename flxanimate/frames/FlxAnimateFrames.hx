@@ -113,7 +113,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		if (Image == null)
 		{
 			if (Path is String)
-				Image = haxe.io.Path.addTrailingSlash(haxe.io.Path.directory(Path)) + json.meta.image;
+				Image = haxe.io.Path.addTrailingSlash(Utils.directory(Path)) + json.meta.image;
 			else
 				return null;
 		}
@@ -174,7 +174,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		if (Image == null)
 		{
 			if (Path is String)
-				Image = haxe.io.Path.addTrailingSlash(haxe.io.Path.directory(Path)) + data.get("imagePath");
+				Image = haxe.io.Path.addTrailingSlash(Utils.directory(Path)) + data.get("imagePath");
 			else
 				return null;
 		}
@@ -268,7 +268,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		if (Image == null)
 		{
 			if (Path is String)
-				Image = haxe.io.Path.addTrailingSlash(haxe.io.Path.directory(Path)) + data.meta.image;
+				Image = haxe.io.Path.addTrailingSlash(Utils.directory(Path)) + data.meta.image;
 			else
 				return null;
 		}
@@ -301,7 +301,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		if (Image == null)
 		{
 			if (Path is String)
-				Image = haxe.io.Path.addTrailingSlash(haxe.io.Path.directory(Path)) + data.metadata.textureFileName;
+				Image = haxe.io.Path.addTrailingSlash(Utils.directory(Path)) + data.metadata.textureFileName;
 			else
 				return null;
 		}
@@ -355,7 +355,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 			if (Image == null)
 			{
 				if (Path is String)
-					Image = haxe.io.Path.addTrailingSlash(haxe.io.Path.directory(Path)) + data.metadata.target.name;
+					Image = haxe.io.Path.addTrailingSlash(Utils.directory(Path)) + data.metadata.target.name;
 				else
 					return null;
 			}
@@ -416,14 +416,18 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		var prevName = "";
 		var imagePath = Path.split("/");
 		imagePath.pop();
-		for (i in 0...names.length)
+		var times;
+		var json;
+		var bitmap;
+		var frames;
+		var initialFrame;
+		for (i => name in names)
 		{
-			var times = 0;
-			var name = names[i];
-			var json = jsons[i];
-			var bitmap = FlxG.bitmap.add(Utils.getBitmapData((Image == null) ? '${imagePath.join("/")}/${json.images[0]}' : Image));
-			var frames = new FlxAtlasFrames(bitmap);
-			var initialFrame = [json.frames[0][5], json.frames[0][6]];
+			times = 0;
+			json = jsons[i];
+			bitmap = FlxG.bitmap.add(Utils.getBitmapData((Image == null) ? '${imagePath.join("/")}/${json.images[0]}' : Image));
+			frames = new FlxAtlasFrames(bitmap);
+			initialFrame = [json.frames[0][5], json.frames[0][6]];
 			for (frame in json.frames)
 			{
 				sliceFrame(name, false, FlxRect.get(frame[0], frame[1], frame[2], frame[3]), null,

@@ -1,24 +1,28 @@
 package flxanimate.animate;
 
-import flixel.FlxG;
-import flixel.util.FlxDestroyUtil;
-import flixel.math.FlxRect;
-import flixel.graphics.FlxGraphic;
-import openfl.geom.Rectangle;
-import flixel.FlxObject;
-import flxanimate.display.FlxAnimateFilterRenderer;
-import flixel.math.FlxMatrix;
-import flixel.graphics.frames.FlxFrame;
-import flixel.FlxCamera;
-import openfl.display.BitmapData;
-import flxanimate.data.AnimationData.LayerType;
-import flixel.math.FlxMath;
 import haxe.extern.EitherType;
-import flxanimate.data.AnimationData.Frame;
+
+import openfl.geom.Rectangle;
+import openfl.display.BitmapData;
+
+import flixel.graphics.FlxGraphic;
+import flixel.graphics.frames.FlxFrame;
+import flixel.math.FlxRect;
+import flixel.math.FlxMatrix;
+import flixel.math.FlxMath;
+import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
+import flixel.FlxCamera;
+import flixel.FlxG;
+import flixel.FlxObject;
+
+import flxanimate.data.AnimationData.Frame;
 import flxanimate.data.AnimationData.Layers;
+import flxanimate.data.AnimationData.LayerType;
+import flxanimate.display.FlxAnimateFilterRenderer;
 import flxanimate.interfaces.IFilterable;
 import flxanimate.motion.easing.*;
+import flxanimate.Utils;
 
 class FlxLayer extends FlxObject implements IFilterable
 {
@@ -99,9 +103,9 @@ class FlxLayer extends FlxObject implements IFilterable
 		_filterCamera = FlxDestroyUtil.destroy(_filterCamera);
 		_filterMatrix = null;
 		// FlxG.bitmap.remove(_bmpGraphic1);
-		_bmp1 = FlxDestroyUtil.dispose(_bmp1);
+		_bmp1 = Utils.dispose(_bmp1);
 		// FlxG.bitmap.remove(_bmpGraphic2);
-		_bmp2 = FlxDestroyUtil.dispose(_bmp2);
+		_bmp2 = Utils.dispose(_bmp2);
 
 		for (keyframe in _keyframes)
 		{
@@ -114,17 +118,19 @@ class FlxLayer extends FlxObject implements IFilterable
 	{
 		var _prevFrame = _currFrame;
 		_setCurFrame(curFrame);
-		if (_clipper == null && type.getName() == "Clipped")
+		if (_clipper == null)
 		{
-			if (_parent != null)
+			switch (type)
 			{
-				var l = _parent.get(type.getParameters()[0]);
-				if (l != null)
-				{
-					l._correctClip = true;
-
-					_clipper = l;
-				}
+				case Clipped(l) if (_parent != null):
+					var l = _parent.get(l);
+					if (l != null)
+					{
+						l._correctClip = true;
+	
+						_clipper = l;
+					}
+				case _:
 			}
 		}
 		else if (_clipper != null)
@@ -155,11 +161,11 @@ class FlxLayer extends FlxObject implements IFilterable
 	@:allow(flxanimate.FlxAnimate)
 	function _get(frame:EitherType<String, Int>, _animateRendering:Bool = true)
 	{
-		if (_animateRendering && type.getName() == "Clipped")
+		if (_animateRendering && type.match(Clipped(_)))
 		{
 			var layers = _parent.getList();
 			var layer = layers[layers.indexOf(this) - 1];
-			if (_parent != null && layer != null && layer.type.getName() == "Clipper")
+			if (_parent != null && layer != null && layer.type.match(Clipper))
 			{
 				layer._renderable = false;
 			}
@@ -268,11 +274,11 @@ class FlxLayer extends FlxObject implements IFilterable
 	}
 	function set_type(value:LayerType)
 	{
-		if (type != null && type.getName() == "Clipped")
+		if (type != null && type.match(Clipped(_)))
 		{
 			var layers = _parent.getList();
 			var layer = layers[layers.indexOf(this) - 1];
-			if (_parent != null && layer != null && layer.type.getName() == "Clipper")
+			if (_parent != null && layer != null && layer.type.match(Clipper))
 			{
 				layer._renderable = true;
 			}
@@ -338,11 +344,14 @@ class FlxLayer extends FlxObject implements IFilterable
 				_filterFrame = new FlxFrame(null);
 			}
 			_filterFrame.parent = FlxG.bitmap.add(new BitmapData(wid, hei, 0), true);
+			Utils.dispose(_bmp1);
 			_bmp1 = new BitmapData(wid, hei, 0);
 			// _bmpGraphic1 = FlxGraphic.fromBitmapData(_bmp1, true);
+			Utils.dispose(_bmp2);
 			_bmp2 = new BitmapData(wid, hei, 0);
 			// _bmpGraphic2 = FlxGraphic.fromBitmapData(_bmp2, true);
 			_filterFrame.frame = new FlxRect(0, 0, wid, hei);
+			// _filterFrame.offset.set(rect.x, rect.y);
 			_filterFrame.sourceSize.set(rect.width, rect.height);
 			@:privateAccess
 			_filterFrame.cacheFrameMatrix();

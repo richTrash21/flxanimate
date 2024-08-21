@@ -401,7 +401,7 @@ class FlxAnim implements IFlxDestroyable
 	public function addByFrameLabel(Name:String, FrameLabel:String, FrameRate:Float = 0, Indices:Array<Int> = null, Looped:Bool = true, X:Float = 0, Y:Float = 0) {
 		if (symbolDictionary == null)
 			return false;
-		var keyFrame = symbolDictionary.get(stageInstance.symbol.name)?.getFrameLabel(FrameLabel);
+		var keyFrame:FlxKeyFrame = symbolDictionary.get(stageInstance.symbol.name)?.getFrameLabel(FrameLabel);
 		if (keyFrame == null)
 			return false;
 
@@ -419,7 +419,7 @@ class FlxAnim implements IFlxDestroyable
 			for (i in 0...listElements.length)
 			{
 				element = listElements[listElements.length - 1 - i];
-				if (element != null && element.symbol != null)
+				if (element?.symbol != null)
 				{
 					if (Indices == null)
 						addBySymbol(Name, element.symbol.name, FrameRate, Looped, X, Y);

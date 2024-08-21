@@ -28,7 +28,7 @@ class FlxTint extends FlxColorEffect
 	public function new(tint:FlxColor, multiplier:Float)
 	{
 		this.multiplier = multiplier;
-		this.tint = tint;
+		this.tint = tint.to24Bit();
 
 		super();
 	}
@@ -51,7 +51,7 @@ class FlxTint extends FlxColorEffect
 	}
 	inline function set_multiplier(value:Float)
 	{
-		if (tint != value) renderDirty = true;
+		if (multiplier != value) renderDirty = true;
 
 		return multiplier = value;
 	}

@@ -1,27 +1,26 @@
 package flxanimate.display;
 
-import openfl.utils.ByteArray;
 import flxanimate.filters.MaskShader;
-import openfl.filters.ShaderFilter;
-import flixel.FlxCamera;
-import openfl.display.BlendMode;
-import openfl.display3D.Context3DClearMask;
-import openfl.display3D.Context3D;
+
 import flixel.math.FlxPoint;
-import lime.graphics.cairo.Cairo;
-import openfl.display.DisplayObjectRenderer;
-import openfl.filters.BlurFilter;
-import openfl.display.Graphics;
 import flixel.FlxG;
-import openfl.display.OpenGLRenderer;
-import openfl.geom.Rectangle;
-import openfl.display.BitmapData;
-import openfl.filters.BitmapFilter;
-import openfl.geom.Matrix;
-import openfl.geom.ColorTransform;
-import openfl.geom.Point;
 
 import openfl.display._internal.Context3DGraphics;
+import openfl.display.BitmapData;
+import openfl.display.BlendMode;
+import openfl.display.DisplayObjectRenderer;
+import openfl.display.Graphics;
+import openfl.display.OpenGLRenderer;
+import openfl.display3D.Context3D;
+import openfl.display3D.Context3DClearMask;
+import openfl.filters.BitmapFilter;
+import openfl.filters.ShaderFilter;
+import openfl.geom.ColorTransform;
+import openfl.geom.Rectangle;
+import openfl.geom.Matrix;
+
+import lime.graphics.cairo.Cairo;
+
 #if (js && html5)
 import openfl.display.CanvasRenderer;
 import openfl.display._internal.CanvasGraphics as GfxRenderer;
@@ -49,10 +48,9 @@ class FlxAnimateFilterRenderer
 {
 	var renderer:OpenGLRenderer;
 	var context:Context3D;
-	@:privateAccess
-	var maskShader:flxanimate.filters.MaskShader;
 
-	var maskFilter:ShaderFilter;
+	static var maskShader:MaskShader = new MaskShader();
+	static var maskFilter:ShaderFilter = new ShaderFilter(maskShader);
 
 	public function new()
 	{
@@ -60,8 +58,6 @@ class FlxAnimateFilterRenderer
 		renderer = new OpenGLRenderer(FlxG.game.stage.context3D);
 		renderer.__worldTransform = new Matrix();
 		renderer.__worldColorTransform = new ColorTransform();
-		maskShader = new MaskShader();
-		maskFilter = new ShaderFilter(maskShader);
 	}
 
 	@:noCompletion function setRenderer(renderer:DisplayObjectRenderer, rect:Rectangle)
@@ -98,7 +94,7 @@ class FlxAnimateFilterRenderer
 		}
 	}
 
-	public function applyFilter(bmp:BitmapData, target:BitmapData, target2:BitmapData, target3:BitmapData, filters:Array<BitmapFilter>, rect:Rectangle, ?mask:BitmapData, ?maskPos:FlxPoint)
+	public function applyFilter(startBmp:BitmapData, outBmp:BitmapData, casheBmp:BitmapData, casheBmp2:BitmapData, filters:Array<BitmapFilter>, rect:Rectangle, ?mask:BitmapData, ?maskPos:FlxPoint)
 	{
 		if (mask != null)
 		{
@@ -117,35 +113,36 @@ class FlxAnimateFilterRenderer
 		renderer.__worldTransform.identity();
 		renderer.__worldColorTransform.__identity();
 
-		var bitmap:BitmapData = target;
-		var bitmap2:BitmapData = target2;
-		var bitmap3:BitmapData = target3;
+		var bitmap:BitmapData = outBmp;
+		var bitmap2:BitmapData = casheBmp;
+		var bitmap3:BitmapData = casheBmp2;
 
-		bmp.__renderTransform.translate(Math.abs(rect.x), Math.abs(rect.y));
-		renderer.__setRenderTarget(target);
-		renderer.__renderFilterPass(bmp, renderer.__defaultDisplayShader, true);
-		bmp.__renderTransform.identity();
+		startBmp.__renderTransform.translate(-rect.x, -rect.y);
+		renderer.__setRenderTarget(outBmp);
+		renderer.__renderFilterPass(startBmp, renderer.__defaultDisplayShader, true);
+		startBmp.__renderTransform.translate(rect.x, rect.y);
+		// startBmp.__renderTransform.identity();
 
 		if (filters != null)
 		{
-			var cacheBitmap;
+			var localCacheBitmap;
 			for (filter in filters)
 			{
 				if (filter.__preserveObject)
 				{
-					renderer.__setRenderTarget(target3);
-					renderer.__renderFilterPass(target, renderer.__defaultDisplayShader, filter.__smooth);
+					renderer.__setRenderTarget(casheBmp2);
+					renderer.__renderFilterPass(outBmp, renderer.__defaultDisplayShader, filter.__smooth);
 				}
 
 				for (i in 0...filter.__numShaderPasses)
 				{
 					renderer.__setBlendMode(filter.__shaderBlendMode);
-					renderer.__setRenderTarget(target2);
-					renderer.__renderFilterPass(target, filter.__initShader(renderer, i, filter.__preserveObject ? target3 : null), filter.__smooth);
+					renderer.__setRenderTarget(casheBmp);
+					renderer.__renderFilterPass(outBmp, filter.__initShader(renderer, i, filter.__preserveObject ? casheBmp2 : null), filter.__smooth);
 
-					cacheBitmap = target;
-					target = target2;
-					target2 = cacheBitmap;
+					localCacheBitmap = outBmp;
+					outBmp = casheBmp;
+					casheBmp = localCacheBitmap;
 				}
 
 				filter.__renderDirty = false;
@@ -209,7 +206,6 @@ class FlxAnimateFilterRenderer
 
 		var bounds = gfx.__owner.getBounds(null);
 
-
 		var bmp = (target == null) ? new BitmapData(Math.ceil(bounds.width), Math.ceil(bounds.height), true, 0) : target;
 
 		renderer.__worldTransform.translate(-bounds.x, -bounds.y);
@@ -220,7 +216,8 @@ class FlxAnimateFilterRenderer
 		var context = renderer.__context3D;
 
 		renderer.__setRenderTarget(bmp);
-		context.setRenderToTexture(bmp.getTexture(context));
+		var renderBuffer = bmp.getTexture(context);
+		context.setRenderToTexture(renderBuffer);
 
 		Context3DGraphics.render(gfx, renderer);
 
@@ -228,10 +225,9 @@ class FlxAnimateFilterRenderer
 
 
 		var gl = renderer.__gl;
-		var renderBuffer = bmp.getTexture(context);
 
 		@:privateAccess
-		gl.readPixels(0, 0, Math.round(bmp.width), Math.round(bmp.height), renderBuffer.__format, gl.UNSIGNED_BYTE, bmp.image.data);
+		gl.readPixels(0, 0, bmp.width, bmp.height, renderBuffer.__format, gl.UNSIGNED_BYTE, bmp.image.data);
 
 
 		if (cacheRTT != null)

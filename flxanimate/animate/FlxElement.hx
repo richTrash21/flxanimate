@@ -44,8 +44,6 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 	@:allow(flxanimate.FlxAnimate)
 	var _scrollF:FlxPoint;
 
-
-
 	/**
 	 * Creates a new `FlxElement` instance.
 	 * @param name the name of the element. `WARNING:` this name is dynamic, in other words, this name can used for the limb or the symbol!

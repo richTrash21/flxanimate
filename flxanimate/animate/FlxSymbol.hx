@@ -240,7 +240,6 @@ class FlxSymbol implements IFlxDestroyable
 	 */
 	public function getFrameLabels(?layer:EitherType<Int, String> = null)
 	{
-		var array = [];
 		var labels = [];
 		if (layer == null)
 		{
@@ -262,12 +261,8 @@ class FlxSymbol implements IFlxDestroyable
 			}
 		}
 		labels.sort((a, b) -> a.index - b.index);
-		for (label in labels)
-		{
-			array.push(label);
-		}
 
-		return array;
+		return labels;
 	}
 	public function getFrameLabelNames(?layer:EitherType<Int, String> = null)
 	{

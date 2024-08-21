@@ -28,7 +28,13 @@ typedef AnimateSpriteData =
 	var rotated:Bool;
 }
 @:forward
-abstract Meta({var app:String; var version:String; var image:String; var format:String; var size:Size;})
+abstract Meta({
+	public var app:String;
+	public var version:String;
+	public var image:String;
+	public var format:String;
+	public var size:Size;
+})
 {
 	public var resolution(get, never):String;
 

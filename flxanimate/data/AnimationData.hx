@@ -63,16 +63,16 @@ class AnimationData
 			case Brightness, "Brightness":
 				colorEffect = Brightness(effect.BRT);
 			case Advanced, "Advanced":
-			{
 				colorEffect = Advanced(new ColorTransform(
 					effect.RM, effect.RO,
 					effect.GM, effect.GO,
 					effect.BM, effect.BO,
 					effect.AM, effect.AO
 				));
-			}
 			default:
-				flixel.FlxG.log.error('color Effect mode "${effect.M}" is invalid or not supported!');
+				final message = 'Color Effect mode "${effect.M}" is invalid or not supported!';
+				trace(message);
+				flixel.FlxG.log.error(message);
 		}
 		return colorEffect;
 	}
@@ -176,7 +176,6 @@ class AnimationData
 	{
 		var CT = null;
 
-		//if ([None, null].indexOf(colorEffect) == -1)
 		if(colorEffect != None && colorEffect != null)
 		{
 			CT = switch (colorEffect)

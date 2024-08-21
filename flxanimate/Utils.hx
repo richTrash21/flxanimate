@@ -1,9 +1,9 @@
 package flxanimate;
 
+import openfl.display.BitmapData;
 #if ANIMATE_SYS_PATHS
 import sys.FileSystem;
 import sys.io.File;
-import openfl.display.BitmapData;
 #else
 import openfl.Assets;
 #end
@@ -12,13 +12,23 @@ class Utils
 {
 	public static function directory(path:String)
 	{
-		path = path.substring(0, path.lastIndexOf("/") + 1);
-		return path.substring(path.lastIndexOf("/") + 1);
+		return path.substring(0, path.lastIndexOf("/"));
 	}
 	public static function extension(path:String):String
 	{
 		var cp = path.lastIndexOf(".");
-		return cp == -1 ? "" : path.substring(cp + 1);
+		return cp == -1 ? null : path.substring(cp + 1);
+	}
+
+	@:access(openfl.display.BitmapData)
+	public static function dispose(bmp:BitmapData)
+	{
+		if (bmp != null)
+		{
+			bmp.__texture?.dispose();
+			bmp.dispose();
+		}	
+		return null;
 	}
 
 	public static function withoutDirectory(path:String)

@@ -55,7 +55,7 @@ class FlxKeyFrame
 	public var filters(default, set):Array<BitmapFilter>;
 
 	var _curFrame:Int = 0;
-	public function new(index:Int, ?duration:Int = 1, ?elements:Array<FlxElement> = null, ?colorEffect:FlxColorEffect = null, ?name:String = null)
+	public function new(index:Int, ?duration:Int = 1, ?elements:Array<FlxElement> = null, ?colorEffect:EitherType<ColorEffect, FlxColorEffect> = null, ?name:String = null)
 	{
 		this.index = index;
 		this.duration = duration;
@@ -260,17 +260,9 @@ class FlxKeyFrame
 	{
 		if (frame == null) return null;
 
-		var keyframe = new FlxKeyFrame(frame.I, frame.DU, frame.N);
-		keyframe.colorEffect = AnimationData.fromColorJson(frame.C);
-
 		var E = frame.E;
-		if (E != null)
-		{
-			for (element in E)
-			{
-				keyframe.add(FlxElement.fromJSON(element));
-			}
-		}
+		var keyframe = new FlxKeyFrame(frame.I, frame.DU, E != null ? [ for (element in E) FlxElement.fromJSON(element) ] : null, AnimationData.fromColorJson(frame.C), frame.N);
+
 		keyframe.filters = AnimationData.fromFilterJson(frame.F);
 
 		return keyframe;
