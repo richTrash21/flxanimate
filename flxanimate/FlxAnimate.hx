@@ -285,12 +285,12 @@ class FlxAnimate extends FlxSprite
 			if (flipX != anim.curInstance.flipX)
 			{
 				_matrix.a *= -1;
-				_matrix.tx += width;
+				// _matrix.tx += width;
 			}
 			if (flipY != anim.curInstance.flipY)
 			{
 				_matrix.d *= -1;
-				_matrix.ty += height;
+				// _matrix.ty += height;
 			}
 			if (frames != null)
 				parseElement(anim.curInstance, _matrix, colorTransform, blend, cameras);
@@ -711,6 +711,9 @@ class FlxAnimate extends FlxSprite
 
 				if (!limbOnScreen(limb, _mat, camera))
 					continue;
+				#if FLX_DEBUG
+				FlxBasic.visibleCount++;
+				#end
 			}
 			camera.drawPixels(limb, null, _mat, colorTransform, blendMode, filterin || antialiasing, this.shader);
 		}
@@ -732,7 +735,6 @@ class FlxAnimate extends FlxSprite
 			x = oldX;
 			y = oldY;
 		}
-		FlxBasic.visibleCount++;
 		#end
 	}
 
@@ -743,11 +745,11 @@ class FlxAnimate extends FlxSprite
 
 		limb.frame.copyToFlash(rect);
 
-		rect.offset(-rect.x, -rect.y);
+		rect.setTo(0, 0, rect.width, rect.width);
 
 		rect.__transform(rect, m);
 
-		_point.copyFromFlash(rect.topLeft);
+		_point.set(rect.x, rect.y);
 
 		if (_indicator != limb && _pivot != limb)
 		{
