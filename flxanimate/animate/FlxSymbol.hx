@@ -15,9 +15,6 @@ import flxanimate.data.AnimationData;
 
 class FlxSymbol implements IFlxDestroyable
 {
-	@:allow(flxanimate.animate.FlxElement)
-	var filterPool:Map<Array<BitmapFilter>, BitmapData> = [];
-
 	var _sprite:Sprite;
 	@:allow(flxanimate.FlxAnimate)
 	var _checking:Bool = false;
@@ -30,7 +27,7 @@ class FlxSymbol implements IFlxDestroyable
 	/**
 	 * The amount of frames the symbol has.
 	 */
-	public var length(get, null):Int;
+	public var length(get, never):Int;
 	/**
 	 * The name of the symbol.
 	 */
@@ -47,7 +44,7 @@ class FlxSymbol implements IFlxDestroyable
 	/**
 	 * The amount of layers structured in names.
 	 */
-	public var layers(get, null):Array<String>;
+	public var layers(get, never):Array<String>;
 
 	/**
 	 * The current frame.
@@ -62,7 +59,6 @@ class FlxSymbol implements IFlxDestroyable
 	@:allow(flxanimate.animate.FlxAnim)
 	function new(name:String, timeline:FlxTimeline)
 	{
-		layers = [];
 		curFrame = 0;
 		this.timeline = timeline;
 		timeline._parent = this;

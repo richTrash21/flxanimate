@@ -30,7 +30,7 @@ class FlxLayer extends FlxObject implements IFilterable
 
 	public var name(default, null):String;
 	public var type(default, set):LayerType;
-	public var length(get, null):Int;
+	public var length(get, never):Int;
 
 	@:allow(flxanimate.FlxAnimate)
 	var _filterCamera:FlxCamera;
@@ -165,7 +165,7 @@ class FlxLayer extends FlxObject implements IFilterable
 		{
 			var layers = _parent.getList();
 			var layer = layers[layers.indexOf(this) - 1];
-			if (_parent != null && layer != null && layer.type.match(Clipper))
+			if (_parent != null && layer != null && layer.type == Clipper)
 			{
 				layer._renderable = false;
 			}
@@ -278,7 +278,7 @@ class FlxLayer extends FlxObject implements IFilterable
 		{
 			var layers = _parent.getList();
 			var layer = layers[layers.indexOf(this) - 1];
-			if (_parent != null && layer != null && layer.type.match(Clipper))
+			if (_parent != null && layer != null && layer.type == Clipper)
 			{
 				layer._renderable = true;
 			}
@@ -368,15 +368,10 @@ class FlxLayer extends FlxObject implements IFilterable
 	public static function fromJSON(layer:Layers)
 	{
 		if (layer == null) return null;
-		var frames = [];
 		var l = new FlxLayer(layer.LN);
-		var Clpb = layer.Clpb;
-		var LT = layer.LT;
-		if (LT != null || Clpb != null)
-		{
-			l.type = (LT != null) ? Clipper : Clipped(Clpb);
-		}
-		var FR = layer.FR;
+		final clpb = layer.Clpb;
+		l.type = (layer.LT != null) ? Clipper : (clpb != null) ? Clipped(clpb) : Normal;
+		final FR = layer.FR;
 		if (FR != null)
 		{
 			for (frame in FR)

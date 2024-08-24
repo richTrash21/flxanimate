@@ -15,6 +15,9 @@ class AnimationData
 
 	// public static var bracketReg:EReg = ~/(\{([^{}]|(?R))*\})/s;.
 
+	//TODO: The comment below this comment.
+	// GeoKureli told me that Reflect is shit, but I have literally no option but to use this.
+	// If I have another thing to use that works the same, should replace this lol
 	/**
 	 * Checks a value, using `Reflection`.
 	 * @param abstracto The abstract in specific.
@@ -22,26 +25,39 @@ class AnimationData
 	 * @param set What value you want to set.
 	 * @return The value in specific casted as `Dynamic`.
 	 */
-	public static function setFieldBool(abstracto:Dynamic, things:Array<String>, ?set:Dynamic):Dynamic
+	public static function getFieldBool(abstracto:Dynamic, things:Array<String>):Dynamic
 	{
-		//TODO: The comment below this comment.
-		// GeoKureli told me that Reflect is shit, but I have literally no option but to use this.
-		// If I have another thing to use that works the same, should replace this lol
 		if (abstracto == null)
-			return Reflect.field({}, "");
+			return null;
 		for (thing in things)
 		{
-			if (set != null)
-			{
-				Reflect.setField(abstracto, thing, set);
-				return set;
-			}
 			if (Reflect.hasField(abstracto, thing))
 			{
 				return Reflect.field(abstracto, thing);
 			}
 		}
-		return Reflect.field(abstracto, "");
+		return null;
+	}
+	/**
+	 * Set a value, using `Reflection`.
+	 * @param abstracto The abstract in specific.
+	 * @param things The fields you want to use.
+	 * @param set What value you want to set.
+	 * @return The value in specific casted as `Dynamic`.
+	 */
+	public static function setFieldBool(abstracto:Dynamic, things:Array<String>, set:Dynamic):Dynamic
+	{
+		if (abstracto == null)
+			return null;
+		for (thing in things)
+		{
+			if (Reflect.hasField(abstracto, thing))
+			{
+				Reflect.setField(abstracto, thing, set);
+				return set;
+			}
+		}
+		return null;
 	}
 	/**
 	 * Parses a Color Effect from a JSON file into a enumeration of `ColorEffect`.
@@ -64,10 +80,8 @@ class AnimationData
 				colorEffect = Brightness(effect.BRT);
 			case Advanced, "Advanced":
 				colorEffect = Advanced(new ColorTransform(
-					effect.RM, effect.RO,
-					effect.GM, effect.GO,
-					effect.BM, effect.BO,
-					effect.AM, effect.AO
+					effect.RM, effect.GM, effect.BM, effect.AM, 
+					effect.RO, effect.GO, effect.BO, effect.AO
 				));
 			default:
 				final message = 'Color Effect mode "${effect.M}" is invalid or not supported!';
@@ -96,27 +110,22 @@ class AnimationData
 			switch (filter.split("_")[0])
 			{
 				case "DSF", "DropShadowFilter":
-				{
 					var drop:DropShadowFilter = Reflect.field(filters, filter);
 					bitmapFilter.unshift(new openfl.filters.DropShadowFilter(drop.DST, drop.AL, colorFromString(drop.C), drop.A, drop.BLX, drop.BLY, drop.STR, drop.Q, drop.IN, drop.KK));
-				}
-				case "GF", "GlowFilter":
-				{
+				
+				case "GF", "GlowFilter": // Friday Night Funkin reference ?!??!?!''1'!'?1'1''?1''
 					var glow:GlowFilter = Reflect.field(filters, filter);
 					bitmapFilter.unshift(new openfl.filters.GlowFilter(colorFromString(glow.C), glow.A, glow.BLX, glow.BLY, glow.STR, glow.Q, glow.IN, glow.KK));
-				}
+
 				case "BF", "BevelFilter": // Friday Night Funkin reference ?!??!?!''1'!'?1'1''?1''
-				{
 					var bevel:BevelFilter = Reflect.field(filters, filter);
 					bitmapFilter.unshift(new flxanimate.filters.BevelFilter(bevel.DST, bevel.AL, colorFromString(bevel.HC), bevel.HA, colorFromString(bevel.SC), bevel.SA, bevel.BLX, bevel.BLY, bevel.STR, bevel.Q, bevel.TP, bevel.KK));
-				}
+
 				case "BLF", "BlurFilter":
-				{
 					var blur:BlurFilter = Reflect.field(filters, filter);
 					bitmapFilter.unshift(new openfl.filters.BlurFilter(blur.BLX, blur.BLY, blur.Q));
-				}
+
 				case "ACF", "AdjustColorFilter":
-				{
 					var adjustColor:AdjustColorFilter = Reflect.field(filters, filter);
 
 					var colorAdjust = new AdjustColor();
@@ -127,10 +136,8 @@ class AnimationData
 					colorAdjust.saturation = adjustColor.SAT;
 
 					bitmapFilter.unshift(new openfl.filters.ColorMatrixFilter(colorAdjust.calculateFinalFlatArray()));
-				}
 
 				case "GGF", "GradientGlowFilter":
-				{
 					var gradient:GradientFilter = Reflect.field(filters, filter);
 					var colors:Array<Int> = [];
 					var alphas:Array<Float> = [];
@@ -145,9 +152,8 @@ class AnimationData
 
 
 					bitmapFilter.unshift(new flxanimate.filters.GradientGlowFilter(gradient.DST, gradient.AL, colors, alphas, ratios, gradient.BLX, gradient.BLY, gradient.STR, gradient.Q, gradient.TP, gradient.KK));
-				}
+
 				case "GBF", "GradientBevelFilter":
-				{
 					var gradient:GradientFilter = Reflect.field(filters, filter);
 					var colors:Array<Int> = [];
 					var alphas:Array<Float> = [];
@@ -162,7 +168,6 @@ class AnimationData
 
 
 					bitmapFilter.unshift(new flxanimate.filters.GradientBevelFilter(gradient.DST, gradient.AL, colors, alphas, ratios, gradient.BLX, gradient.BLY, gradient.STR, gradient.Q, gradient.TP, gradient.KK));
-				}
 			}
 		}
 
@@ -252,16 +257,16 @@ abstract AnimAtlas({}) from {}
 
 	inline function get_AN():Animation
 	{
-		return AnimationData.setFieldBool(this, ["AN", "ANIMATION"]);
+		return AnimationData.getFieldBool(this, ["AN", "ANIMATION"]);
 	}
 
 	inline function get_MD():MetaData
 	{
-		return AnimationData.setFieldBool(this, ["MD", "metadata"]);
+		return AnimationData.getFieldBool(this, ["MD", "metadata"]);
 	}
 	inline function get_SD()
 	{
-		return AnimationData.setFieldBool(this, ["SD", "SYMBOL_DICTIONARY"]);
+		return AnimationData.getFieldBool(this, ["SD", "SYMBOL_DICTIONARY"]);
 	}
 }
 /**
@@ -276,7 +281,7 @@ abstract SymbolDictionary({}) from {}
 
 	inline function get_S():Array<SymbolData>
 	{
-		return AnimationData.setFieldBool(this, ["S", "Symbols"]);
+		return AnimationData.getFieldBool(this, ["S", "Symbols"]);
 	}
 }
 @:forward
@@ -297,11 +302,11 @@ abstract Animation(SymbolData) from {}
 
 	inline function get_N():String
 	{
-		return AnimationData.setFieldBool(this, ["N", "name"]);
+		return AnimationData.getFieldBool(this, ["N", "name"]);
 	}
 	inline function get_STI()
 	{
-		return AnimationData.setFieldBool(this, ["STI", "StageInstance"]);
+		return AnimationData.getFieldBool(this, ["STI", "StageInstance"]);
 	}
 }
 /**
@@ -318,7 +323,7 @@ abstract StageInstance({})
 
 	inline function get_SI():SymbolInstance
 	{
-		return AnimationData.setFieldBool(this, ["SI", "SYMBOL_Instance"]);
+		return AnimationData.getFieldBool(this, ["SI", "SYMBOL_Instance"]);
 	}
 }
 /**
@@ -337,11 +342,11 @@ abstract SymbolData({}) from {}
 
 	inline function get_SN():String
 	{
-		return AnimationData.setFieldBool(this, ["SN", "SYMBOL_name"]);
+		return AnimationData.getFieldBool(this, ["SN", "SYMBOL_name"]);
 	}
 	inline function get_TL():Timeline
 	{
-		return AnimationData.setFieldBool(this, ["TL", "TIMELINE"]);
+		return AnimationData.getFieldBool(this, ["TL", "TIMELINE"]);
 	}
 }
 /**
@@ -356,7 +361,7 @@ abstract Timeline({}) from {}
 
 	inline function get_L():Array<Layers>
 	{
-		return AnimationData.setFieldBool(this, ["L", "LAYERS"]);
+		return AnimationData.getFieldBool(this, ["L", "LAYERS"]);
 	}
 	inline function set_L(value:Array<Layers>)
 	{
@@ -387,19 +392,19 @@ abstract Layers({}) from {}
 
 	inline function get_LN():String
 	{
-		return AnimationData.setFieldBool(this, ["LN", "Layer_name"]);
+		return AnimationData.getFieldBool(this, ["LN", "Layer_name"]);
 	}
 	inline function get_LT():String
 	{
-		return AnimationData.setFieldBool(this, ["LT", "Layer_type"]);
+		return AnimationData.getFieldBool(this, ["LT", "Layer_type"]);
 	}
 	inline function get_Clpb():String
 	{
-		return AnimationData.setFieldBool(this, ["Clpb", "Clipped_by"]);
+		return AnimationData.getFieldBool(this, ["Clpb", "Clipped_by"]);
 	}
 	inline function get_FR():Array<Frame>
 	{
-		return AnimationData.setFieldBool(this, ["FR", "Frames"]);
+		return AnimationData.getFieldBool(this, ["FR", "Frames"]);
 	}
 	inline function set_FR(value:Array<Frame>):Array<Frame>
 	{
@@ -419,7 +424,7 @@ abstract MetaData({}) from {}
 
 	inline function get_FRT()
 	{
-		return AnimationData.setFieldBool(this, ["FRT", "framerate"]);
+		return AnimationData.getFieldBool(this, ["FRT", "framerate"]);
 	}
 }
 /**
@@ -456,23 +461,23 @@ abstract Frame({}) from {}
 
 	inline function get_N():String
 	{
-		return AnimationData.setFieldBool(this, ["N", "name"]);
+		return AnimationData.getFieldBool(this, ["N", "name"]);
 	}
 	inline function get_I():Int
 	{
-		return AnimationData.setFieldBool(this, ["I", "index"]);
+		return AnimationData.getFieldBool(this, ["I", "index"]);
 	}
 	inline function get_DU():Int
 	{
-		return AnimationData.setFieldBool(this, ["DU", "duration"]);
+		return AnimationData.getFieldBool(this, ["DU", "duration"]);
 	}
 	inline function get_E():Array<Element>
 	{
-		return AnimationData.setFieldBool(this, ["E", "elements"]);
+		return AnimationData.getFieldBool(this, ["E", "elements"]);
 	}
 	inline function get_C()
 	{
-		return AnimationData.setFieldBool(this, ["C", "color"]);
+		return AnimationData.getFieldBool(this, ["C", "color"]);
 	}
 	inline function set_C(value:ColorEffects)
 	{
@@ -481,7 +486,7 @@ abstract Frame({}) from {}
 
 	inline function get_F()
 	{
-		return AnimationData.setFieldBool(this, ["F", "filters"]);
+		return AnimationData.getFieldBool(this, ["F", "filters"]);
 	}
 }
 /**
@@ -497,7 +502,7 @@ abstract Element(StageInstance)
 
 	inline function get_ASI():AtlasSymbolInstance
 	{
-		return AnimationData.setFieldBool(this, ["ASI", "ATLAS_SPRITE_instance"]);
+		return AnimationData.getFieldBool(this, ["ASI", "ATLAS_SPRITE_instance"]);
 	}
 }
 /**
@@ -559,46 +564,46 @@ abstract SymbolInstance({}) from {}
 
 	inline function get_SN()
 	{
-		return AnimationData.setFieldBool(this, ["SN", "SYMBOL_name"]);
+		return AnimationData.getFieldBool(this, ["SN", "SYMBOL_name"]);
 	}
 
 	inline function get_IN()
 	{
-		return AnimationData.setFieldBool(this, ["IN", "Instance_Name"]);
+		return AnimationData.getFieldBool(this, ["IN", "Instance_Name"]);
 	}
 
 	inline function get_ST()
 	{
-		return AnimationData.setFieldBool(this, ["ST", "symbolType"]);
+		return AnimationData.getFieldBool(this, ["ST", "symbolType"]);
 	}
 
 	inline function get_bitmap()
 	{
-		return AnimationData.setFieldBool(this, ["BM", "bitmap"]);
+		return AnimationData.getFieldBool(this, ["BM", "bitmap"]);
 	}
 	inline function get_FF()
 	{
-		return AnimationData.setFieldBool(this, ["FF", "firstFrame"]) ?? 0;
+		return AnimationData.getFieldBool(this, ["FF", "firstFrame"]) ?? 0;
 	}
 
 	inline function get_LP()
 	{
-		return AnimationData.setFieldBool(this, ["LP", "loop"]);
+		return AnimationData.getFieldBool(this, ["LP", "loop"]);
 	}
 
 	inline function get_TRP()
 	{
-		return AnimationData.setFieldBool(this, ["TRP", "transformationPoint"]);
+		return AnimationData.getFieldBool(this, ["TRP", "transformationPoint"]);
 	}
 
 	inline function get_M3D()
 	{
-		return AnimationData.setFieldBool(this, ["M3D", "Matrix3D"]);
+		return AnimationData.getFieldBool(this, ["M3D", "Matrix3D"]);
 	}
 
 	inline function get_C()
 	{
-		return AnimationData.setFieldBool(this, ["C", "color"]);
+		return AnimationData.getFieldBool(this, ["C", "color"]);
 	}
 	inline function set_C(value:ColorEffects)
 	{
@@ -607,7 +612,7 @@ abstract SymbolInstance({}) from {}
 
 	inline function get_F()
 	{
-		return AnimationData.setFieldBool(this, ["F", "filters"]);
+		return AnimationData.getFieldBool(this, ["F", "filters"]);
 	}
 }
 abstract ColorEffects({}) from {}
@@ -642,51 +647,51 @@ abstract ColorEffects({}) from {}
 
 	inline function get_M()
 	{
-		return AnimationData.setFieldBool(this, ["M", "mode"]);
+		return AnimationData.getFieldBool(this, ["M", "mode"]);
 	}
 	inline function get_TC()
 	{
-		return AnimationData.setFieldBool(this, ["TC", "tintColor"]);
+		return AnimationData.getFieldBool(this, ["TC", "tintColor"]);
 	}
 	inline function get_TM()
 	{
-		return AnimationData.setFieldBool(this, ["TM", "tintMultiplier"]);
+		return AnimationData.getFieldBool(this, ["TM", "tintMultiplier"]);
 	}
 	inline function get_AM()
 	{
-		return AnimationData.setFieldBool(this, ["AM", "alphaMultiplier"]);
+		return AnimationData.getFieldBool(this, ["AM", "alphaMultiplier"]);
 	}
 	inline function get_AO()
 	{
-		return AnimationData.setFieldBool(this, ["AO", "AlphaOffset"]);
+		return AnimationData.getFieldBool(this, ["AO", "AlphaOffset"]);
 	}
 	inline function get_RM()
 	{
-		return AnimationData.setFieldBool(this, ["RM", "RedMultiplier"]);
+		return AnimationData.getFieldBool(this, ["RM", "RedMultiplier"]);
 	}
 	inline function get_RO()
 	{
-		return AnimationData.setFieldBool(this, ["RO", "redOffset"]);
+		return AnimationData.getFieldBool(this, ["RO", "redOffset"]);
 	}
 	inline function get_GM()
 	{
-		return AnimationData.setFieldBool(this, ["GM", "greenMultiplier"]);
+		return AnimationData.getFieldBool(this, ["GM", "greenMultiplier"]);
 	}
 	inline function get_GO()
 	{
-		return AnimationData.setFieldBool(this, ["GO", "greenOffset"]);
+		return AnimationData.getFieldBool(this, ["GO", "greenOffset"]);
 	}
 	inline function get_BM()
 	{
-		return AnimationData.setFieldBool(this, ["BM", "blueMultiplier"]);
+		return AnimationData.getFieldBool(this, ["BM", "blueMultiplier"]);
 	}
 	inline function get_BO()
 	{
-		return AnimationData.setFieldBool(this, ["BO", "blueOffset"]);
+		return AnimationData.getFieldBool(this, ["BO", "blueOffset"]);
 	}
 	inline function get_BRT()
 	{
-		return AnimationData.setFieldBool(this, ["BRT", "Brightness"]);
+		return AnimationData.getFieldBool(this, ["BRT", "Brightness"]);
 	}
 }
 abstract Filters({})
@@ -705,11 +710,11 @@ abstract Filters({})
 
 	inline function get_ACF()
 	{
-		return AnimationData.setFieldBool(this, ["ACF", "AdjustColorFilter"]);
+		return AnimationData.getFieldBool(this, ["ACF", "AdjustColorFilter"]);
 	}
 	inline function get_GF()
 	{
-		return AnimationData.setFieldBool(this, ["GF"]);
+		return AnimationData.getFieldBool(this, ["GF"]);
 	}
 }
 /**
@@ -736,19 +741,19 @@ abstract AdjustColorFilter({})
 
 	inline function get_BRT()
 	{
-		return AnimationData.setFieldBool(this, ["BRT", "brightness"]);
+		return AnimationData.getFieldBool(this, ["BRT", "brightness"]);
 	}
 	inline function get_CT()
 	{
-		return AnimationData.setFieldBool(this, ["CT", "contrast"]);
+		return AnimationData.getFieldBool(this, ["CT", "contrast"]);
 	}
 	inline function get_SAT()
 	{
-		return AnimationData.setFieldBool(this, ["SAT", "saturation"]);
+		return AnimationData.getFieldBool(this, ["SAT", "saturation"]);
 	}
 	inline function get_H()
 	{
-		return AnimationData.setFieldBool(this, ["H", "hue"]);
+		return AnimationData.getFieldBool(this, ["H", "hue"]);
 	}
 }
 /**
@@ -773,15 +778,15 @@ abstract BlurFilter({})
 
 	inline function get_BLX()
 	{
-		return AnimationData.setFieldBool(this, ["BLX", "blurX"]);
+		return AnimationData.getFieldBool(this, ["BLX", "blurX"]);
 	}
 	inline function get_BLY()
 	{
-		return AnimationData.setFieldBool(this, ["BLY", "blurY"]);
+		return AnimationData.getFieldBool(this, ["BLY", "blurY"]);
 	}
 	inline function get_Q()
 	{
-		return AnimationData.setFieldBool(this, ["Q", "quality"]);
+		return AnimationData.getFieldBool(this, ["Q", "quality"]);
 	}
 }
 
@@ -796,23 +801,23 @@ abstract GlowFilter(BlurFilter)
 
 	inline function get_C()
 	{
-		return AnimationData.setFieldBool(this, ["C", "color"]);
+		return AnimationData.getFieldBool(this, ["C", "color"]);
 	}
 	inline function get_A()
 	{
-		return AnimationData.setFieldBool(this, ["A", "alpha"]);
+		return AnimationData.getFieldBool(this, ["A", "alpha"]);
 	}
 	inline function get_STR()
 	{
-		return AnimationData.setFieldBool(this, ["STR", "strength"]);
+		return AnimationData.getFieldBool(this, ["STR", "strength"]);
 	}
 	inline function get_KK()
 	{
-		return AnimationData.setFieldBool(this, ["KK", "knockout"]);
+		return AnimationData.getFieldBool(this, ["KK", "knockout"]);
 	}
 	inline function get_IN()
 	{
-		return AnimationData.setFieldBool(this, ["IN", "inner"]);
+		return AnimationData.getFieldBool(this, ["IN", "inner"]);
 	}
 }
 
@@ -825,15 +830,15 @@ abstract DropShadowFilter(GlowFilter)
 
 	inline function get_HO()
 	{
-		return AnimationData.setFieldBool(this, ["HO", "hideObject"]);
+		return AnimationData.getFieldBool(this, ["HO", "hideObject"]);
 	}
 	inline function get_AL()
 	{
-		return AnimationData.setFieldBool(this, ["AL", "angle"]);
+		return AnimationData.getFieldBool(this, ["AL", "angle"]);
 	}
 	inline function get_DST()
 	{
-		return AnimationData.setFieldBool(this, ["DST", "distance"]);
+		return AnimationData.getFieldBool(this, ["DST", "distance"]);
 	}
 }
 
@@ -852,39 +857,39 @@ abstract BevelFilter(BlurFilter)
 
 	inline function get_SC()
 	{
-		return AnimationData.setFieldBool(this, ["SC", "shadowColor"]);
+		return AnimationData.getFieldBool(this, ["SC", "shadowColor"]);
 	}
 	inline function get_SA()
 	{
-		return AnimationData.setFieldBool(this, ["SA", "shadowAlpha"]);
+		return AnimationData.getFieldBool(this, ["SA", "shadowAlpha"]);
 	}
 	inline function get_HC()
 	{
-		return AnimationData.setFieldBool(this, ["HC", "highlightColor"]);
+		return AnimationData.getFieldBool(this, ["HC", "highlightColor"]);
 	}
 	inline function get_HA()
 	{
-		return AnimationData.setFieldBool(this, ["HA", "highlightAlpha"]);
+		return AnimationData.getFieldBool(this, ["HA", "highlightAlpha"]);
 	}
 	inline function get_STR()
 	{
-		return AnimationData.setFieldBool(this, ["STR", "strength"]);
+		return AnimationData.getFieldBool(this, ["STR", "strength"]);
 	}
 	inline function get_KK()
 	{
-		return AnimationData.setFieldBool(this, ["KK", "knockout"]);
+		return AnimationData.getFieldBool(this, ["KK", "knockout"]);
 	}
 	inline function get_AL()
 	{
-		return AnimationData.setFieldBool(this, ["AL", "angle"]);
+		return AnimationData.getFieldBool(this, ["AL", "angle"]);
 	}
 	inline function get_DST()
 	{
-		return AnimationData.setFieldBool(this, ["DST", "distance"]);
+		return AnimationData.getFieldBool(this, ["DST", "distance"]);
 	}
 	inline function get_TP()
 	{
-		return AnimationData.setFieldBool(this, ["TP", "type"]);
+		return AnimationData.getFieldBool(this, ["TP", "type"]);
 	}
 }
 @:forward
@@ -900,27 +905,27 @@ abstract GradientFilter(BlurFilter)
 
 	inline function get_STR()
 	{
-		return AnimationData.setFieldBool(this, ["STR", "strength"]);
+		return AnimationData.getFieldBool(this, ["STR", "strength"]);
 	}
 	inline function get_KK()
 	{
-		return AnimationData.setFieldBool(this, ["KK", "knockout"]);
+		return AnimationData.getFieldBool(this, ["KK", "knockout"]);
 	}
 	inline function get_AL()
 	{
-		return AnimationData.setFieldBool(this, ["AL", "angle"]);
+		return AnimationData.getFieldBool(this, ["AL", "angle"]);
 	}
 	inline function get_DST()
 	{
-		return AnimationData.setFieldBool(this, ["DST", "distance"]);
+		return AnimationData.getFieldBool(this, ["DST", "distance"]);
 	}
 	inline function get_TP()
 	{
-		return AnimationData.setFieldBool(this, ["TP", "type"]);
+		return AnimationData.getFieldBool(this, ["TP", "type"]);
 	}
 	inline function get_GE()
 	{
-		return AnimationData.setFieldBool(this, ["GE", "GradientEntries"]);
+		return AnimationData.getFieldBool(this, ["GE", "GradientEntries"]);
 	}
 }
 
@@ -933,15 +938,15 @@ abstract GradientEntry({})
 
 	inline function get_R()
 	{
-		return AnimationData.setFieldBool(this, ["R", "ratio"]);
+		return AnimationData.getFieldBool(this, ["R", "ratio"]);
 	}
 	inline function get_C()
 	{
-		return AnimationData.setFieldBool(this, ["C", "color"]);
+		return AnimationData.getFieldBool(this, ["C", "color"]);
 	}
 	inline function get_A()
 	{
-		return AnimationData.setFieldBool(this, ["A", "alpha"]);
+		return AnimationData.getFieldBool(this, ["A", "alpha"]);
 	}
 
 }
@@ -966,11 +971,11 @@ abstract Bitmap({}) from {}
 	public var POS(get, never):TransformationPoint;
 	inline function get_N()
 	{
-		return AnimationData.setFieldBool(this, ["N", "name"]);
+		return AnimationData.getFieldBool(this, ["N", "name"]);
 	}
 	inline function get_POS()
 	{
-		return AnimationData.setFieldBool(this, ["POS", "Position"]);
+		return AnimationData.getFieldBool(this, ["POS", "Position"]);
 	}
 }
 /**
@@ -986,7 +991,7 @@ abstract AtlasSymbolInstance(Bitmap) from {}
 
 	inline function get_M3D()
 	{
-		return AnimationData.setFieldBool(this, ["M3D", "Matrix3D"]);
+		return AnimationData.getFieldBool(this, ["M3D", "Matrix3D"]);
 	}
 }
 

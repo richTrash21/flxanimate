@@ -260,8 +260,11 @@ class FlxKeyFrame
 	{
 		if (frame == null) return null;
 
-		var E = frame.E;
-		var keyframe = new FlxKeyFrame(frame.I, frame.DU, E != null ? [ for (element in E) FlxElement.fromJSON(element) ] : null, AnimationData.fromColorJson(frame.C), frame.N);
+		final keyframe = new FlxKeyFrame(frame.I, frame.DU, null, AnimationData.fromColorJson(frame.C), frame.N);
+		final E = frame.E;
+		if (E != null)
+			for (element in E)
+				keyframe.add(FlxElement.fromJSON(element));
 
 		keyframe.filters = AnimationData.fromFilterJson(frame.F);
 

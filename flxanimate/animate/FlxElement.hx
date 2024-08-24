@@ -157,13 +157,15 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 	}
 	public static function fromJSON(element:Element)
 	{
-		var symbol = element.SI != null;
+		var SI = element.SI;
+		var ASI = element.ASI;
+		var symbol = SI != null;
 		var params:SymbolParameters = null;
 		if (symbol)
 		{
 			params = new SymbolParameters();
-			params.instance = element.SI.IN;
-			params.type = switch (element.SI.ST)
+			params.instance = SI.IN;
+			params.type = switch (SI.ST)
 			{
 				case movieclip, "movieclip": MovieClip;
 				case button, "button":		 Button;
@@ -182,26 +184,28 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 					params.blendMode = blendModeFromString(params.instance);
 				}
 			}
-			var lp:LoopType = (element.SI.LP == null) ? loop : element.SI.LP.split("R")[0];
-			params.loop = switch (lp) // remove the reverse sufix
+			final lpStr = SI.LP;
+			params.loop = switch (lpStr == null ? loop : lpStr.split("R")[0]) // remove the reverse sufix
 			{
 				case playonce, "playonce": PlayOnce;
 				case singleframe, "singleframe": SingleFrame;
 				default: Loop;
 			}
-			params.reverse = (element.SI.LP == null) ? false : StringTools.contains(element.SI.LP, "R");
-			params.firstFrame = element.SI.FF;
-			params.colorEffect = AnimationData.fromColorJson(element.SI.C);
-			params.name = element.SI.SN;
-			params.transformationPoint.set(element.SI.TRP.x, element.SI.TRP.y);
-			params.filters = AnimationData.fromFilterJson(element.SI.F);
+			params.reverse = (lpStr == null) ? false : StringTools.contains(lpStr, "R");
+			params.firstFrame = SI.FF;
+			params.colorEffect = AnimationData.fromColorJson(SI.C);
+			params.name = SI.SN;
+			var transformationPoint = SI.TRP;
+			params.transformationPoint.set(transformationPoint.x, transformationPoint.y);
+			params.filters = AnimationData.fromFilterJson(SI.F);
 		}
 
-		var m3d = (symbol) ? element.SI.M3D : element.ASI.M3D;
-		var array = Reflect.fields(m3d);
-		if (!Std.isOfType(m3d, Array))
+		final m3d = symbol ? SI.M3D : ASI.M3D;
+		final array = Reflect.fields(m3d);
+		final isArray:Bool = Std.isOfType(m3d, Array);
+		if (!isArray)
 			array.sort((a, b) -> Std.parseInt(a.substring(1)) - Std.parseInt(b.substring(1)));
-		var m:Array<Float> = (m3d is Array) ? m3d : [for (field in array) Reflect.field(m3d,field)];
+		var m:Array<Float> = isArray ? m3d : [for (field in array) Reflect.field(m3d,field)];
 
 		if (!symbol && m3d == null)
 		{
@@ -209,9 +213,9 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 			m[1] = m[4] = m[12] = m[13] = 0;
 		}
 
-		var pos = (symbol) ? element.SI.bitmap.POS : element.ASI.POS;
+		var pos = symbol ? SI.bitmap.POS : ASI.POS;
 		if (pos == null)
 			pos = {x: 0, y: 0};
-		return new FlxElement((symbol) ? element.SI.bitmap.N : element.ASI.N, params, new FlxMatrix(m[0], m[1], m[4], m[5], m[12] + pos.x, m[13] + pos.y));
+		return new FlxElement(symbol ? SI.bitmap.N : ASI.N, params, new FlxMatrix(m[0], m[1], m[4], m[5], m[12] + pos.x, m[13] + pos.y));
 	}
 }

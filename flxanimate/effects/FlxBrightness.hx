@@ -8,7 +8,6 @@ class FlxBrightness extends FlxColorEffect
 	{
 		this.brightness = brightness;
 
-
 		super();
 	}
 	override function process()

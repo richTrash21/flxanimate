@@ -105,10 +105,6 @@ class SymbolParameters implements IFilterable
 	@:allow(flxanimate.animate.FlxKeyFrame)
 	var _renderDirty:Bool = false;
 
-	@:allow(flxanimate.animate.FlxKeyFrame)
-	@:allow(flxanimate.animate.FlxAnim)
-	var _colorEffect(get, null):ColorTransform;
-
 	public var transformationPoint:FlxPoint;
 
 	public var filters(default, set):Array<BitmapFilter>;
@@ -186,10 +182,6 @@ class SymbolParameters implements IFilterable
 			_curFrame = frame;
 		}
 
-		@:privateAccess
-		if (colorEffect != null && colorEffect.renderDirty)
-			colorEffect.process();
-
 		if (filters == null || filters.length == 0 || _renderDirty) return;
 
 		@:privateAccess
@@ -249,11 +241,12 @@ class SymbolParameters implements IFilterable
 			value = None;
 
 		if ((value is ColorEffect))
-		{
 			colorEffect = AnimationData.parseColorEffect(value);
-		}
 		else
 			colorEffect = value;
+	
+		if (colorEffect != null)
+			colorEffect.renderDirty = true;
 
 		return colorEffect;
 	}
