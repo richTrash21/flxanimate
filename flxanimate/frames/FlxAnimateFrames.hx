@@ -1,5 +1,6 @@
 package flxanimate.frames;
 
+import haxe.extern.EitherType;
 import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
 import openfl.geom.Rectangle;
 import flixel.FlxG;
@@ -29,7 +30,6 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	static var zip:Null<List<haxe.zip.Entry>>;
 
 	public var parents:Array<FlxGraphic>;
-
 	public static function clearCache()
 	{
 		for (_ => i in FlxAnimateFrames.framesCollections) i.destroy();
@@ -157,8 +157,75 @@ class FlxAnimateFrames extends FlxAtlasFrames
 			pushFrame(frame);
 		return this;
 	}
+	#else
+	public override function addAtlas(collection:EitherType<FlxFramesCollection, FlxAtlasFrames>, overwriteHash:Bool = false):FlxAtlasFrames
+	{
+		if (collection is FlxAtlasFrames)
+		{
+			return super.addAtlas(cast collection, overwriteHash);
+		}
+		else
+		{
+			var collection:FlxFramesCollection = cast collection;
+			if (collection.parent == null)
+				throw "Cannot add atlas with null parent";
+	
+			if (parents.indexOf(collection.parent) == -1)
+				parents.push(collection.parent);
+	
+			for (frame in collection.frames)
+				pushFrame(frame, overwriteHash);
+			
+			return this;
+		}
+	}
 	#end
 
+	#if FLX_ANIMATE_PSYCH_SUPPOST
+	// Compatibility with Psych Engine
+    public inline function animateConcat(frames:FlxFramesCollection)
+		return addAtlas(frames);
+
+    /**
+     * 
+     * @param Data the Json/XML file content/string
+     * @param Image the image which the file is referencing **WARNING:** if you set the path as a json, it's obligatory to set the image!
+     * @return A new instance of `FlxAtlasFrames`
+     */
+	public static function fromAnimateAtlas(Data:AnimateAtlas, Image:FlxGraphicAsset):FlxAnimateFrames
+	{
+		var graphic = FlxG.bitmap.add(Image);
+		if (graphic == null)
+			return null;
+		var frames:FlxAnimateFrames = new FlxAnimateFrames();
+		var spritemapFrames = FlxAtlasFrames.findFrame(graphic);
+		if (spritemapFrames == null)
+		{
+			spritemapFrames = new FlxAtlasFrames(graphic);
+			var limb;
+			var rect;
+			for (curSprite in Data.ATLAS.SPRITES)
+			{
+				limb = curSprite.SPRITE;
+				rect = FlxRect.get(limb.x, limb.y, limb.w, limb.h);
+				if (limb.rotated)
+					rect.setSize(rect.height, rect.width);
+	
+				sliceFrame(limb.name, limb.rotated, rect, spritemapFrames);
+			}
+		}
+		graphic.addFrameCollection(spritemapFrames);
+		frames.concat(spritemapFrames);
+
+		if (frames.frames == [])
+		{
+			FlxG.log.error("the Frames parsing couldn't parse any of the frames, it's completely empty! \n Maybe you misspelled the Path?");
+			return null;
+		}
+		return frames;
+	}
+	#end
+	
 	/**
 	 * a `Sparrow` spritesheet enhancer, providing for the 'add only the XML Path' workflow while adding support to Sparrow v1.
 	 * @param Path The direction of the Xml you want to parse.
@@ -219,36 +286,35 @@ class FlxAnimateFrames extends FlxAtlasFrames
 
 		var data:Access = new Access(xml);
 
+		static var size:Rectangle = new Rectangle();
 		for (texture in data.nodes.SubTexture)
 		{
-			var name = texture.att.name;
 			var trimmed = texture.has.frameX;
 			var rotated = (texture.has.rotated && texture.att.rotated == "true");
-			var flipX = (texture.has.flipX && texture.att.flipX == "true");
-			var flipY = (texture.has.flipY && texture.att.flipY == "true");
 
 			var rect = FlxRect.get(Std.parseFloat(texture.att.x), Std.parseFloat(texture.att.y), Std.parseFloat(texture.att.width),
 				Std.parseFloat(texture.att.height));
 
-			var size = if (trimmed)
+			if (trimmed)
 			{
-				new Rectangle(Std.parseInt(texture.att.frameX), Std.parseInt(texture.att.frameY), Std.parseInt(texture.att.frameWidth),
+				size.setTo(Std.parseInt(texture.att.frameX), Std.parseInt(texture.att.frameY), Std.parseInt(texture.att.frameWidth),
 					Std.parseInt(texture.att.frameHeight));
 			}
 			else
 			{
-				new Rectangle(0, 0, rect.width, rect.height);
+				size.setTo(0, 0, rect.width, rect.height);
 			}
 
-			var angle = rotated ? FlxFrameAngle.ANGLE_NEG_90 : FlxFrameAngle.ANGLE_0;
-
-			var offset = FlxPoint.get(-size.left, -size.top);
 			var sourceSize = FlxPoint.get(size.width, size.height);
 
 			if (rotated && !trimmed)
 				sourceSize.set(size.height, size.width);
 
-			frames.addAtlasFrame(rect, sourceSize, offset, name, angle, flipX, flipY);
+			frames.addAtlasFrame(rect, sourceSize, FlxPoint.get(-size.left, -size.top), texture.att.name,
+					rotated ? FlxFrameAngle.ANGLE_NEG_90 : FlxFrameAngle.ANGLE_0,
+					(texture.has.flipX && texture.att.flipX == "true"),
+					(texture.has.flipY && texture.att.flipY == "true")
+				);
 		}
 
 		return frames;

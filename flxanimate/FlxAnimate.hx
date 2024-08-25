@@ -400,12 +400,12 @@ class FlxAnimate extends FlxSprite
 			default:	 instance.symbol._curFrame;
 		}
 
-		// var cacheToBitmap = !skipFilters && (instance.symbol.cacheAsBitmap/* || this.filters != null && mainSymbol*/) && (!filterin || filterin && filterInstance != instance);
-		var cacheToBitmap = !skipFilters && (instance.symbol.cacheAsBitmap && (!filterin || filterInstance != instance));
+		// var cacheToBitmap = !skipFilters && (instance.symbol.cacheAsBitmap/* || this.filters != null && mainSymbol*/) && filterInstance != instance;
+		var cacheToBitmap = !skipFilters && (instance.symbol.cacheAsBitmap && filterInstance != instance);
 
 		if (cacheToBitmap)
 		{
-			if (instance.symbol._renderDirty)
+			if (instance.symbol._renderDirty || instance.symbol._filterFrame == null)
 			{
 				instance.symbol._filterMatrix.identity();
 
@@ -435,7 +435,7 @@ class FlxAnimate extends FlxSprite
 		}
 		else
 		{
-			if (instance.symbol.colorEffect != null && (!filterin || filterInstance != instance))
+			if (instance.symbol.colorEffect != null && filterInstance != instance)
 				colorEffect.concat(instance.symbol.colorEffect.getColor());
 	
 			var layers = symbol.timeline.getList();
@@ -443,6 +443,7 @@ class FlxAnimate extends FlxSprite
 			var mat_temp = FlxPooledMatrix.get();
 			var colorEffect_temp = ColorTransform.__pool.get();
 			var layer:FlxLayer;
+			var frame:FlxKeyFrame;
 			for (i in 0...layers.length)
 			{
 				layer = layers[layers.length - 1 - i];
@@ -453,7 +454,7 @@ class FlxAnimate extends FlxSprite
 				{
 					var layer = layer._clipper;
 					layer._setCurFrame(curIndexFrame);
-					var frame = layer._currFrame;
+					frame = layer._currFrame;
 					if (frame != null && frame._renderDirty)
 					{
 						var filterCamera = FlxPooledCamera.get();
@@ -468,42 +469,33 @@ class FlxAnimate extends FlxSprite
 
 				layer._setCurFrame(curIndexFrame);
 
-				var frame = layer._currFrame;
+				frame = layer._currFrame;
 
 				if (frame == null) continue;
-
-				var toBitmap = !skipFilters && (frame.filters != null || layer.type.match(Clipped(_)));
 
 				colorEffect_temp.__copyFrom(colorEffect);
 				if (frame.colorEffect != null)
 					colorEffect_temp.concat(frame.colorEffect.getColor());
 
-				if (toBitmap && !frame._renderDirty && layer._filterFrame != null)
+				if (!skipFilters && (frame.filters != null || layer.type.match(Clipped(_))))
 				{
-					mat_temp.copyFrom(layer._filterMatrix);
-					mat_temp.translate(instance.x, instance.y);
-					mat_temp.concat(m);
-
-					drawLimb(layer._filterFrame, mat_temp, colorEffect_temp, filterin, blendMode, cameras);
-					continue;
-				}
-
-				if (toBitmap)
-				{
-					// render layer to _filterFrame
-					var filterCamera = FlxPooledCamera.get();
-					var maskCamera = (layer._clipper != null) ? FlxPooledCamera.get() : null;
-					var colTr = ColorTransform.__pool.get();
-					mat_temp.identity();
-					renderLayer(frame, mat_temp, colTr, instance, null, [filterCamera]);
-					renderFilter(layer, frame.filters, filterCamera, maskCamera);
-
-					filterCamera.put();
-					maskCamera?.put();
-					ColorTransform.__pool.release(colTr);
-
-					frame._renderDirty = false;
-
+					if (frame._renderDirty || layer._filterFrame == null)
+					{
+						// render layer to _filterFrame
+						var filterCamera = FlxPooledCamera.get();
+						var maskCamera = (layer._clipper != null) ? FlxPooledCamera.get() : null;
+						var colTr = ColorTransform.__pool.get();
+						mat_temp.identity();
+						renderLayer(frame, mat_temp, colTr, instance, null, [filterCamera]);
+						renderFilter(layer, frame.filters, filterCamera, maskCamera);
+	
+						filterCamera.put();
+						maskCamera?.put();
+						ColorTransform.__pool.release(colTr);
+	
+						frame._renderDirty = false;
+					}
+	
 					mat_temp.copyFrom(layer._filterMatrix);
 					mat_temp.translate(instance.x, instance.y);
 					mat_temp.concat(m);
@@ -872,4 +864,66 @@ class FlxAnimate extends FlxSprite
 
 		return jsontxt;
 	}
+
+	#if FLX_ANIMATE_PSYCH_SUPPOST
+	public function loadAtlasEx(img:flixel.system.FlxAssets.FlxGraphicAsset, pathOrStr:String, myJson:Dynamic)
+	{
+		var animJson:AnimAtlas = null;
+		var trimmed:String = StringTools.trim(pathOrStr);
+		trimmed = trimmed.substr(trimmed.length - 5).toLowerCase();
+
+		if(myJson is String)
+		{
+			if(trimmed == '.json') myJson = Utils.getText(myJson); //is a path
+			animJson = cast haxe.Json.parse(_removeBOM(myJson));
+		}
+		else animJson = cast myJson;
+
+		var isXml:Null<Bool> = null;
+		var myData:Dynamic = pathOrStr;
+
+		if(trimmed == '.json') //Path is json
+		{
+			myData = _removeBOM(Utils.getText(pathOrStr));
+			isXml = false;
+		}
+		else if (trimmed.substr(1) == '.xml') //Path is xml
+		{
+			myData = _removeBOM(Utils.getText(pathOrStr));
+			isXml = true;
+		}
+
+		// Automatic if everything else fails
+		switch(isXml)
+		{
+			case true:
+				myData = Xml.parse(myData);
+			case false:
+				myData = haxe.Json.parse(myData);
+			case null:
+				try
+				{
+					myData = haxe.Json.parse(myData);
+					isXml = false;
+					//trace('JSON parsed successfully!');
+				}
+				catch(e)
+				{
+					myData = Xml.parse(myData);
+					isXml = true;
+					//trace('XML parsed successfully!');
+				}
+		}
+
+		anim._loadAtlas(animJson);
+		frames = isXml ? FlxAnimateFrames.fromSparrow(cast myData, img) : FlxAnimateFrames.fromAnimateAtlas(cast myData, img);
+		origin = anim.curInstance.symbol.transformationPoint;
+	}
+
+	static function _removeBOM(str:String) //Removes BOM byte order indicator
+	{
+		if (str.charCodeAt(0) == 0xFEFF) str = str.substr(1); //myData = myData.substr(2);
+		return str;
+	}
+	#end
 }
