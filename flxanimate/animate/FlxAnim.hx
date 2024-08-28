@@ -1,22 +1,23 @@
 package flxanimate.animate;
 
-import flxanimate.geom.FlxMatrix3D;
-import flixel.math.FlxMath;
 import haxe.extern.EitherType;
-import flxanimate.animate.SymbolParameters;
-import flixel.util.FlxStringUtil;
+
 import openfl.geom.ColorTransform;
-import flixel.util.FlxDestroyUtil.IFlxDestroyable;
-import flixel.FlxG;
+
+import flixel.math.FlxMath;
 import flixel.math.FlxMatrix;
-
-import flixel.util.FlxSignal;
-import flixel.util.FlxSignal.FlxTypedSignal;
-
-import flxanimate.data.AnimationData;
 #if FLX_SOUND_SYSTEM
 import flixel.sound.FlxSound;
 #end
+import flixel.util.FlxDestroyUtil.IFlxDestroyable;
+import flixel.util.FlxSignal;
+import flixel.util.FlxSignal.FlxTypedSignal;
+import flixel.util.FlxStringUtil;
+import flixel.FlxG;
+
+import flxanimate.animate.SymbolParameters;
+import flxanimate.data.AnimationData;
+import flxanimate.geom.FlxMatrix3D;
 
 typedef AnimStuff = {
 	var instance:FlxElement;
@@ -85,7 +86,7 @@ class FlxAnim implements IFlxDestroyable
 	 * When ever the animation is playing.
 	 */
 	public var isPlaying(default, null):Bool;
-	
+
 	/**
 	 * A signal dispatched when the animation's over,
 	 * when the current frame is equal to the current symbol's length.
@@ -330,7 +331,7 @@ class FlxAnim implements IFlxDestroyable
 		if (frameDelay != 0 && isPlaying && !finished && animElapsed > 0)
 		{
 			_tick += animElapsed;
-		
+
 			while (_tick > frameDelay)
 			{
 				// reversed ? curFrame-- : curFrame++;
@@ -369,7 +370,7 @@ class FlxAnim implements IFlxDestroyable
 			case PlayOnce:		reversed && curFrame == 0 || !reversed && curFrame >= length - 1;
 			default:			false;
 		}
-	
+
 	function get_curFrame()
 	{
 		return curSymbol?.curFrame ?? 0;
@@ -556,7 +557,7 @@ class FlxAnim implements IFlxDestroyable
 		instance = instance == null ? symbolDictionary.get(stageInstance.symbol.name) : instance;
 		return instance == null ? null : instance.getFrameLabel(Label, layer);
 	}
-	
+
 	public function toString()
 	{
 		return FlxStringUtil.getDebugString([
@@ -615,22 +616,22 @@ class FlxAnim implements IFlxDestroyable
 
 	inline function set_loopType(type:Loop)
 		return curInstance.symbol.loop = type;
-	
+
 	inline function get_symbolType()
 		return curInstance.symbol.type;
-	
+
 	inline function set_symbolType(type:SymbolT)
 		return curInstance.symbol.type = type;
-	
+
 	inline function get_reversed()
 		return curInstance.symbol.reverse;
-	
+
 	inline function set_reversed(value:Bool)
 		return curInstance.symbol.reverse = value;
-	
+
 	public inline function getByName(name:String)
 		return animsMap.get(name);
-	
+
 
 	public function getByInstance(instance:String, ?frame:Int = null, ?layer:EitherType<String, Int>)
 	{
@@ -668,7 +669,7 @@ class FlxAnim implements IFlxDestroyable
 		var elements = label.getList();
 		return elements.length > 0 ? elements[0].symbol.name : null;
 	}
-	
+
 	inline public function existsByName(name:String)
 	{
 		return animsMap.exists(name);

@@ -14,24 +14,21 @@ class FlxSymbolDictionary
 
 	public var length(default, null):Int;
 
-	public function new()
+	public function new(?parent:FlxAnim)
 	{
+		_parent = parent;
 		_symbols = [];
 	}
 
 
-	public function getLibrary(library:String)
+	public function getLibrary(library:String):Map<String, FlxSymbol>
 	{
 		var path = Utils.directory(Path.addTrailingSlash(library));
-
-		var libraries:Map<String, FlxSymbol> = [];
-		for (instance in _symbols.keys())
-		{
-			if (path == instance)
-				libraries.set(path, _symbols.get(path));
-		}
-
-		return libraries;
+		return [
+			for (instance => symb in _symbols)
+				if (path == instance)
+					path => symb
+		];
 	}
 
 	public inline function existsSymbol(symbol:String)
@@ -51,7 +48,7 @@ class FlxSymbolDictionary
 			symbol.name += " Copy";
 		}
 
-			_symbols.set(symbol.name, symbol);
+		_symbols.set(symbol.name, symbol);
 
 		length++;
 	}
@@ -80,9 +77,7 @@ class FlxSymbolDictionary
 	}
 	public function removeSymbol(symbol:EitherType<FlxSymbol, String>)
 	{
-		var bool:Bool = false;
-
-		bool = _symbols.remove((Std.isOfType(symbol, FlxSymbol)) ? symbol.name : symbol);
+		var bool:Bool = _symbols.remove(Std.isOfType(symbol, FlxSymbol) ? cast (symbol, FlxSymbol).name : symbol);
 
 		if (bool)
 			length--;

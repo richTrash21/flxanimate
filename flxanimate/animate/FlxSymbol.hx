@@ -15,7 +15,6 @@ import flxanimate.data.AnimationData;
 
 class FlxSymbol implements IFlxDestroyable
 {
-	var _sprite:Sprite;
 	@:allow(flxanimate.FlxAnimate)
 	var _checking:Bool = false;
 	@:allow(flxanimate.FlxAnimate)

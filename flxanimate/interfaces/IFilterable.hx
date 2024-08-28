@@ -8,8 +8,8 @@ import flixel.FlxCamera;
 
 interface IFilterable
 {
-	@:allow(flxanimate.FlxAnimate)
-	private var _filterCamera:FlxCamera;
+	// @:allow(flxanimate.FlxAnimate)
+	// private var _filterCamera:FlxCamera;
 	@:allow(flxanimate.FlxAnimate)
 	@:allow(flxanimate.filters.FlxAnimateFilterRenderer)
 	private var _filterFrame:FlxFrame;

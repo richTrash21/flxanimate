@@ -37,7 +37,7 @@ import flxanimate.Utils;
 @:allow(flxanimate.FlxAnimate)
 class SymbolParameters implements IFilterable
 {
-	var _filterCamera:FlxCamera;
+	// var _filterCamera:FlxCamera;
 
 	@:allow(flxanimate.animate.FlxElement)
 	var _parent:FlxElement;
@@ -148,7 +148,7 @@ class SymbolParameters implements IFilterable
 			FlxG.bitmap.remove(_filterFrame.parent);
 
 		_filterFrame = FlxDestroyUtil.destroy(_filterFrame);
-		_filterCamera = FlxDestroyUtil.destroy(_filterCamera);
+		// _filterCamera = FlxDestroyUtil.destroy(_filterCamera);
 		_filterMatrix = null;
 		// FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp1)));
 		_bmp1 = FlxDestroyUtil.dispose(_bmp1);
@@ -244,7 +244,7 @@ class SymbolParameters implements IFilterable
 			colorEffect = AnimationData.parseColorEffect(value);
 		else
 			colorEffect = value;
-	
+
 		if (colorEffect != null)
 			colorEffect.renderDirty = true;
 

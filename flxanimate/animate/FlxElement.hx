@@ -41,9 +41,6 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 	@:allow(flxanimate.FlxAnimate)
 	var _color:ColorTransform = new ColorTransform();
 
-	@:allow(flxanimate.FlxAnimate)
-	var _scrollF:FlxPoint;
-
 	/**
 	 * Creates a new `FlxElement` instance.
 	 * @param name the name of the element. `WARNING:` this name is dynamic, in other words, this name can used for the limb or the symbol!
@@ -131,7 +128,7 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 	static final _eregOVERLAY	 = new EReg("overlay|перекрытие", _eregOpt);
 	static final _eregSCREEN	 = new EReg("screen|осветление", _eregOpt);
 	static final _eregSUBTRACT	 = new EReg("substract|нормальное", _eregOpt);
-	
+
 	// suppost list: openfl.display.OpenGLRenderer.hx:1030
 
 	static final _eregBlendStartKey	 = new EReg("_bl|blend" + _eregSpace + "|смешение" + _eregSpace + "|наложнение" + _eregSpace, _eregOpt);
@@ -187,9 +184,9 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 			final lpStr = SI.LP;
 			params.loop = switch (lpStr == null ? loop : lpStr.split("R")[0]) // remove the reverse sufix
 			{
-				case playonce, "playonce": PlayOnce;
-				case singleframe, "singleframe": SingleFrame;
-				default: Loop;
+				case playonce, "playonce":			PlayOnce;
+				case singleframe, "singleframe":	SingleFrame;
+				default:							Loop;
 			}
 			params.reverse = (lpStr == null) ? false : StringTools.contains(lpStr, "R");
 			params.firstFrame = SI.FF;

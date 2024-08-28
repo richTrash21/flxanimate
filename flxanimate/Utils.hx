@@ -10,11 +10,16 @@ import openfl.Assets;
 
 class Utils
 {
-	public static function directory(path:String)
+	public inline static function directory(path:String)
 	{
 		return path.substring(0, path.lastIndexOf("/"));
 	}
-	public static function extension(path:String):String
+	public inline static function withoutExtension(path:String):String
+	{
+		var cp = path.lastIndexOf(".");
+		return cp == -1 ? path : path.substring(0, cp);
+	}
+	public inline static function extension(path:String):String
 	{
 		var cp = path.lastIndexOf(".");
 		return cp == -1 ? null : path.substring(cp + 1);
@@ -31,7 +36,7 @@ class Utils
 		return null;
 	}
 
-	public static function withoutDirectory(path:String)
+	public inline static function withoutDirectory(path:String)
 		return path.substring(path.lastIndexOf("/") + 1);
 
 	public inline static function getText(path:String)

@@ -12,7 +12,6 @@ import flixel.math.FlxMatrix;
 import flixel.math.FlxMath;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
-import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
 
@@ -22,6 +21,7 @@ import flxanimate.data.AnimationData.LayerType;
 import flxanimate.display.FlxAnimateFilterRenderer;
 import flxanimate.interfaces.IFilterable;
 import flxanimate.motion.easing.*;
+import flxanimate.FlxAnimate.FlxPooledCamera;
 import flxanimate.Utils;
 
 class FlxLayer extends FlxObject implements IFilterable
@@ -33,7 +33,7 @@ class FlxLayer extends FlxObject implements IFilterable
 	public var length(get, never):Int;
 
 	@:allow(flxanimate.FlxAnimate)
-	var _filterCamera:FlxCamera;
+	var _filterCamera:FlxPooledCamera;
 
 	var _mcMap:Map<String, Int>;
 	@:allow(flxanimate.FlxAnimate)
@@ -42,7 +42,7 @@ class FlxLayer extends FlxObject implements IFilterable
 	var _bmp1:BitmapData;
 	@:allow(flxanimate.FlxAnimate)
 	var _bmp2:BitmapData;
-	
+
 	// var _bmpGraphic1:FlxGraphic;
 	// var _bmpGraphic2:FlxGraphic;
 
@@ -100,7 +100,8 @@ class FlxLayer extends FlxObject implements IFilterable
 			FlxG.bitmap.remove(_filterFrame.parent);
 		}
 		_filterFrame = FlxDestroyUtil.destroy(_filterFrame);
-		_filterCamera = FlxDestroyUtil.destroy(_filterCamera);
+		// _filterCamera = FlxDestroyUtil.destroy(_filterCamera);
+		_filterCamera = FlxDestroyUtil.put(_filterCamera);
 		_filterMatrix = null;
 		// FlxG.bitmap.remove(_bmpGraphic1);
 		_bmp1 = Utils.dispose(_bmp1);
@@ -118,6 +119,7 @@ class FlxLayer extends FlxObject implements IFilterable
 	{
 		var _prevFrame = _currFrame;
 		_setCurFrame(curFrame);
+		/*
 		if (_clipper == null)
 		{
 			switch (type)
@@ -127,7 +129,7 @@ class FlxLayer extends FlxObject implements IFilterable
 					if (l != null)
 					{
 						l._correctClip = true;
-	
+
 						_clipper = l;
 					}
 				case _:
@@ -140,6 +142,7 @@ class FlxLayer extends FlxObject implements IFilterable
 				_currFrame._renderDirty = true;
 			}
 		}
+		*/
 
 		if (_currFrame != null)
 		{
