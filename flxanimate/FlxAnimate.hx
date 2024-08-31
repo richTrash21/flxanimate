@@ -343,7 +343,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 		else
 		{
 			relativeX = relativeY = 0;
-			super.draw();
+			basicDraw();
 		}
 
 		if (showPivot && (showPosPoint || showMidPoint))
@@ -368,6 +368,10 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 			mat.put();
 		}
 	}
+	public function basicDraw()
+	{
+		super.draw();
+	}
 	public override function getScreenBounds(?newRect:FlxRect, ?camera:FlxCamera):FlxRect
 	{
 		if (newRect == null)
@@ -375,7 +379,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 
 		if (camera == null)
 			camera = FlxG.camera;
-		newRect.setPosition(x - relativeX, y - relativeY);
+		newRect.setPosition(x + relativeX, y + relativeY);
 		if (pixelPerfectPosition)
 			newRect.floor();
 		_scaledOrigin.set(origin.x * scale.x, origin.y * scale.y);

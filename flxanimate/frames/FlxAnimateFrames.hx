@@ -1,19 +1,23 @@
 package flxanimate.frames;
 
-import haxe.extern.EitherType;
-import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
-import openfl.geom.Rectangle;
-import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFramesCollection;
-import flixel.math.FlxPoint;
+import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
 import flixel.math.FlxRect;
+import flixel.math.FlxPoint;
 import flixel.system.FlxAssets.FlxGraphicAsset;
+import flixel.FlxG;
+
+import openfl.geom.Rectangle;
+import openfl.Assets;
+
+import haxe.extern.EitherType;
+import haxe.xml.Access;
+
 import flxanimate.data.SpriteMapData;
 import flxanimate.format.PropertyList;
-import openfl.Assets;
-import haxe.xml.Access;
+import flxanimate.zip.Zip;
 
 class FlxAnimateFrames extends FlxAtlasFrames
 {
@@ -35,7 +39,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		for (_ => i in FlxAnimateFrames.framesCollections) i.destroy();
 		FlxAnimateFrames.framesCollections.clear();
 	}
-	
+
 	/**
 	 * Helper function to parse several Spritemaps from a texture atlas via `fromSpritemap()`
 	 *
@@ -49,36 +53,94 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		if (frames == null)
 		{
 			frames = new FlxAnimateFrames();
-	
-			// var texts = Assets.list(TEXT).filter(text -> StringTools.startsWith(text, '$Path/sprite'));
-	
-			var texts = [];
-	
-			if (Utils.exists('$Path/spritemap.json'))
+
+
+			if (zip != null || Utils.extension(Path) == "zip")
 			{
-				texts.push('$Path/spritemap.json');
+				/*
+				#if html5
+				FlxG.log.error("Zip Stuff isn't supported on Html5 since it can't transform bytes into an image");
+				return null;
+				#else
+				var imagemap:Map<String, haxe.io.Bytes> = new Map();
+				var jsonMap:Map<String, AnimateAtlas> = new Map();
+				var thing = zip == null ? Zip.unzip(Zip.readZip(Utils.getBytes(Path))) : zip;
+				for (list in thing)
+				{
+					switch (Utils.extension(list.fileName))
+					{
+						case "json":
+							jsonMap.set(list.fileName, haxe.Json.parse(StringTools.replace(list.data.toString(), String.fromCharCode(0xFEFF), "")));
+						case "png":
+							imagemap.set(list.fileName.split("/").pop(), list.data);
+					}
+				}
+				// Assuming the json has the same stuff as the image stuff
+				for (nameFile => curJson in jsonMap)
+				{
+					var curImage = openfl.display.BitmapData.fromBytes(imagemap[curJson.meta.image]);
+					var spritemapFrames:FlxAtlasFrames;
+					var graphic:FlxGraphic;
+					var limb;
+					var rect;
+					if (curImage != null)
+					{
+						graphic = FlxG.bitmap.add(curImage, nameFile);
+
+						spritemapFrames = new FlxAtlasFrames(graphic);
+						for (sprite in curJson.ATLAS.SPRITES)
+						{
+							limb = sprite.SPRITE;
+							rect = FlxRect.get(limb.x, limb.y, limb.w, limb.h);
+							if (limb.rotated)
+								rect.setSize(rect.height, rect.width);
+
+							sliceFrame(limb.name, limb.rotated, rect, spritemapFrames);
+						}
+						frames.addAtlas(spritemapFrames);
+					}
+					else
+						FlxG.log.error('the Image called "${curJson.meta.image}" isnt in this zip file!');
+				}
+				zip = null;
+				#end
+				*/
+				FlxG.log.error("Zip Stuff isn't supported");
+				return null;
 			}
 			else
 			{
-				var i = 1;
-				while (Utils.exists('$Path/spritemap$i.json'))
-					texts.push('$Path/spritemap${i++}.json');
+				// var texts = Assets.list(TEXT).filter(text -> StringTools.startsWith(text, '$Path/sprite'));
+
+				var texts = [];
+
+				if (Utils.exists('$Path/spritemap.json'))
+				{
+					texts.push('$Path/spritemap.json');
+				}
+				else
+				{
+					var i = 1;
+					while (Utils.exists('$Path/spritemap$i.json'))
+						texts.push('$Path/spritemap${i++}.json');
+				}
+
+				var spritemapFrames:FlxAtlasFrames;
+				for (text in texts)
+				{
+					spritemapFrames = fromSpriteMap(text);
+
+					if (spritemapFrames != null)
+						frames.addAtlas(spritemapFrames);
+				}
 			}
-	
-			for (text in texts)
-			{
-				var spritemapFrames = fromSpriteMap(text);
-	
-				if (spritemapFrames != null)
-					frames.addAtlas(spritemapFrames);
-			}
-	
+
 			if (frames.frames.length == 0)
 			{
 				FlxG.log.error("the Frames parsing couldn't parse any of the frames, it's completely empty! \n Maybe you misspelled the Path?");
 				return null;
 			}
-	
+
 			framesCollections.set(Path, frames);
 		}
 		return frames;
@@ -140,8 +202,6 @@ class FlxAnimateFrames extends FlxAtlasFrames
 
 			sliceFrame(limb.name, limb.rotated, rect, frames);
 		}
-
-
 		return frames;
 	}
 
@@ -169,13 +229,13 @@ class FlxAnimateFrames extends FlxAtlasFrames
 			var collection:FlxFramesCollection = cast collection;
 			if (collection.parent == null)
 				throw "Cannot add atlas with null parent";
-	
+
 			if (parents.indexOf(collection.parent) == -1)
 				parents.push(collection.parent);
-	
+
 			for (frame in collection.frames)
 				pushFrame(frame, overwriteHash);
-			
+
 			return this;
 		}
 	}
@@ -187,7 +247,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		return addAtlas(frames);
 
     /**
-     * 
+     *
      * @param Data the Json/XML file content/string
      * @param Image the image which the file is referencing **WARNING:** if you set the path as a json, it's obligatory to set the image!
      * @return A new instance of `FlxAtlasFrames`
@@ -210,7 +270,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 				rect = FlxRect.get(limb.x, limb.y, limb.w, limb.h);
 				if (limb.rotated)
 					rect.setSize(rect.height, rect.width);
-	
+
 				sliceFrame(limb.name, limb.rotated, rect, spritemapFrames);
 			}
 		}
@@ -225,7 +285,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		return frames;
 	}
 	#end
-	
+
 	/**
 	 * a `Sparrow` spritesheet enhancer, providing for the 'add only the XML Path' workflow while adding support to Sparrow v1.
 	 * @param Path The direction of the Xml you want to parse.

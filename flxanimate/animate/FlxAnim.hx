@@ -62,10 +62,14 @@ class FlxAnim implements IFlxDestroyable
 	 */
 	public var curSymbol(get, never):FlxSymbol;
 
+	public var curAnim:AnimStuff;
+	public var curAnimName:String;
+
 	/**
 	 * Whether the animation has finished or not.
 	 */
 	public var finished(get, never):Bool;
+
 	/**
 	 * a reverse option where the animation plays backwards or not.
 	 */
@@ -232,7 +236,9 @@ class FlxAnim implements IFlxDestroyable
 			{
 				Force = (Force || curInstance != curThing.instance);
 
+				curAnim = curThing;
 				curInstance = curThing.instance;
+				curAnimName = Name;
 			}
 		}
 
@@ -688,7 +694,7 @@ class FlxAnim implements IFlxDestroyable
 		_tick = 0;
 		buttonMap = null;
 		animsMap = null;
-		curInstance.destroy();
+		// curInstance.destroy();
 		curInstance = null;
 		stageInstance.destroy();
 		stageInstance = null;
