@@ -590,12 +590,15 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 					mat_temp.copyFrom(layer._filterMatrix);
 					mat_temp.translate(instance.x, instance.y);
 					mat_temp.concat(m);
+					mat_temp.translate(layer.x, layer.y);
 
 					drawLimb(layer._filterFrame, mat_temp, colorEffect_temp, filterin, blendMode, cameras);
 				}
 				else
 				{
-					renderLayer(frame, matrix, colorEffect_temp, filterInstance, blendMode, cameras);
+					mat_temp.copyFrom(matrix);
+					mat_temp.translate(layer.x, layer.y);
+					renderLayer(frame, mat_temp, colorEffect_temp, filterInstance, blendMode, cameras);
 				}
 			}
 			mat_temp.put();

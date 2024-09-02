@@ -24,6 +24,7 @@ import flxanimate.motion.easing.*;
 import flxanimate.FlxAnimate.FlxPooledCamera;
 import flxanimate.Utils;
 
+@:allow(flxanimate.FlxAnimate)
 class FlxLayer extends FlxObject implements IFilterable
 {
 	public var onFrameUpdate:(prevFrame:FlxKeyFrame, curFrame:FlxKeyFrame)->Void;
@@ -32,24 +33,19 @@ class FlxLayer extends FlxObject implements IFilterable
 	public var type(default, set):LayerType;
 	public var length(get, never):Int;
 
-	@:allow(flxanimate.FlxAnimate)
-	var _filterCamera:FlxPooledCamera;
+	// var _filterCamera:FlxPooledCamera;
+	// var maskCamera:FlxPooledCamera;
 
-	var _mcMap:Map<String, Int>;
-	@:allow(flxanimate.FlxAnimate)
+	// var _mcMap:Map<String, Int>;
 	var _filterFrame:FlxFrame;
-	@:allow(flxanimate.FlxAnimate)
 	var _bmp1:BitmapData;
-	@:allow(flxanimate.FlxAnimate)
 	var _bmp2:BitmapData;
 
 	// var _bmpGraphic1:FlxGraphic;
 	// var _bmpGraphic2:FlxGraphic;
 
-	@:allow(flxanimate.FlxAnimate)
 	var _filterMatrix:FlxMatrix;
 
-	@:allow(flxanimate.FlxAnimate)
 	var _renderable:Bool = true;
 
 	@:allow(flxanimate.animate.FlxTimeline)
@@ -63,13 +59,10 @@ class FlxLayer extends FlxObject implements IFilterable
 	@:allow(flxanimate.animate.FlxKeyFrame)
 	var _keyframes(default, null):Array<FlxKeyFrame>;
 
-	@:allow(flxanimate.FlxAnimate)
 	var _correctClip:Bool = false;
 
-	@:allow(flxanimate.FlxAnimate)
 	var _clipper:FlxLayer = null;
 
-	@:allow(flxanimate.FlxAnimate)
 	var _currFrame:FlxKeyFrame;
 
 	public function new(?name:String, ?keyframes:Array<FlxKeyFrame>)
@@ -80,7 +73,7 @@ class FlxLayer extends FlxObject implements IFilterable
 		_keyframes = (keyframes != null) ? keyframes : [];
 		visible = true;
 		_labels = [];
-		_mcMap = [];
+		// _mcMap = [];
 		_filterMatrix = new FlxMatrix();
 	}
 
@@ -100,8 +93,10 @@ class FlxLayer extends FlxObject implements IFilterable
 			FlxG.bitmap.remove(_filterFrame.parent);
 		}
 		_filterFrame = FlxDestroyUtil.destroy(_filterFrame);
+		// _filterCamera = FlxDestroyUtil.put(cast _filterCamera);
 		// _filterCamera = FlxDestroyUtil.destroy(_filterCamera);
-		_filterCamera = FlxDestroyUtil.put(_filterCamera);
+		// maskCamera = FlxDestroyUtil.put(cast maskCamera);
+		// maskCamera = FlxDestroyUtil.destroy(maskCamera);
 		_filterMatrix = null;
 		// FlxG.bitmap.remove(_bmpGraphic1);
 		_bmp1 = Utils.dispose(_bmp1);
@@ -161,7 +156,6 @@ class FlxLayer extends FlxObject implements IFilterable
 	{
 		return _get(frame, false);
 	}
-	@:allow(flxanimate.FlxAnimate)
 	function _get(frame:EitherType<String, Int>, _animateRendering:Bool = true)
 	{
 		if (_animateRendering && type.match(Clipped(_)))
@@ -171,6 +165,7 @@ class FlxLayer extends FlxObject implements IFilterable
 			if (_parent != null && layer != null && layer.type == Clipper)
 			{
 				layer._renderable = false;
+				_clipper = layer;
 			}
 		}
 		var index = 0;
@@ -277,18 +272,20 @@ class FlxLayer extends FlxObject implements IFilterable
 	}
 	function set_type(value:LayerType)
 	{
-		if (type != null && type.match(Clipped(_)))
+		if (type != null)
 		{
-			var layers = _parent.getList();
-			var layer = layers[layers.indexOf(this) - 1];
-			if (_parent != null && layer != null && layer.type == Clipper)
+			if(type.match(Clipped(_)))
 			{
-				layer._renderable = true;
+				var layers = _parent.getList();
+				var layer = layers[layers.indexOf(this) - 1];
+				if (_parent != null && layer != null && layer.type == Clipper)
+				{
+					layer._renderable = true;
+				}
 			}
 		}
 		return type = value;
 	}
-	@:allow(flxanimate.FlxAnimate)
 	function _setCurFrame(frame:Int)
 	{
 		if (length == 0 || frame > length)
@@ -328,7 +325,6 @@ class FlxLayer extends FlxObject implements IFilterable
 			_currFrame = get(frame);
 	}
 
-	@:allow(flxanimate.FlxAnimate)
 	function updateBitmaps(rect:Rectangle)
 	{
 		if (_filterFrame == null || (rect.width > _filterFrame.parent.bitmap.width || rect.height > _filterFrame.parent.bitmap.height))

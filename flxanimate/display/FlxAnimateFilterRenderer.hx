@@ -94,7 +94,7 @@ class FlxAnimateFilterRenderer
 		}
 	}
 
-	public function applyFilter(startBmp:BitmapData, outBmp:BitmapData, casheBmp:BitmapData, casheBmp2:BitmapData, filters:Array<BitmapFilter>, rect:Rectangle, ?mask:BitmapData, ?maskPos:FlxPoint)
+	public function applyFilter(startBmp:BitmapData, outBmp:BitmapData, casheBmp:BitmapData, casheBmp2:BitmapData, filters:Array<BitmapFilter>, ?rect:Rectangle, ?mask:BitmapData, ?maskPos:FlxPoint)
 	{
 		if (mask != null)
 		{
@@ -117,32 +117,40 @@ class FlxAnimateFilterRenderer
 		var bitmap2:BitmapData = casheBmp;
 		var bitmap3:BitmapData = casheBmp2;
 
-		startBmp.__renderTransform.translate(-rect.x, -rect.y);
-		renderer.__setRenderTarget(outBmp);
-		renderer.__renderFilterPass(startBmp, renderer.__defaultDisplayShader, true);
-		startBmp.__renderTransform.translate(rect.x, rect.y);
+		if (rect == null)
+		{
+			renderer.__setRenderTarget(outBmp);
+			if (startBmp != bitmap)
+				renderer.__renderFilterPass(startBmp, renderer.__defaultDisplayShader, true);
+		}
+		else
+		{
+			startBmp.__renderTransform.translate(-rect.x, -rect.y);
+			renderer.__setRenderTarget(outBmp);
+			if (startBmp != bitmap)
+				renderer.__renderFilterPass(startBmp, renderer.__defaultDisplayShader, true);
+			startBmp.__renderTransform.translate(rect.x, rect.y);
+		}
 		// startBmp.__renderTransform.identity();
 
 		if (filters != null)
 		{
-			var localCacheBitmap;
 			for (filter in filters)
 			{
 				if (filter.__preserveObject)
 				{
-					renderer.__setRenderTarget(casheBmp2);
-					renderer.__renderFilterPass(outBmp, renderer.__defaultDisplayShader, filter.__smooth);
+					renderer.__setRenderTarget(bitmap3);
+					renderer.__renderFilterPass(bitmap, renderer.__defaultDisplayShader, filter.__smooth);
 				}
 
 				for (i in 0...filter.__numShaderPasses)
 				{
 					renderer.__setBlendMode(filter.__shaderBlendMode);
-					renderer.__setRenderTarget(casheBmp);
-					renderer.__renderFilterPass(outBmp, filter.__initShader(renderer, i, filter.__preserveObject ? casheBmp2 : null), filter.__smooth);
+					renderer.__setRenderTarget(bitmap2);
+					renderer.__renderFilterPass(bitmap, filter.__initShader(renderer, i, (filter.__preserveObject) ? bitmap3 : null), filter.__smooth);
 
-					localCacheBitmap = outBmp;
-					outBmp = casheBmp;
-					casheBmp = localCacheBitmap;
+					renderer.__setRenderTarget(bitmap);
+					renderer.__renderFilterPass(bitmap2, renderer.__defaultDisplayShader, filter.__smooth);
 				}
 
 				filter.__renderDirty = false;
@@ -195,7 +203,7 @@ class FlxAnimateFilterRenderer
 		return bitmap;
 	}
 
-	public function graphicstoBitmapData(gfx:Graphics, ?target:BitmapData = null) // TODO!: Support for CPU based games (Cairo/Canvas only renderers)
+	public function graphicstoBitmapData(gfx:Graphics, ?target:BitmapData, ?point:FlxPoint) // TODO!: Support for CPU based games (Cairo/Canvas only renderers)
 	{
 		if (gfx.__bounds == null) return null;
 
@@ -209,6 +217,10 @@ class FlxAnimateFilterRenderer
 		var bmp = (target == null) ? new BitmapData(Math.ceil(bounds.width), Math.ceil(bounds.height), true, 0) : target;
 
 		renderer.__worldTransform.translate(-bounds.x, -bounds.y);
+		if (point != null)
+		{
+			renderer.__worldTransform.translate(point.x, point.y);
+		}
 
 		// GfxRenderer.render(gfx, cast renderer.__softwareRenderer);
 		// var bmp = gfx.__bitmap;
