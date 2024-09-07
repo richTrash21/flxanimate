@@ -101,7 +101,9 @@ class FlxPooledCamera extends FlxCamera implements IFlxPooled
 @:access(flixel.FlxCamera)
 class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 {
-	public var useAtlas(default, set):Bool = true;
+	@:isVar
+	public var useAtlas(get, never):Bool = true;
+	public var toggleAtlas:Bool = true;
 
 	public var anim(default, null):FlxAnim;
 
@@ -303,7 +305,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 		if(alpha == 0) return;
 		updateSkewMatrix();
 
-		if (useAtlas && atlasIsValid)
+		if (useAtlas)
 		{
 			for (i => camera in cameras)
 			{
@@ -897,7 +899,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 	public override function updateAnimation(elapsed:Float)
 	{
 		_lastElapsed = elapsed;
-		if (useAtlas && atlasIsValid)
+		if (useAtlas)
 		{
 			anim.update(elapsed);
 		}
@@ -1052,16 +1054,8 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 	#end
 
 	@:noCompletion
-	function set_useAtlas(i:Bool)
+	inline function get_useAtlas()
 	{
-		if (useAtlas != i)
-		{
-			useAtlas = i;
-			if (!useAtlas)
-			{
-				resetHelpers();
-			}
-		}
-		return useAtlas;
+		return toggleAtlas && atlasIsValid;
 	}
 }
