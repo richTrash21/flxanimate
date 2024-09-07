@@ -101,7 +101,7 @@ class FlxPooledCamera extends FlxCamera implements IFlxPooled
 @:access(flixel.FlxCamera)
 class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 {
-	public var useAtlas(default, set):Bool = false;
+	public var useAtlas(default, set):Bool = true;
 
 	public var anim(default, null):FlxAnim;
 
