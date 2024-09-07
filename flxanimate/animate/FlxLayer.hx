@@ -165,7 +165,7 @@ class FlxLayer extends FlxObject implements IFilterable
 			if (_parent != null && layer != null && layer.type == Clipper)
 			{
 				layer._renderable = false;
-				_clipper = layer;
+				// _clipper = layer;
 			}
 		}
 		var index = 0;
@@ -272,16 +272,13 @@ class FlxLayer extends FlxObject implements IFilterable
 	}
 	function set_type(value:LayerType)
 	{
-		if (type != null)
+		if (type != null && type.match(Clipped(_)))
 		{
-			if(type.match(Clipped(_)))
+			var layers = _parent.getList();
+			var layer = layers[layers.indexOf(this) - 1];
+			if (_parent != null && layer != null && layer.type == Clipper)
 			{
-				var layers = _parent.getList();
-				var layer = layers[layers.indexOf(this) - 1];
-				if (_parent != null && layer != null && layer.type == Clipper)
-				{
-					layer._renderable = true;
-				}
+				layer._renderable = true;
 			}
 		}
 		return type = value;
