@@ -1,25 +1,26 @@
 package flxanimate.animate;
 
-import haxe.extern.EitherType;
-
 import openfl.display.BitmapData;
 import openfl.display.BlendMode;
 import openfl.filters.BitmapFilter;
 import openfl.geom.ColorTransform;
 import openfl.geom.Rectangle;
 
-import flixel.math.FlxMatrix;
-import flixel.graphics.frames.FlxFrame;
 import flixel.graphics.FlxGraphic;
-import flixel.math.FlxRect;
+import flixel.graphics.frames.FlxFrame;
+import flixel.math.FlxMatrix;
 import flixel.math.FlxPoint;
+import flixel.math.FlxRect;
 import flixel.util.FlxDestroyUtil;
 import flixel.FlxG;
 import flixel.FlxCamera;
 
+import haxe.extern.EitherType;
+
 import flxanimate.data.AnimationData;
 import flxanimate.effects.FlxColorEffect;
 import flxanimate.interfaces.IFilterable;
+import flxanimate.FlxAnimate.FlxPooledCamera;
 import flxanimate.Utils;
 
 /**
@@ -37,7 +38,7 @@ import flxanimate.Utils;
 @:allow(flxanimate.FlxAnimate)
 class SymbolParameters implements IFilterable
 {
-	// var _filterCamera:FlxCamera;
+	var _filterCamera:FlxPooledCamera;
 
 	@:allow(flxanimate.animate.FlxElement)
 	var _parent:FlxElement;
@@ -148,7 +149,8 @@ class SymbolParameters implements IFilterable
 			FlxG.bitmap.remove(_filterFrame.parent);
 
 		_filterFrame = FlxDestroyUtil.destroy(_filterFrame);
-		// _filterCamera = FlxDestroyUtil.destroy(_filterCamera);
+		_filterCamera = FlxDestroyUtil.put(cast _filterCamera);
+		_filterCamera = FlxDestroyUtil.destroy(_filterCamera);
 		_filterMatrix = null;
 		// FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp1)));
 		_bmp1 = FlxDestroyUtil.dispose(_bmp1);

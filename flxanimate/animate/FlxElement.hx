@@ -2,6 +2,7 @@ package flxanimate.animate;
 
 import openfl.display.BlendMode;
 import openfl.geom.ColorTransform;
+
 import flixel.math.FlxMath;
 import flixel.math.FlxMatrix;
 import flixel.math.FlxPoint;
@@ -9,6 +10,7 @@ import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxObject;
+
 import flxanimate.data.AnimationData;
 import flxanimate.geom.FlxMatrix3D;
 
@@ -198,11 +200,26 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 		}
 
 		final m3d = symbol ? SI.M3D : ASI.M3D;
-		final array = Reflect.fields(m3d);
-		final isArray:Bool = Std.isOfType(m3d, Array);
-		if (!isArray)
-			array.sort((a, b) -> Std.parseInt(a.substring(1)) - Std.parseInt(b.substring(1)));
-		var m:Array<Float> = isArray ? m3d : [for (field in array) Reflect.field(m3d,field)];
+		var m:Array<Float> = [];
+
+		if (m3d == null)
+		{
+			// Initialize with identity matrix if m3d is null
+    		m = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+		}
+		else if (Std.isOfType(m3d, Array))
+		{
+    		m = cast m3d;
+		}
+		else
+		{
+    		// Assuming m3d is an object with properties m00, m01, m02, etc.
+			var rowColNames = ["00", "01", "02", "03", "10", "11", "12", "13", "20", "21", "22", "23", "30", "31", "32", "33"];
+			for (i in 0...16) {
+					var fieldName = 'm${rowColNames[i]}';
+					m[i] = Reflect.hasField(m3d, fieldName) ? Reflect.field(m3d, fieldName) : 0;
+			}
+		}
 
 		if (!symbol && m3d == null)
 		{

@@ -1,8 +1,11 @@
 package flxanimate.animate;
+
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
-import haxe.extern.EitherType;
-import flxanimate.data.AnimationData.SymbolData;
 import flixel.FlxG;
+
+import haxe.extern.EitherType;
+
+import flxanimate.data.AnimationData.SymbolData;
 import flxanimate.data.AnimationData.Timeline;
 
 class FlxTimeline implements IFlxDestroyable

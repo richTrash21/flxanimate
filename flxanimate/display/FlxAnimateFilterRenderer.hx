@@ -98,8 +98,15 @@ class FlxAnimateFilterRenderer
 	{
 		if (mask != null)
 		{
-			maskShader.relativePos.value[0] = maskPos.x;
-			maskShader.relativePos.value[1] = maskPos.y;
+			if (maskPos == null)
+			{
+				maskShader.relativePos.value[0] = maskShader.relativePos.value[1] = 0;
+			}
+			else
+			{
+				maskShader.relativePos.value[0] = maskPos.x;
+				maskShader.relativePos.value[1] = maskPos.y;
+			}
 			maskShader.mainPalette.input = mask;
 			maskFilter.invalidate();
 			if (filters == null)

@@ -10,8 +10,8 @@ import flixel.math.FlxMatrix;
 import flixel.sound.FlxSound;
 #end
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
-import flixel.util.FlxSignal;
 import flixel.util.FlxSignal.FlxTypedSignal;
+import flixel.util.FlxSignal;
 import flixel.util.FlxStringUtil;
 import flixel.FlxG;
 

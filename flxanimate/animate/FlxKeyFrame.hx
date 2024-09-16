@@ -1,17 +1,20 @@
 package flxanimate.animate;
 
-import flxanimate.effects.FlxColorEffect;
-import flixel.math.FlxMatrix;
 import flixel.graphics.frames.FlxFrame;
+import flixel.math.FlxMath;
+import flixel.math.FlxMatrix;
+import flixel.FlxG;
+
 import openfl.display.Sprite;
 import openfl.filters.BitmapFilter;
-import openfl.utils.Function;
-import haxe.extern.EitherType;
-import flixel.FlxG;
-import flixel.math.FlxMath;
 import openfl.geom.ColorTransform;
-import flxanimate.data.AnimationData;
+import openfl.utils.Function;
+
+import haxe.extern.EitherType;
+
 import flxanimate.animate.FlxLayer;
+import flxanimate.data.AnimationData;
+import flxanimate.effects.FlxColorEffect;
 
 class FlxKeyFrame
 {

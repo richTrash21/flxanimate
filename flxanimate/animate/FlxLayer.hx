@@ -2,22 +2,22 @@ package flxanimate.animate;
 
 import haxe.extern.EitherType;
 
-import openfl.geom.Rectangle;
 import openfl.display.BitmapData;
+import openfl.geom.Rectangle;
 
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFrame;
-import flixel.math.FlxRect;
-import flixel.math.FlxMatrix;
 import flixel.math.FlxMath;
-import flixel.util.FlxDestroyUtil;
+import flixel.math.FlxMatrix;
+import flixel.math.FlxRect;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
+import flixel.util.FlxDestroyUtil;
 import flixel.FlxG;
 import flixel.FlxObject;
 
 import flxanimate.data.AnimationData.Frame;
-import flxanimate.data.AnimationData.Layers;
 import flxanimate.data.AnimationData.LayerType;
+import flxanimate.data.AnimationData.Layers;
 import flxanimate.display.FlxAnimateFilterRenderer;
 import flxanimate.interfaces.IFilterable;
 import flxanimate.motion.easing.*;
@@ -33,8 +33,8 @@ class FlxLayer extends FlxObject implements IFilterable
 	public var type(default, set):LayerType;
 	public var length(get, never):Int;
 
-	// var _filterCamera:FlxPooledCamera;
-	// var maskCamera:FlxPooledCamera;
+	var _filterCamera:FlxPooledCamera;
+	var maskCamera:FlxPooledCamera;
 
 	// var _mcMap:Map<String, Int>;
 	var _filterFrame:FlxFrame;
@@ -93,10 +93,10 @@ class FlxLayer extends FlxObject implements IFilterable
 			FlxG.bitmap.remove(_filterFrame.parent);
 		}
 		_filterFrame = FlxDestroyUtil.destroy(_filterFrame);
-		// _filterCamera = FlxDestroyUtil.put(cast _filterCamera);
-		// _filterCamera = FlxDestroyUtil.destroy(_filterCamera);
-		// maskCamera = FlxDestroyUtil.put(cast maskCamera);
-		// maskCamera = FlxDestroyUtil.destroy(maskCamera);
+		_filterCamera = FlxDestroyUtil.put(cast _filterCamera);
+		_filterCamera = FlxDestroyUtil.destroy(_filterCamera);
+		maskCamera = FlxDestroyUtil.put(cast maskCamera);
+		maskCamera = FlxDestroyUtil.destroy(maskCamera);
 		_filterMatrix = null;
 		// FlxG.bitmap.remove(_bmpGraphic1);
 		_bmp1 = Utils.dispose(_bmp1);
@@ -141,12 +141,19 @@ class FlxLayer extends FlxObject implements IFilterable
 
 		if (_currFrame != null)
 		{
-			if (_correctClip)
-				_currFrame._cacheAsBitmap = true;
 			if (_prevFrame != _currFrame)
 			{
 				_currFrame._renderDirty = true;
 				_prevFrame = _currFrame;
+				if (_clipper != null)
+				{
+					if (_currFrame.getList().length <= 0)
+						_clipper._renderable = false;
+					else
+						_clipper._renderable = true;
+					_clipper._currFrame._renderDirty = true;
+				}
+				// _currFrame.updateRender(elapsed, curFrame, dictionary, swfRender);
 			}
 			_currFrame.updateRender(elapsed, curFrame, dictionary, swfRender);
 		}
@@ -262,6 +269,20 @@ class FlxLayer extends FlxObject implements IFilterable
 	inline function set__parent(par:FlxTimeline)
 	{
 		_parent = par;
+		_clipper = null;
+		if (_parent != null)
+		{
+			switch(type)
+			{
+				case Clipped(layer):
+					var layer = _parent.get(layer);
+					if (layer != null && layer.type == Clipper)
+					{
+						_clipper = layer;
+					}
+				default:
+			}
+		}
 		rename();
 		return par;
 	}
@@ -272,15 +293,27 @@ class FlxLayer extends FlxObject implements IFilterable
 	}
 	function set_type(value:LayerType)
 	{
-		if (type != null && type.match(Clipped(_)))
+		_clipper = null;
+		if (value != null)
 		{
-			var layers = _parent.getList();
-			var layer = layers[layers.indexOf(this) - 1];
-			if (_parent != null && layer != null && layer.type == Clipper)
+			switch(value)
 			{
-				layer._renderable = true;
+				case Clipped(layer):
+					if (_parent != null)
+					{
+						var layer = _parent.get(layer);
+						if (layer != null && layer.type == Clipper)
+						{
+							_clipper = layer;
+						}
+					}
+				case Clipper:
+					maskCamera = FlxPooledCamera.get();
+				default:
 			}
 		}
+		else
+			value = Normal;
 		return type = value;
 	}
 	function _setCurFrame(frame:Int)

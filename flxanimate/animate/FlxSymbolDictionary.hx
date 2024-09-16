@@ -1,6 +1,7 @@
 package flxanimate.animate;
 
 import flixel.FlxG;
+
 import haxe.extern.EitherType;
 import haxe.io.Path;
 

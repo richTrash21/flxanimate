@@ -1,17 +1,20 @@
 package flxanimate.animate;
 
+import flixel.math.FlxMatrix;
 import flixel.util.FlxDestroyUtil;
-import flxanimate.display.FlxAnimateFilterRenderer;
-import openfl.filters.BitmapFilter;
+import flixel.FlxG;
+
 import openfl.display.BitmapData;
+import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.EventType;
-import openfl.display.Sprite;
+import openfl.filters.BitmapFilter;
 import openfl.utils.Function;
+
 import haxe.extern.EitherType;
-import flixel.math.FlxMatrix;
-import flixel.FlxG;
+
 import flxanimate.data.AnimationData;
+import flxanimate.display.FlxAnimateFilterRenderer;
 
 class FlxSymbol implements IFlxDestroyable
 {
