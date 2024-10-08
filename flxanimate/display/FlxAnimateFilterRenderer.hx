@@ -18,7 +18,9 @@ import openfl.filters.ShaderFilter;
 import openfl.geom.ColorTransform;
 import openfl.geom.Rectangle;
 import openfl.geom.Matrix;
+import openfl.utils._internal.UInt8Array;
 
+import lime.graphics.Image;
 import lime.graphics.cairo.Cairo;
 
 #if (js && html5)
@@ -58,6 +60,44 @@ class FlxAnimateFilterRenderer
 		renderer = new OpenGLRenderer(FlxG.game.stage.context3D);
 		renderer.__worldTransform = new Matrix();
 		renderer.__worldColorTransform = new ColorTransform();
+	}
+
+	static function checkImageData(bmp:BitmapData):BitmapData
+	{
+		if (bmp.image == null && bmp.width > 0 && bmp.height > 0 || !bmp.__isValid)
+		{
+			#if lime
+			#if sys
+			var buffer = new lime.graphics.ImageBuffer(new UInt8Array(bmp.width * bmp.height * 4), bmp.width, bmp.height);
+			buffer.format = BGRA32;
+			buffer.premultiplied = true;
+
+			bmp.image = new Image(buffer, 0, 0, bmp.width, bmp.height);
+			// #elseif (js && html5)
+			// var buffer = new ImageBuffer (null, width, height);
+			// var canvas:CanvasElement = cast Browser.document.createElement ("canvas");
+			// buffer.__srcCanvas = canvas;
+			// buffer.__srcContext = canvas.getContext ("2d");
+			//
+			// image = new Image (buffer, 0, 0, width, height);
+			// image.type = CANVAS;
+			//
+			// if (fillColor != 0) {
+			//
+			// image.fillRect (image.rect, fillColor);
+			//
+			// }
+			#else
+			bmp.image = new Image(null, 0, 0, bmp.width, bmp.height, 0);
+			#end
+
+			bmp.image.transparent = true;
+			#end
+
+			bmp.__isValid = true;
+			bmp.readable = true;
+		}
+		return bmp;
 	}
 
 	@:noCompletion function setRenderer(renderer:DisplayObjectRenderer, rect:Rectangle)
@@ -169,6 +209,7 @@ class FlxAnimateFilterRenderer
 			var gl = renderer.__gl;
 
 			var renderBuffer = bitmap.getTexture(renderer.__context3D);
+			bitmap = checkImageData(bitmap);
 			@:privateAccess
 			gl.readPixels(0, 0, bitmap.width, bitmap.height, renderBuffer.__format, gl.UNSIGNED_BYTE, bitmap.image.data);
 			bitmap.image.version = 0;
@@ -245,6 +286,7 @@ class FlxAnimateFilterRenderer
 
 		var gl = renderer.__gl;
 
+		bmp = checkImageData(bmp);
 		@:privateAccess
 		gl.readPixels(0, 0, bmp.width, bmp.height, renderBuffer.__format, gl.UNSIGNED_BYTE, bmp.image.data);
 

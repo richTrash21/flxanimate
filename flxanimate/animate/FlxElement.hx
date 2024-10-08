@@ -141,16 +141,16 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 		if (_eregADD.match(str))		 return BlendMode.ADD;
 		if (_eregALPHA.match(str))		 return BlendMode.ALPHA;
 		if (_eregDARKEN.match(str))		 return BlendMode.DARKEN;
-		if (_eregDIFFERENCE.match(str))		 return BlendMode.DIFFERENCE;
+		if (_eregDIFFERENCE.match(str))	 return BlendMode.DIFFERENCE;
 		if (_eregERASE.match(str))		 return BlendMode.ERASE;
-		if (_eregHARDLIGHT.match(str))		 return BlendMode.HARDLIGHT;
+		if (_eregHARDLIGHT.match(str))	 return BlendMode.HARDLIGHT;
 		if (_eregINVERT.match(str))		 return BlendMode.INVERT;
 		if (_eregLAYER.match(str))		 return BlendMode.LAYER;
-		if (_eregLIGHTEN.match(str))		 return BlendMode.LIGHTEN;
-		if (_eregMULTIPLY.match(str))		 return BlendMode.MULTIPLY;
-		if (_eregOVERLAY.match(str))		 return BlendMode.OVERLAY;
+		if (_eregLIGHTEN.match(str))	 return BlendMode.LIGHTEN;
+		if (_eregMULTIPLY.match(str))	 return BlendMode.MULTIPLY;
+		if (_eregOVERLAY.match(str))	 return BlendMode.OVERLAY;
 		if (_eregSCREEN.match(str))		 return BlendMode.SCREEN;
-		if (_eregSUBTRACT.match(str))		 return BlendMode.SUBTRACT;
+		if (_eregSUBTRACT.match(str))	 return BlendMode.SUBTRACT;
 		// return BlendMode.NORMAL;
 		return null;
 	}
