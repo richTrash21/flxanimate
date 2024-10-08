@@ -98,10 +98,11 @@ class FlxPooledCamera extends FlxCamera implements IFlxPooled
 	}
 }
 
+@:access(flixel.FlxCamera)
+@:access(flixel.graphics.frames.FlxFrame)
+@:access(flxanimate.animate.FlxAnim)
 @:access(openfl.geom.ColorTransform)
 @:access(openfl.geom.Rectangle)
-@:access(flixel.graphics.frames.FlxFrame)
-@:access(flixel.FlxCamera)
 class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 {
 	@:isVar
@@ -571,21 +572,18 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 		{
 			if (instance.symbol._renderDirty || instance.symbol._filterFrame == null)
 			{
-				// if (instance.symbol._filterCamera == null)
-				// 	instance.symbol._filterCamera = FlxPooledCamera.get();
+				if (instance.symbol._filterCamera == null)
+					instance.symbol._filterCamera = FlxPooledCamera.get();
 				instance.symbol._filterMatrix.identity();
 				// instance.symbol._filterMatrix.copyFrom(instance.matrix);
 				// instance.symbol._filterMatrix.concat(instance.matrix);
 
 				var colTr = ColorTransform.__pool.get();
-				var filterCamera = FlxPooledCamera.get();
-				parseElement(instance, instance.symbol._filterMatrix, colTr, instance, null, [filterCamera]);
+				parseElement(instance, instance.symbol._filterMatrix, colTr, instance, null, [instance.symbol._filterCamera]);
 
-				@:privateAccess
-				renderFilter(instance.symbol, instance.symbol.filters, filterCamera);
+				renderFilter(instance.symbol, instance.symbol.filters, instance.symbol._filterCamera);
 				instance.symbol._renderDirty = false;
 
-				filterCamera.put();
 				ColorTransform.__pool.release(colTr);
 			}
 
@@ -769,10 +767,10 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 					filter.__leftExtension + filter.__rightExtension,
 					filter.__topExtension + filter.__bottomExtension);
 			}
-			graphicSize.width += extension.width * 1.5;
-			graphicSize.height += extension.height * 1.5;
-			graphicSize.x = extension.x * 1.5;
-			graphicSize.y = extension.y * 1.5;
+			graphicSize.width += extension.width * 2;
+			graphicSize.height += extension.height * 2;
+			graphicSize.x = extension.x * 2;
+			graphicSize.y = extension.y * 2;
 
 			Rectangle.__pool.release(extension);
 		}
@@ -889,7 +887,6 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 		}
 		if (isOverlaped && !badPress)
 		{
-			@:privateAccess
 			var event = anim.buttonMap.get(anim.curSymbol.name);
 			if (FlxG.mouse.justPressed && !pressed)
 			{
@@ -1088,7 +1085,6 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 
 	public function setButtonPack(button:String, callbacks:ClickStuff #if FLX_SOUND_SYSTEM , sound:FlxSound #end):Void
 	{
-		@:privateAccess
 		anim.buttonMap.set(button, {Callbacks: callbacks, #if FLX_SOUND_SYSTEM Sound:  sound #end});
 	}
 
@@ -1114,7 +1110,6 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 	 * Sets variables via a typedef. Something similar as having an ID class.
 	 * @param Settings
 	 */
-	@:access(flxanimate.animate.FlxAnim)
 	public function setTheSettings(?Settings:Settings):Void
 	{
 		antialiasing = Settings.Antialiasing;

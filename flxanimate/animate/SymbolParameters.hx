@@ -318,8 +318,8 @@ class SymbolParameters implements IFilterable
 	{
 		if (_filterFrame == null || (rect.width > _filterFrame.parent.bitmap.width || rect.height > _filterFrame.parent.bitmap.height))
 		{
-			var wid = Math.ceil((_filterFrame == null || rect.width > _filterFrame.parent.width) ? rect.width : _filterFrame.parent.width);
-			var hei = Math.ceil((_filterFrame == null || rect.height > _filterFrame.parent.height) ? rect.height : _filterFrame.parent.height);
+			final wid = Math.ceil((_filterFrame == null || rect.width > _filterFrame.parent.width) ? rect.width : _filterFrame.parent.width);
+			final hei = Math.ceil((_filterFrame == null || rect.height > _filterFrame.parent.height) ? rect.height : _filterFrame.parent.height);
 			if (_filterFrame != null)
 			{
 				_filterFrame.parent.destroy();
