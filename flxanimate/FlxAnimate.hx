@@ -579,9 +579,9 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 				// instance.symbol._filterMatrix.concat(instance.matrix);
 
 				var colTr = ColorTransform.__pool.get();
-				parseElement(instance, instance.symbol._filterMatrix, colTr, instance, null, [instance.symbol._filterCamera]);
+				parseElement(instance, instance.symbol._filterMatrix, colTr, instance, [instance.symbol._filterCamera]);
 
-				renderFilter(instance.symbol, instance.symbol.filters, instance.symbol._filterCamera);
+				renderFilter(instance.symbol, instance.symbol.filters);
 				instance.symbol._renderDirty = false;
 
 				ColorTransform.__pool.release(colTr);
@@ -655,7 +655,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 					}
 					else
 					{
-						drawLimb(layer._filterFrame, _caltFilterMatrix(mat_temp, m, instance, layer), colorEffect_temp, filterin, (isMasked) ? [layer._clipper.maskCamera] : cameras);
+						drawLimb(layer._filterFrame, _caltFilterMatrix(mat_temp, m, instance, layer), colorEffect_temp, filterin, blendMode, (isMasked) ? [layer._clipper.maskCamera] : cameras);
 						continue;
 					}
 				}
@@ -678,21 +678,21 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 				final useFilter = toBitmap || isMasker || isMasked;
 
 				if (useFilter) mat_temp.identity();
-				renderLayer(frame, useFilter ? mat_temp : matrix, colorEffect_temp, useFilter ? null : filterInstance, (toBitmap || isMasker) ? [layer._filterCamera] : (isMasked) ? [layer._clipper.maskCamera] : cameras);
+				renderLayer(frame, useFilter ? mat_temp : matrix, colorEffect_temp, useFilter ? null : filterInstance, useFilter ? null : blendMode, (toBitmap || isMasker) ? [layer._filterCamera] : (isMasked) ? [layer._clipper.maskCamera] : cameras);
 
 
 				if (toBitmap)
 				{
 					layer._filterMatrix.identity();
-					renderFilter(layer, frame.filters, layer._filterCamera);
-					drawLimb(layer._filterFrame, _caltFilterMatrix(mat_temp, m, instance, layer), colorEffect_temp, filterin, (isMasked) ? [layer._clipper.maskCamera] : cameras);
+					renderFilter(layer, frame.filters);
+					drawLimb(layer._filterFrame, _caltFilterMatrix(mat_temp, m, instance, layer), colorEffect_temp, filterin, blendMode, (isMasked) ? [layer._clipper.maskCamera] : cameras);
 					frame._renderDirty = false;
 				}
 				if (isMasker)
 				{
 					layer._filterMatrix.identity();
 					renderMask(layer);
-					drawLimb(layer._filterFrame, _caltFilterMatrix(mat_temp, m, instance, layer), colorEffect_temp, filterin, cameras);
+					drawLimb(layer._filterFrame, _caltFilterMatrix(mat_temp, m, instance, layer), colorEffect_temp, filterin, blendMode, cameras);
 				}
 
 				/*
@@ -751,8 +751,9 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 	@:access(flixel.FlxCamera)
 	@:access(openfl.display.DisplayObject)
 	@:access(openfl.filters.BitmapFilter)
-	function renderFilter(filterInstance:IFilterable, filters:Array<BitmapFilter>, filterCamera:FlxCamera)
+	function renderFilter(filterInstance:IFilterable, filters:Array<BitmapFilter>)
 	{
+		var filterCamera = filterInstance._filterCamera;
 		filterCamera.render();
 
 		var graphicSize = filterCamera.canvas.getBounds(null);
@@ -778,7 +779,6 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 		{
 			graphicSize.x = graphicSize.y = 0;
 		}
-
 		filterInstance.updateBitmaps(graphicSize);
 
 		var gfx = FlxAnimate.renderer.graphicstoBitmapData(filterCamera.canvas.graphics, filterInstance._bmp1);
