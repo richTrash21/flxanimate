@@ -528,7 +528,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 		return matrix;
 	}
 
-	function parseElement(instance:FlxElement, m:FlxMatrix, colorFilter:ColorTransform, ?filterInstance:FlxElement = null, ?blendMode:BlendMode, ?cameras:Array<FlxCamera> = null)
+	function parseElement(instance:FlxElement, m:FlxMatrix, colorFilter:ColorTransform, ?filterInstance:FlxElement, ?blendMode:BlendMode, ?cameras:Array<FlxCamera>)
 	{
 		if (instance == null || !instance.visible)
 			return;
@@ -576,7 +576,6 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 					instance.symbol._filterCamera = FlxPooledCamera.get();
 				instance.symbol._filterMatrix.identity();
 				// instance.symbol._filterMatrix.copyFrom(instance.matrix);
-				// instance.symbol._filterMatrix.concat(instance.matrix);
 
 				var colTr = ColorTransform.__pool.get();
 				parseElement(instance, instance.symbol._filterMatrix, colTr, instance, [instance.symbol._filterCamera]);
@@ -743,7 +742,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 			ColorTransform.__pool.release(colorEffect_temp);
 		}
 	}
-	inline function renderLayer(frame:FlxKeyFrame, matrix:FlxMatrix, colorEffect:ColorTransform, ?instance:FlxElement = null, ?blendMode:BlendMode, ?cameras:Array<FlxCamera>)
+	function renderLayer(frame:FlxKeyFrame, matrix:FlxMatrix, colorEffect:ColorTransform, ?instance:FlxElement, ?blendMode:BlendMode, ?cameras:Array<FlxCamera>)
 	{
 		for (element in frame.getList())
 			parseElement(element, matrix, colorEffect, instance, blendMode, cameras);
@@ -755,7 +754,6 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 	{
 		var filterCamera = filterInstance._filterCamera;
 		filterCamera.render();
-
 		var graphicSize = filterCamera.canvas.getBounds(null);
 
 		if (filters != null && filters.length > 0)
@@ -768,10 +766,11 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 					filter.__leftExtension + filter.__rightExtension,
 					filter.__topExtension + filter.__bottomExtension);
 			}
-			graphicSize.width += extension.width * 2;
-			graphicSize.height += extension.height * 2;
-			graphicSize.x = extension.x * 2;
-			graphicSize.y = extension.y * 2;
+			extension.__transform(extension, filterInstance._filterMatrix);
+			graphicSize.width += extension.width * 1.5;
+			graphicSize.height += extension.height * 1.5;
+			graphicSize.x = extension.x * 1.5;
+			graphicSize.y = extension.y * 1.5;
 
 			Rectangle.__pool.release(extension);
 		}
@@ -791,8 +790,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 
 		var bounds = Rectangle.__pool.get();
 
-		static var staticLocalMatrixLol = new Matrix();
-		filterCamera.canvas.__getBounds(bounds, staticLocalMatrixLol);
+		filterCamera.canvas.__getBounds(bounds, filterInstance._filterMatrix);
 
 		FlxAnimate.renderer.applyFilter(gfx, filterInstance._filterFrame.parent.bitmap, filterInstance._bmp1, filterInstance._bmp2, filters, graphicSize);
 
@@ -828,12 +826,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 			Utils.clearCameraDraws(mask);
 			return;
 		}
-		var p = new FlxPoint(mBounds.x, mBounds.y);
-
-		p.x -= bounds.x;
-		p.y -= bounds.y;
-
-		var lMask = FlxAnimate.renderer.graphicstoBitmapData(mask.canvas.graphics, instance._bmp1, p);
+		var lMask = FlxAnimate.renderer.graphicstoBitmapData(mask.canvas.graphics, instance._bmp1, new FlxPoint(mBounds.x - bounds.x, mBounds.y - bounds.y));
 		var mrBmp = FlxAnimate.renderer.graphicstoBitmapData(masker.canvas.graphics, instance._bmp2);
 
 		// instance._filterFrame.parent.bitmap.copyPixels(instance._bmp1, instance._bmp1.rect, instance._bmp1.rect.topLeft, instance._bmp2, instance._bmp2.rect.topLeft, true);

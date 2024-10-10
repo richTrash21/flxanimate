@@ -60,11 +60,11 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 
 	}
 
-	override public function toString()
+	public override function toString()
 	{
 		return '{matrix: $matrix, bitmap: $bitmap}';
 	}
-	override public function destroy()
+	public override function destroy()
 	{
 		super.destroy();
 		_parent = null;
@@ -126,7 +126,6 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 	static final _eregLAYER		 = new EReg("layer|слой", _eregOpt);
 	static final _eregLIGHTEN	 = new EReg("lighten|(?:замена+" + _eregSpace + ")?светлы(м|й)", _eregOpt);
 	static final _eregMULTIPLY	 = new EReg("multiply|умножение", _eregOpt);
-	// static final _eregNORMAL	 = new EReg("normal|нормальное", _eregOpt);
 	static final _eregOVERLAY	 = new EReg("overlay|перекрытие", _eregOpt);
 	static final _eregSCREEN	 = new EReg("screen|осветление", _eregOpt);
 	static final _eregSUBTRACT	 = new EReg("substract|нормальное", _eregOpt);
@@ -200,12 +199,17 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 		}
 
 		final m3d = symbol ? SI.M3D : ASI.M3D;
-		var m:Array<Float> = [];
+		var m:Array<Float>;
 
 		if (m3d == null)
 		{
 			// Initialize with identity matrix if m3d is null
-    		m = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+    		m = [
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				0, 0, 0, 1
+			];
 		}
 		else if (Std.isOfType(m3d, Array))
 		{
@@ -213,23 +217,22 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 		}
 		else
 		{
+			m = [];
     		// Assuming m3d is an object with properties m00, m01, m02, etc.
-			var rowColNames = ["00", "01", "02", "03", "10", "11", "12", "13", "20", "21", "22", "23", "30", "31", "32", "33"];
-			for (i in 0...16) {
-					var fieldName = 'm${rowColNames[i]}';
-					m[i] = Reflect.hasField(m3d, fieldName) ? Reflect.field(m3d, fieldName) : 0;
+			static final rowColNames = ["00", "01", "02", "03", "10", "11", "12", "13", "20", "21", "22", "23", "30", "31", "32", "33"];
+			var fieldName:String;
+			for (i in 0...rowColNames.length) {
+				fieldName = 'm${rowColNames[i]}';
+				m[i] = Reflect.hasField(m3d, fieldName) ? Reflect.field(m3d, fieldName) : 0;
 			}
 		}
 
-		if (!symbol && m3d == null)
-		{
-			m[0] = m[5] = 1;
-			m[1] = m[4] = m[12] = m[13] = 0;
-		}
-
 		var pos = symbol ? SI.bitmap.POS : ASI.POS;
-		if (pos == null)
-			pos = {x: 0, y: 0};
-		return new FlxElement(symbol ? SI.bitmap.N : ASI.N, params, new FlxMatrix(m[0], m[1], m[4], m[5], m[12] + pos.x, m[13] + pos.y));
+		if (pos != null)
+		{
+			m[12] += pos.x;
+			m[13] += pos.y;
+		}
+		return new FlxElement(symbol ? SI.bitmap.N : ASI.N, params, new FlxMatrix(m[0], m[1], m[4], m[5], m[12], m[13]));
 	}
 }
