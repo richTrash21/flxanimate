@@ -413,7 +413,7 @@ class FlxAnim implements IFlxDestroyable
 			FlxG.log.error('There\'s animation "$Name" is already added!');
 			return;
 		}
-		if (Indices != null)
+		if (Indices != null && Indices.length > 0)
 			addBySymbolIndices(Name, Prefix, Indices, FrameRate, Looped, X, Y);
 		else
 			addBySymbol(Name, Prefix, FrameRate, Looped, X, Y);
