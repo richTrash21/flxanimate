@@ -196,7 +196,6 @@ class FlxLayer extends FlxObject implements IFilterable
 			}
 		}
 
-
 		return null;
 	}
 

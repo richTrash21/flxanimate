@@ -397,14 +397,30 @@ class FlxAnim implements IFlxDestroyable
 	@:noCompletion var __addByFrameLabel:Bool;
 
 	/**
-	 * Creates an animation based on a frame label's starting frame and duration.0
+	 * Creates an animation.
 	 * @param Name The name of the animation to add.
-	 * @param FrameLabel The frame label to use as the starting frame.
+	 * @param Prefix The name of the symbol or label animation you're looking.
 	 * @param FrameRate The framerate of the animation to use.
 	 * @param Looped Whether the animation should loop or not.
+	 * @param Indices The indices you're gonna be using for the animation, like `[0,1,2]`.
 	 * @param X A x offset to apply to the animation.
 	 * @param Y A y offset to apply to the animation.
 	 */
+	public function addAnimation(Name:String, Prefix:String, FrameRate:Float = 0, Looped:Bool = true, Indices:Array<Int> = null, X:Float = 0, Y:Float = 0)
+	{
+		if (animsMap.exists(Name))
+		{
+			FlxG.log.error('There\'s animation "$Name" is already added!');
+			return;
+		}
+		if (Indices != null)
+			addBySymbolIndices(Name, Prefix, Indices, FrameRate, Looped, X, Y);
+		else
+			addBySymbol(Name, Prefix, FrameRate, Looped, X, Y);
+		if (!animsMap.exists(Name))
+			FlxG.log.error('The animation "$Name" doesn\'t exist!');
+	}
+
 	public function addByFrameLabel(Name:String, FrameLabel:String, FrameRate:Float = 0, Indices:Array<Int> = null, Looped:Bool = true, X:Float = 0, Y:Float = 0) {
 		if (symbolDictionary == null)
 			return false;
@@ -416,7 +432,7 @@ class FlxAnim implements IFlxDestroyable
 		if (keyFrame.duration > 1)
 		{
 			addBySymbolIndices(Name, stageInstance.symbol.name,
-				Indices == null ? keyFrame.getFrameIndices() : Indices,
+				(Indices == null || Indices.length == 0) ? keyFrame.getFrameIndices() : Indices,
 				FrameRate, Looped, X, Y);
 		}
 		else
@@ -505,9 +521,8 @@ class FlxAnim implements IFlxDestroyable
 		var timeline = new FlxTimeline();
 		timeline.add("Layer 1");
 
-		for (index in 0...Indices.length)
+		for (index => i in Indices)
 		{
-			var i = Indices[index];
 			var keyframe = new FlxKeyFrame(index);
 
 			var params = new SymbolParameters(SymbolName, params.symbol.loop);
@@ -713,12 +728,10 @@ class FlxAnim implements IFlxDestroyable
  * This class shows what framerate the animation was initially set.
  * (Remind myself to include more than this, like more metadata to stuff lmao)
  */
-class FlxMetaData
+class FlxMetaData implements IFlxDestroyable
 {
 	public var name:String;
-	/**
-	 * The frame rate the animation was exported in the texture atlas in the beginning.
-	 */
+
 	public var frameRate:Float;
 
 	public var showHiddenLayers:Bool;
@@ -734,6 +747,16 @@ class FlxMetaData
 		showHiddenLayers = false;
 		skipFilters = false;
 		skipBlends = false;
+	}
+	public function toString()
+	{
+		return FlxStringUtil.getDebugString([
+			LabelValuePair.weak("name", name),
+			LabelValuePair.weak("frameRate", frameRate),
+			LabelValuePair.weak("showHiddenLayers", showHiddenLayers),
+			LabelValuePair.weak("skipFilters", skipFilters),
+			LabelValuePair.weak("skipBlends", skipBlends)
+		]);
 	}
 	public function destroy()
 	{
