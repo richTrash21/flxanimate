@@ -406,7 +406,7 @@ class FlxAnim implements IFlxDestroyable
 	 * @param X A x offset to apply to the animation.
 	 * @param Y A y offset to apply to the animation.
 	 */
-	public function addAnimation(Name:String, Prefix:String, FrameRate:Float = 0, Looped:Bool = true, Indices:Array<Int> = null, X:Float = 0, Y:Float = 0)
+	public function addAnimation(Name:String, Prefix:String, FrameRate:Float = 0, Looped:Bool = true, ?Indices:Array<Int>, ?X:Float, ?Y:Float)
 	{
 		if (animsMap.exists(Name))
 		{
@@ -421,7 +421,7 @@ class FlxAnim implements IFlxDestroyable
 			FlxG.log.error('The animation "$Name" doesn\'t exist!');
 	}
 
-	public function addByFrameLabel(Name:String, FrameLabel:String, FrameRate:Float = 0, Indices:Array<Int> = null, Looped:Bool = true, X:Float = 0, Y:Float = 0) {
+	public function addByFrameLabel(Name:String, FrameLabel:String, FrameRate:Float = 0, Indices:Array<Int> = null, Looped:Bool = true, ?X:Float, ?Y:Float) {
 		if (symbolDictionary == null)
 			return false;
 		var keyFrame:FlxKeyFrame = symbolDictionary.get(stageInstance.symbol.name)?.getFrameLabel(FrameLabel);
@@ -464,7 +464,7 @@ class FlxAnim implements IFlxDestroyable
 	 * @param Y  the *y* axis of the animation.
 	 * @param FrameRate the framerate of the animation.
 	 */
-	public function addBySymbol(Name:String, SymbolName:String, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0)
+	public function addBySymbol(Name:String, SymbolName:String, FrameRate:Float = 0, Looped:Bool = true, ?X:Float, ?Y:Float)
 	{
 		if (symbolDictionary == null || (!__addByFrameLabel && addByFrameLabel(Name, SymbolName, FrameRate, null, Looped, X, Y)))
 		{
@@ -501,11 +501,11 @@ class FlxAnim implements IFlxDestroyable
 	 * @param Indices The indices you're gonna be using for the animation, like `[0,1,2]`.
 	 * @param FrameRate the framerate of the animation.
 	 */
-	public function addByAnimIndices(Name:String, Indices:Array<Int>, FrameRate:Float = 0)
+	public function addByAnimIndices(Name:String, Indices:Array<Int>, ?FrameRate:Float)
 	{
 		addBySymbolIndices(Name, stageInstance.symbol.name, Indices, FrameRate, stageInstance.symbol.loop == Loop, 0,0);
 	}
-	public function addBySymbolIndices(Name:String, SymbolName:String, Indices:Array<Int>, FrameRate:Float = 0, Looped:Bool = true, X:Float = 0, Y:Float = 0)
+	public function addBySymbolIndices(Name:String, SymbolName:String, Indices:Array<Int>, FrameRate:Float = 0, Looped:Bool = true, ?X:Float, ?Y:Float)
 	{
 		if (symbolDictionary == null || (!__addByFrameLabel && addByFrameLabel(Name, SymbolName, FrameRate, Indices, Looped, X, Y)))
 		{
