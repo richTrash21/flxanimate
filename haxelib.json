@@ -1,8 +1,8 @@
 {
     "name": "flxanimate",
-    "url": "https://github.com/Dot-Stuff/flxanimate/",
+    "url": "https://github.com/Redar13/flxanimate/",
     "license": "MIT",
-    "tags": ["adobe","flash","animate","texture_sheet", "flixel"],
+    "tags": ["adobe", "flash", "animate", "texture_sheet", "flixel"],
     "description": "Adobe Animate's texture atlas player for HaxeFlixel.",
     "version": "4.0.0",
     "releasenote": "Revamp several issues, and introducing filters on MovieClips/layers.",

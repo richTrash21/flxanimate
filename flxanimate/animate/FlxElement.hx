@@ -62,7 +62,7 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 
 	public override function toString()
 	{
-		return '{matrix: $matrix, bitmap: $bitmap}';
+		return '{matrix: $matrix, bitmap: $bitmap, symbol: $symbol}';
 	}
 	public override function destroy()
 	{

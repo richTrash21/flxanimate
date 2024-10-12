@@ -216,7 +216,7 @@ class FlxKeyFrame
 
 	public inline function toString()
 	{
-		return '{index: $index, duration: $duration}';
+		return '{name: $name, index: $index, duration: $duration}';
 	}
 	function set_colorEffect(value:EitherType<ColorEffect, FlxColorEffect>)
 	{
