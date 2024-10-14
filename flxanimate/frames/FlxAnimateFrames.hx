@@ -180,7 +180,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 				return null;
 		}
 
-		var graphic:FlxGraphic = FlxG.bitmap.add(Image);
+		var graphic:FlxGraphic = FlxG.bitmap.add((Std.isOfType(Image, String)) ? Utils.getBitmapData(Image) : Image);
 		if (graphic == null)
 			return null;
 
