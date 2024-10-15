@@ -175,9 +175,7 @@ class FlxTimeline implements IFlxDestroyable
 		var _length = 0;
 		for (layer in _layers)
 		{
-			var length = layer.length;
-			if (_length < length)
-				_length = length;
+			_length = cast Math.max(_length, layer.length);
 		}
 		return _length;
 	}
