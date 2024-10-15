@@ -74,14 +74,14 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 		matrix = null;
 	}
 
-	inline function set_bitmap(value:String)
+	function set_bitmap(value:String)
 	{
 		if (value != bitmap && symbol != null && symbol.cacheAsBitmap)
 			symbol._renderDirty = true;
 
 		return bitmap = value;
 	}
-	inline function set_matrix(value:FlxMatrix)
+	function set_matrix(value:FlxMatrix)
 	{
 		(value == null) ? matrix.identity() : matrix = value;
 
@@ -205,24 +205,22 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 		{
 			// Initialize with identity matrix if m3d is null
     		m = [
-				1, 0, 0, 0,
-				0, 1, 0, 0,
-				0, 0, 1, 0,
-				0, 0, 0, 1
+				1, 0, 0,
+				1, 0, 0
 			];
 		}
 		else if (Std.isOfType(m3d, Array))
 		{
-    		m = cast m3d;
+			m = [m3d[0], m3d[1], m3d[4], m3d[5], m3d[12], m3d[13]];
 		}
 		else
 		{
 			m = [];
     		// Assuming m3d is an object with properties m00, m01, m02, etc.
-			static final rowColNames = ["00", "01", "02", "03", "10", "11", "12", "13", "20", "21", "22", "23", "30", "31", "32", "33"];
+			static final rowColNames = ["m00","m01","m10","m11","m30","m31"];
 			var fieldName:String;
 			for (i in 0...rowColNames.length) {
-				fieldName = 'm${rowColNames[i]}';
+				fieldName = rowColNames[i];
 				m[i] = Reflect.hasField(m3d, fieldName) ? Reflect.field(m3d, fieldName) : 0;
 			}
 		}
@@ -230,9 +228,9 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 		var pos = symbol ? SI.bitmap.POS : ASI.POS;
 		if (pos != null)
 		{
-			m[12] += pos.x;
-			m[13] += pos.y;
+			m[4] += pos.x;
+			m[5] += pos.y;
 		}
-		return new FlxElement(symbol ? SI.bitmap.N : ASI.N, params, new FlxMatrix(m[0], m[1], m[4], m[5], m[12], m[13]));
+		return new FlxElement(symbol ? SI.bitmap.N : ASI.N, params, new FlxMatrix(m[0], m[1], m[2], m[3], m[4], m[5]));
 	}
 }

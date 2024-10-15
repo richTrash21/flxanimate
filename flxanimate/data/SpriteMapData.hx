@@ -40,7 +40,7 @@ abstract Meta({
 
 	inline function get_resolution()
 	{
-		return AnimationData.getFieldBool(this, ["resolution", "scale"]);
+		return MacroAnimationData.getFieldBool(this, ["resolution", "scale"]);
 	}
 }
 
