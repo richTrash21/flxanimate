@@ -300,6 +300,8 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 			origin = anim.curInstance.symbol.transformationPoint;
 	}
 
+	// TODO: PRECASHE FILTERS FUNC
+
 	var _camerasCashePoints(default, null):Array<FlxPoint> = [];
 	/**
 	 * the function `draw()` renders the symbol that `anim` has currently plus a pivot that you can toggle on or off.
@@ -1057,6 +1059,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 
 	override function destroy()
 	{
+		skew = FlxDestroyUtil.put(skew);
 		anim = FlxDestroyUtil.destroy(anim);
 		_camerasCashePoints = FlxDestroyUtil.putArray(_camerasCashePoints);
 		super.destroy();
