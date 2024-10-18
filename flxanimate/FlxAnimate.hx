@@ -908,7 +908,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 		return frame;
 	}
 	static var _mat:FlxMatrix = new FlxMatrix();
-	function drawPivotLimb(limb:FlxFrame, _matrix:FlxMatrix, cameras:Array<FlxCamera> = null)
+	function drawPivotLimb(limb:FlxFrame, _matrix:FlxMatrix, ?cameras:Array<FlxCamera>)
 	{
 		if (limb == null || limb.type == EMPTY)
 			return;
@@ -943,7 +943,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 		}
 	}
 
-	function drawLimb(limb:FlxFrame, _matrix:FlxMatrix, ?colorTransform:ColorTransform = null, filterin:Bool = false, ?blendMode:BlendMode, cameras:Array<FlxCamera> = null)
+	function drawLimb(limb:FlxFrame, _matrix:FlxMatrix, ?colorTransform:ColorTransform, ?filterin:Bool, ?blendMode:BlendMode, cameras:Array<FlxCamera>)
 	{
 		if (/*colorTransform != null && (colorTransform.alphaMultiplier == 0 || colorTransform.alphaOffset == -255) ||*/ limb == null || limb.type == EMPTY)
 			return;
