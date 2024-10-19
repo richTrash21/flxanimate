@@ -309,7 +309,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 	public override function draw():Void
 	{
 		if(alpha == 0) return;
-		updateSkewMatrix();
+		//updateSkewMatrix();
 
 		if (useAtlas)
 		{
@@ -500,7 +500,14 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 
 		getScreenPosition(_point, camera).subtractPoint(offset);
 		_point.add(origin.x, origin.y);
-		_matrix.concat(matrixExposed ? transformMatrix : _skewMatrix);
+		if (matrixExposed)
+		{
+			_matrix.concat(transformMatrix);
+		}
+		else
+		{
+			updateSkewToMatrix(_matrix);
+		}
 		_matrix.translate(_point.x, _point.y);
 
 		if (isPixelPerfectRender(camera))
@@ -971,7 +978,14 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 						_mat.rotateWithTrig(_cosAngle, _sinAngle);
 				}
 
-				_mat.concat(matrixExposed ? transformMatrix : _skewMatrix);
+				if (matrixExposed)
+				{
+					_mat.concat(transformMatrix);
+				}
+				else
+				{
+					updateSkewToMatrix(_mat);
+				}
 
 				_mat.translate(_camerasCashePoints[i].x, _camerasCashePoints[i].y);
 
@@ -1003,6 +1017,23 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 			}
 			camera.drawPixels(limb, null, _mat, colorTransform, blendMode, filterin || antialiasing, filterin ? null : this.shader);
 		}
+	}
+
+	function updateSkewToMatrix(matrix:Matrix):Void // thx to rich
+	{
+		final tanX = -skew.x * FlxAngle.TO_RAD, tanY = skew.y * FlxAngle.TO_RAD;
+
+		var old = matrix.a + matrix.b * tanX;
+		matrix.b = matrix.a * tanY + matrix.b;
+		matrix.a = old;
+
+		old = matrix.c + matrix.d * tanX;
+		matrix.d = matrix.c * tanY + matrix.d;
+		matrix.c = old;
+
+		old = matrix.tx + matrix.ty * tanX;
+		matrix.ty = matrix.tx * tanY + matrix.ty;
+		matrix.tx = old;
 	}
 
 	#if FLX_DEBUG
