@@ -917,7 +917,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 	static var _mat:FlxMatrix = new FlxMatrix();
 	function drawPivotLimb(limb:FlxFrame, _matrix:FlxMatrix, ?cameras:Array<FlxCamera>)
 	{
-		if (limb == null || limb.type == EMPTY)
+		if (limb == null || limb.type == EMPTY || limb.parent.isDestroyed)
 			return;
 
 		if (cameras == null)
