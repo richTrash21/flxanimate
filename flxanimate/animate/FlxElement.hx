@@ -116,19 +116,19 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 	inline extern static final _eregSpace = "(?:_)?";
 
 	// Suppost Eng & Rus
-	static final _eregADD		 = new EReg("add|сложение", _eregOpt);
-	static final _eregALPHA		 = new EReg("alpha|альфа", _eregOpt);
-	static final _eregDARKEN	 = new EReg("darken|(?:замена+" + _eregSpace + ")?теймны(м|й)", _eregOpt);
-	static final _eregDIFFERENCE = new EReg("difference|разница", _eregOpt);
-	static final _eregERASE		 = new EReg("erase|удаление", _eregOpt);
-	static final _eregHARDLIGHT	 = new EReg("hardlight|жесткий" + _eregSpace + "свет", _eregOpt);
-	static final _eregINVERT	 = new EReg("negative|invert|инверсия|негатив", _eregOpt);
-	static final _eregLAYER		 = new EReg("layer|слой", _eregOpt);
-	static final _eregLIGHTEN	 = new EReg("lighten|(?:замена+" + _eregSpace + ")?светлы(м|й)", _eregOpt);
-	static final _eregMULTIPLY	 = new EReg("multiply|умножение", _eregOpt);
-	static final _eregOVERLAY	 = new EReg("overlay|перекрытие", _eregOpt);
-	static final _eregSCREEN	 = new EReg("screen|осветление", _eregOpt);
-	static final _eregSUBTRACT	 = new EReg("substract|нормальное", _eregOpt);
+	static final _eregADD		  = new EReg("add|сложение|0", _eregOpt);
+	static final _eregALPHA		  = new EReg("alpha|альфа|1", _eregOpt);
+	static final _eregDARKEN	  = new EReg("darken|(?:замена+" + _eregSpace + ")?теймны(м|й)|2", _eregOpt);
+	static final _eregDIFFERENCE  = new EReg("difference|разница|3", _eregOpt);
+	static final _eregERASE		  = new EReg("erase|удаление|4", _eregOpt);
+	static final _eregHARDLIGHT	  = new EReg("hardlight|жесткий" + _eregSpace + "свет|5", _eregOpt);
+	static final _eregINVERT	  = new EReg("negative|invert|инверсия|негатив|6", _eregOpt);
+	static final _eregLAYER		  = new EReg("layer|слой|7", _eregOpt);
+	static final _eregLIGHTEN	  = new EReg("lighten|(?:замена+" + _eregSpace + ")?светлы(м|й)|8", _eregOpt);
+	static final _eregMULTIPLY	  = new EReg("multiply|умножение|9", _eregOpt);
+	static final _eregOVERLAY	  = new EReg("overlay|перекрытие|11", _eregOpt);
+	static final _eregSCREEN	  = new EReg("screen|осветление|12", _eregOpt);
+	static final _eregSUBTRACT	  = new EReg("substract|нормальное|14", _eregOpt);
 
 	// suppost list: openfl.display.OpenGLRenderer.hx:1030
 
