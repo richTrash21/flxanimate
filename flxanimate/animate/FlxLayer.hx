@@ -165,32 +165,35 @@ class FlxLayer extends FlxObject implements IFilterable
 	}
 	function _get(frame:EitherType<String, Int>, _animateRendering:Bool = true)
 	{
-		if (_animateRendering && _parent != null && type.match(Clipped(_)))
+		if (frame != null)
 		{
-			var layers = _parent.getList();
-			var layer = layers[layers.indexOf(this) - 1];
-			if (layer != null && layer.type == Clipper)
+			if (_animateRendering && _parent != null && type.match(Clipped(_)))
 			{
-				layer._renderable = false;
-				// _clipper = layer;
-			}
-		}
-		if (frame is String)
-		{
-			return _labels.get(frame);
-		}
-		else
-		{
-			var index = frame;
-			if (index < 0 || index == Math.NaN)
-				index = 0;
-			else if (index > length)
-				return null;
-			for (keyframe in _keyframes)
-			{
-				if (keyframe.index + keyframe.duration > index)
+				var layers = _parent.getList();
+				var layer = layers[layers.indexOf(this) - 1];
+				if (layer != null && layer.type == Clipper)
 				{
-					return keyframe;
+					layer._renderable = false;
+					// _clipper = layer;
+				}
+			}
+			if (frame is String)
+			{
+				return _labels.get(frame);
+			}
+			else
+			{
+				var index:Int = cast frame;
+				if (index < 0 || index == Math.NaN)
+					index = 0;
+				else if (index > length)
+					return null;
+				for (keyframe in _keyframes)
+				{
+					if (keyframe.index + keyframe.duration > index)
+					{
+						return keyframe;
+					}
 				}
 			}
 		}
