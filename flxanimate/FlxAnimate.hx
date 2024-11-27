@@ -627,7 +627,9 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 				if (instance.symbol.colorEffect != null)
 					colorEffect.concat(instance.symbol.colorEffect.getColor());
 
-				drawLimb(instance.symbol._filterFrame, _caltFilterMatrix(matrix, m, instance, instance.symbol), colorEffect, filterin, blendMode, cameras);
+				matrix.copyFrom(instance.symbol._filterMatrix);
+				matrix.concat(m);
+				drawLimb(instance.symbol._filterFrame, matrix, colorEffect, filterin, blendMode, cameras);
 			}
 		}
 		else
@@ -690,7 +692,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 					}
 					else
 					{
-						drawLimb(layer._filterFrame, _caltFilterMatrix(mat_temp, m, instance, layer), colorEffect_temp, filterin, blendMode, (isMasked) ? [layer._clipper.maskCamera] : cameras);
+						drawLimb(layer._filterFrame, _caltFilterMatrix(mat_temp, matrix, instance, layer), colorEffect_temp, filterin, blendMode, (isMasked) ? [layer._clipper.maskCamera] : cameras);
 						continue;
 					}
 				}
@@ -720,14 +722,14 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 				{
 					layer._filterMatrix.identity();
 					renderFilter(layer, frame.filters);
-					drawLimb(layer._filterFrame, _caltFilterMatrix(mat_temp, m, instance, layer), colorEffect_temp, filterin, blendMode, (isMasked) ? [layer._clipper.maskCamera] : cameras);
+					drawLimb(layer._filterFrame, _caltFilterMatrix(mat_temp, matrix, instance, layer), colorEffect_temp, filterin, blendMode, (isMasked) ? [layer._clipper.maskCamera] : cameras);
 					frame._renderDirty = false;
 				}
 				if (isMasker)
 				{
 					layer._filterMatrix.identity();
 					renderMask(layer);
-					drawLimb(layer._filterFrame, _caltFilterMatrix(mat_temp, m, instance, layer), colorEffect_temp, filterin, blendMode, cameras);
+					drawLimb(layer._filterFrame, _caltFilterMatrix(mat_temp, matrix, instance, layer), colorEffect_temp, filterin, blendMode, cameras);
 				}
 
 				/*

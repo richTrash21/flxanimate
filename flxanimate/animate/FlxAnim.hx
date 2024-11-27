@@ -234,7 +234,7 @@ class FlxAnim implements IFlxDestroyable
 			}
 			if (curThing != null)
 			{
-				Force = (Force || curInstance != curThing.instance);
+				Force = Force || curInstance != curThing.instance;
 
 				curAnim = curThing;
 				curInstance = curThing.instance;
