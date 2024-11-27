@@ -383,10 +383,12 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 			mat.put();
 		}
 	}
+	
 	public function basicDraw()
 	{
 		super.draw();
 	}
+	
 	@:access(flixel.group.FlxTypedGroup)
 	public override function overlaps(objectOrGroup:FlxBasic, inScreenSpace:Bool = false, ?camera:FlxCamera):Bool
 	{
@@ -422,6 +424,30 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 			&& (objectScreenPos.y + object.height > _point.y)
 			&& (objectScreenPos.y < _point.y + height);
 	}
+	
+	override public function overlapsPoint(point:FlxPoint, inScreenSpace = false, ?camera:FlxCamera):Bool
+	{
+		if (!inScreenSpace)
+		{
+			var x = this.x + relativeX;
+			var y = this.y + relativeY;
+			var result = (point.x >= x) && (point.x < x + width) && (point.y >= y) && (point.y < y + height);
+			point.putWeak();
+			return result;
+		}
+
+		if (camera == null)
+		{
+			camera = FlxG.camera;
+		}
+		var xPos:Float = point.x - camera.scroll.x;
+		var yPos:Float = point.y - camera.scroll.y;
+		getScreenPosition(_point, camera);
+		_point.add(relativeX, relativeY);
+		point.putWeak();
+		return (xPos >= _point.x) && (xPos < _point.x + width) && (yPos >= _point.y) && (yPos < _point.y + height);
+	}
+	
 	public override function getBoundingBox(camera:FlxCamera):FlxRect
 	{
 		getScreenPosition(_point, camera);
@@ -436,6 +462,7 @@ class FlxAnimate extends FlxSprite // TODO: MultipleAnimateAnims suppost
 
 		return _rect;
 	}
+	
 	public override function getScreenBounds(?newRect:FlxRect, ?camera:FlxCamera):FlxRect
 	{
 		if (newRect == null)
